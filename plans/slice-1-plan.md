@@ -139,20 +139,20 @@
 ## Phase 4 — Frontend: Public Form Runner
 
 ### 4.1 Public route
-- [ ] Route: `app/f/[slug]/page.tsx` — `publicProcedure`, no auth
-- [ ] Fetch form via `forms.public.getBySlug`
-- [ ] If no published version → "not yet live" branded page
-- [ ] If `is_accepting_responses = false` → "no longer accepting responses" page
+- [x] Route: `app/f/[slug]/page.tsx` — `publicProcedure`, no auth
+- [x] Fetch form via `forms.public.getBySlug`
+- [x] If no published version → "not yet live" branded page
+- [x] If `is_accepting_responses = false` → "no longer accepting responses" page
 
 ### 4.2 Basic runner (Slice 1: all questions on one page)
 > Note: one-question-per-screen UX is Slice 4. Slice 1 = simple stacked layout.
 
-- [ ] Render all fields top-to-bottom
-- [ ] `ShortTextInput`, `LongTextInput` components
-- [ ] Required field visual indicator (`*`)
-- [ ] Honeypot hidden input (spam protection)
-- [ ] Submit button (Slice 2 wires it up; Slice 1 = disabled/placeholder)
-- [ ] Thank-you screen component (shown post-submit in Slice 2)
+- [x] Render all fields top-to-bottom
+- [x] `ShortTextInput`, `LongTextInput` components
+- [x] Required field visual indicator (`*`)
+- [x] Honeypot hidden input (spam protection)
+- [x] Submit button (Slice 2 wires it up; Slice 1 = disabled/placeholder)
+- [x] Thank-you screen component (shown post-submit in Slice 2)
 
 ---
 
