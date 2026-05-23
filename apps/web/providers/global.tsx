@@ -7,6 +7,7 @@ import { Toaster } from "~/components/ui/sonner";
 
 import { trpc } from "~/trpc/client";
 import { createTRPCHttpBatchClientClient } from "~/trpc/create-client";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import { AuthProvider } from "./auth";
 
 const queryClient = new QueryClient({
@@ -33,7 +34,9 @@ export const GlobalProviders: React.FC<{ children: React.ReactNode }> = ({ child
         disableTransitionOnChange
       >
         <trpc.Provider queryClient={queryClient} client={trpcClient}>
-          <AuthProvider>{children}</AuthProvider>
+          <TooltipProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </TooltipProvider>
           <Toaster />
         </trpc.Provider>
       </NextThemesProvider>

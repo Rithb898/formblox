@@ -8,9 +8,11 @@ import { TRPCError } from "@trpc/server";
 const TAGS = ["Authentication"];
 const getPath = generatePath("/authentication");
 
+const IS_PROD = (process.env.NODE_ENV as string) === "prod";
+
 const COOKIE_OPTS_ACCESS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: IS_PROD,
   sameSite: "lax" as const,
   maxAge: 15 * 60 * 1000,
   path: "/",
@@ -18,7 +20,7 @@ const COOKIE_OPTS_ACCESS = {
 
 const COOKIE_OPTS_REFRESH = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: IS_PROD,
   sameSite: "lax" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/",

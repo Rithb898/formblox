@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { Field, FieldLabel, FieldError } from "~/components/ui/field";
 import {
   Card,
   CardContent,
@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
   if (done) {
     return (
       <Card>
-        <CardHeader className="space-y-1">
+        <CardHeader className="text-center">
           <CardTitle className="text-2xl">Check your email</CardTitle>
           <CardDescription>
             If an account exists with that email, a password reset link has been sent.
@@ -58,24 +58,23 @@ export default function ForgotPasswordPage() {
 
   return (
     <Card>
-      <CardHeader className="space-y-1">
+      <CardHeader className="text-center">
         <CardTitle className="text-2xl">Forgot password</CardTitle>
         <CardDescription>Enter your email and we&apos;ll send you a reset link</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <Field invalid={!!errors.email}>
+            <FieldLabel>Email</FieldLabel>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="m@example.com"
               autoComplete="email"
-              aria-invalid={!!errors.email}
               {...register("email")}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-          </div>
+            <FieldError>{errors.email?.message}</FieldError>
+          </Field>
 
           <Button type="submit" className="w-full" disabled={forgotMutation.isPending}>
             {forgotMutation.isPending ? "Sending..." : "Send reset link"}

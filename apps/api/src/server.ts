@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import { logger } from "@repo/logger";
 import cors from "cors";
@@ -43,7 +44,10 @@ const authLimiter = rateLimit({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendCommand: (...args: string[]) => redisClient.call(...(args as [string, ...string[]])) as any,
   }),
-  message: { error: "Too many requests, please try again later." },
+  skip: () => env.NODE_ENV !== "prod",
+  handler: (_req, res) => {
+    res.redirect(`${env.FRONTEND_URL}/login?error=rate_limited`);
+  },
 });
 
 // General API limiter (100 req / 15 min)
@@ -66,24 +70,41 @@ app.get("/health", (req, res) => {
   return res.json({ message: "FormBlox server is healthy", healthy: true });
 });
 
+const isProd = env.NODE_ENV === "prod";
+const OAUTH_STATE_COOKIE = "oauth_state";
+
 // Google OAuth routes
 app.get("/auth/google", authLimiter, async (_req, res) => {
   const { googleOAuth2Client } = await import("@repo/services/clients/google-oauth");
+  const state = crypto.randomBytes(16).toString("hex");
+  res.cookie(OAUTH_STATE_COOKIE, state, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: 10 * 60 * 1000,
+    path: "/",
+  });
   const url = googleOAuth2Client.generateAuthUrl({
     scope: ["email", "profile"],
     access_type: "offline",
+    state,
   });
   res.redirect(url);
 });
 
 app.get("/auth/google/callback", authLimiter, async (req, res) => {
   const code = req.query.code as string | undefined;
-  if (!code) {
-    return res.redirect(`${env.FRONTEND_URL}/login?error=missing_code`);
+  const returnedState = req.query.state as string | undefined;
+  const storedState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
+
+  res.clearCookie(OAUTH_STATE_COOKIE, { path: "/" });
+
+  if (!code || !returnedState || !storedState || returnedState !== storedState) {
+    return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
   }
+
   try {
     const { accessToken, refreshToken } = await authService.googleCallback(code);
-    const isProd = env.NODE_ENV === "prod";
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: isProd,

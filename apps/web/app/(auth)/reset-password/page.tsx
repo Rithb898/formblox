@@ -8,8 +8,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { PasswordInput } from "~/components/ui/password-input";
+import { Field, FieldLabel, FieldError } from "~/components/ui/field";
 import {
   Card,
   CardContent,
@@ -57,11 +57,11 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="text-center">
           <CardTitle>Invalid link</CardTitle>
           <CardDescription>This reset link is missing a token.</CardDescription>
         </CardHeader>
-        <CardFooter>
+        <CardFooter className="justify-center">
           <Link href="/forgot-password">
             <Button variant="outline">Request a new link</Button>
           </Link>
@@ -72,39 +72,34 @@ export default function ResetPasswordPage() {
 
   return (
     <Card>
-      <CardHeader className="space-y-1">
+      <CardHeader className="text-center">
         <CardTitle className="text-2xl">Reset password</CardTitle>
         <CardDescription>Enter your new password below</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newPassword">New password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={!!errors.newPassword}
-              {...register("newPassword")}
-            />
-            {errors.newPassword && (
-              <p className="text-sm text-destructive">{errors.newPassword.message}</p>
-            )}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Field invalid={!!errors.newPassword}>
+              <FieldLabel>New password</FieldLabel>
+              <PasswordInput
+                id="newPassword"
+                autoComplete="new-password"
+                {...register("newPassword")}
+              />
+              <FieldError>{errors.newPassword?.message}</FieldError>
+            </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm new password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={!!errors.confirmPassword}
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-            )}
+            <Field invalid={!!errors.confirmPassword}>
+              <FieldLabel>Confirm password</FieldLabel>
+              <PasswordInput
+                id="confirmPassword"
+                autoComplete="new-password"
+                {...register("confirmPassword")}
+              />
+              <FieldError>{errors.confirmPassword?.message}</FieldError>
+            </Field>
           </div>
+          <p className="text-xs text-muted-foreground">Must be at least 8 characters long.</p>
 
           <Button type="submit" className="w-full" disabled={resetMutation.isPending}>
             {resetMutation.isPending ? "Resetting..." : "Reset password"}
