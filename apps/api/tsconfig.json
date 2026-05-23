@@ -6,6 +6,7 @@
 
     "moduleResolution": "Node",
     "module": "CommonJS",
+    "ignoreDeprecations": "6.0",
 
     // We don't need these for our final build
     "declarationMap": false,
