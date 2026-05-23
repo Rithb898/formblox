@@ -3,10 +3,7 @@ import jwt from "jsonwebtoken";
 import { db, eq, and, isNull } from "@repo/database";
 import { refreshTokensTable } from "@repo/database/schema";
 import { env } from "../env";
-
-interface AccessTokenPayload {
-  userId: string;
-}
+import { accessTokenPayloadSchema, type AccessTokenPayload } from "./model";
 
 function hashToken(raw: string): string {
   return crypto.createHash("sha256").update(raw).digest("hex");
@@ -20,7 +17,8 @@ class TokenService {
   }
 
   verifyAccessToken(token: string): AccessTokenPayload {
-    return jwt.verify(token, env.JWT_ACCESS_SECRET) as AccessTokenPayload;
+    const raw = jwt.verify(token, env.JWT_ACCESS_SECRET);
+    return accessTokenPayloadSchema.parse(raw);
   }
 
   async createRefreshToken(userId: string): Promise<string> {

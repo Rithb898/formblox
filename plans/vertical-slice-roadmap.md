@@ -44,8 +44,41 @@ Turborepo + auth. Done.
 - **FE:** "Summary" tab in dashboard
 - ✅ Submittable — complete story
 
-## Slice 7+ — Bonus if time
-Themes → embed widget → share card → templates → integrations (Slack/webhook/Sheets) → conditional logic → multi-language
+## Slice 7 — AI form generation from prompt (Day 5)
+- **BE:** `POST /forms/generate` → Claude returns full form JSON (questions + types) → save
+- **FE:** "Generate with AI" button → prompt textarea → preview → edit → save
+- **Demo:** "make me a customer feedback form" → instant working form
+- ✅ Submittable — second AI wow
+
+## Slice 8 — Themes & branding (Day 5–6)
+- **BE:** `theme` JSON column on `forms` (colors, font, bg)
+- **FE:** Theme panel in editor (presets + color picker), runner respects theme
+- **Demo:** same form, three different looks
+- ✅ Submittable — looks professional
+
+## Slice 9 — Conditional logic / branching (Day 6)
+- **BE:** `logic` JSON on questions (`if answer === X, go to question Y`)
+- **FE:** Simple logic UI per question (dropdown: "if X → jump to Y / end")
+- **Demo:** branching path based on first answer
+- ✅ Submittable — real form-builder feature
+
+## Slice 10 — Analytics dashboard (Day 6–7)
+- **BE:** `GET /forms/:id/analytics` → completion rate, drop-off per question, avg time, response count over time
+- **FE:** Charts tab (recharts) — funnel + line chart + per-question stats
+- **Demo:** "67% drop off at question 3"
+- ✅ Submittable — feels like a real product
+
+## Slice 11+ — Bonus stretch
+- Embed widget (`<script>` snippet, popup + inline)
+- Webhook + Slack/Discord notifications
+- Templates gallery (10 pre-built forms)
+- Share cards (OG image generation)
+- Multi-language (auto-translate via Claude)
+- Hidden fields (URL params)
+- Save & resume (partial submissions)
+- File upload question type
+- Payment question (Stripe)
+- Team workspaces
 
 ---
 

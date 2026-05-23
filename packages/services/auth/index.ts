@@ -11,11 +11,7 @@ import {
 import { googleOAuth2Client } from "../clients/google-oauth";
 import { tokenService } from "../token";
 import { emailService } from "../email";
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
+import { type AuthTokens, type MeOutput } from "./model";
 
 class AuthService {
   private async issueTokens(userId: string): Promise<AuthTokens> {
@@ -241,7 +237,7 @@ class AuthService {
     await tokenService.revokeAllRefreshTokens(record.userId);
   }
 
-  async me(userId: string) {
+  async me(userId: string): Promise<MeOutput> {
     const [user] = await db
       .select({
         id: usersTable.id,
