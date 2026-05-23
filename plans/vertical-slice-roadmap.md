@@ -10,9 +10,11 @@
 Turborepo + auth. Done.
 
 ## Slice 1 — Create & view a form (Day 1)
-- **BE:** `forms` table, `POST /forms`, `GET /forms/:id`
-- **FE:** "New form" button → text-only question editor → save → public view URL
-- **Demo:** create form, open link, see question
+> Architecture: [slice-1-architecture.md](./slice-1-architecture.md) · Implementation: [slice-1-plan.md](./slice-1-plan.md)
+
+- **BE:** `workspaces` + `forms` + `form_versions` + `form_fields` tables, versioned CRUD, publish flow, `public_slug` (nanoid 10)
+- **FE:** 3-pane editor (palette / dnd-kit canvas / property panel), Zustand store, explicit save (`Cmd+S`), public `/f/:slug` view
+- **Demo:** create form, publish, open slug link, see question
 - ✅ Submittable
 
 ## Slice 2 — Collect responses (Day 1–2)

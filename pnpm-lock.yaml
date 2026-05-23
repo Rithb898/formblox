@@ -302,6 +302,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@repo/forms':
+        specifier: workspace:*
+        version: link:../forms
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -372,6 +375,22 @@ importers:
       typescript-eslint:
         specifier: ^8.50.0
         version: 8.50.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
+
+  packages/forms:
+    dependencies:
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/logger:
     dependencies:

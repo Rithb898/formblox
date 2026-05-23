@@ -7,6 +7,8 @@ import {
   oauthAccountsTable,
   emailVerificationTokensTable,
   passwordResetTokensTable,
+  workspacesTable,
+  workspaceMembersTable,
 } from "@repo/database/schema";
 import { googleOAuth2Client } from "../clients/google-oauth";
 import { tokenService } from "../token";
@@ -14,6 +16,14 @@ import { emailService } from "../email";
 import { type AuthTokens, type MeOutput } from "./model";
 
 class AuthService {
+  private async createPersonalWorkspace(userId: string, fullName: string): Promise<void> {
+    const [workspace] = await db
+      .insert(workspacesTable)
+      .values({ name: `${fullName}'s Workspace`, createdBy: userId })
+      .returning({ id: workspacesTable.id });
+    await db.insert(workspaceMembersTable).values({ workspaceId: workspace!.id, userId, role: "owner" });
+  }
+
   private async issueTokens(userId: string): Promise<AuthTokens> {
     const accessToken = tokenService.createAccessToken(userId);
     const refreshToken = await tokenService.createRefreshToken(userId);
@@ -39,6 +49,7 @@ class AuthService {
     const user = insertedUsers[0]!;
 
     await db.insert(userCredentialsTable).values({ userId: user.id, passwordHash });
+    await this.createPersonalWorkspace(user.id, fullName);
 
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -146,6 +157,7 @@ class AuthService {
         })
         .returning({ id: usersTable.id });
       userId = insertedNewUsers[0]!.id;
+      await this.createPersonalWorkspace(userId, name ?? email);
     }
 
     await db.insert(oauthAccountsTable).values({
