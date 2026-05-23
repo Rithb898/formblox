@@ -1,0 +1,71 @@
+"use client";
+
+import { Type, AlignLeft } from "lucide-react";
+import { nanoid } from "nanoid";
+import { useFormEditorStore } from "~/stores/form-editor";
+import { cn } from "~/lib/utils";
+
+const FIELD_TYPES = [
+  {
+    type: "short_text",
+    label: "Short text",
+    description: "Single line answer",
+    icon: Type,
+  },
+  {
+    type: "long_text",
+    label: "Long text",
+    description: "Multi-line answer",
+    icon: AlignLeft,
+  },
+] as const;
+
+export function FieldPalette() {
+  const addField = useFormEditorStore((s) => s.addField);
+  const fields = useFormEditorStore((s) => s.fields);
+
+  function handleAdd(type: string) {
+    addField({
+      id: nanoid(),
+      order: fields.length,
+      type,
+      label: "",
+      required: false,
+      config: {},
+    });
+  }
+
+  return (
+    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-border bg-sidebar">
+      <div className="flex h-12 shrink-0 items-center border-b border-border px-4">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          Fields
+        </span>
+      </div>
+      <div className="flex flex-col gap-1 overflow-y-auto p-3">
+        {FIELD_TYPES.map(({ type, label, description, icon: Icon }) => (
+          <button
+            key={type}
+            onClick={() => handleAdd(type)}
+            className={cn(
+              "group flex w-full items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-left transition-all",
+              "hover:border-border hover:bg-accent",
+              "active:scale-[0.98]",
+            )}
+          >
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors group-hover:border-ring/40 group-hover:text-foreground">
+              <Icon className="size-3.5" />
+            </span>
+            <span className="flex flex-col">
+              <span className="text-sm font-medium text-foreground">{label}</span>
+              <span className="text-xs text-muted-foreground">{description}</span>
+            </span>
+          </button>
+        ))}
+        <div className="mt-2 border-t border-border pt-3">
+          <p className="px-1 text-xs text-muted-foreground/60">More field types in Slice 3</p>
+        </div>
+      </div>
+    </aside>
+  );
+}

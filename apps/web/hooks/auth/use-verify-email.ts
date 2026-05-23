@@ -12,7 +12,7 @@ export function useVerifyEmail() {
 
   const mutation = trpc.auth.verifyEmail.useMutation({
     onSuccess: () => {
-      setTimeout(() => router.push("/dashboard"), 2000);
+      setTimeout(() => router.push("/forms"), 2000);
     },
   });
 

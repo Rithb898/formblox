@@ -1,4 +1,4 @@
-import { pgTable, uuid, integer, boolean, text, jsonb, pgEnum, timestamp, uniqueIndex, index } from "drizzle-orm/pg-core";
+import { pgTable, integer, boolean, text, jsonb, pgEnum, timestamp, uniqueIndex, index, uuid } from "drizzle-orm/pg-core";
 import { formVersionsTable } from "./form-versions";
 import { FIELD_TYPES } from "@repo/forms/field-types";
 
@@ -7,7 +7,7 @@ export const fieldTypeEnum = pgEnum("field_type", FIELD_TYPES);
 export const formFieldsTable = pgTable(
   "form_fields",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: text("id").primaryKey(),
     formVersionId: uuid("form_version_id")
       .notNull()
       .references(() => formVersionsTable.id, { onDelete: "cascade" }),

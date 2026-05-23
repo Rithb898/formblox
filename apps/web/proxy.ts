@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password"];
+const PUBLIC_PATHS = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/f/"];
 
 const AUTH_PATHS = ["/login", "/signup"];
 
@@ -29,7 +29,7 @@ export function proxy(request: NextRequest) {
   }
 
   if (isAuthenticated && isAuthPath) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/forms", request.url));
   }
 
   return NextResponse.next();

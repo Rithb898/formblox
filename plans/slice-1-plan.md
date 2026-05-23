@@ -72,44 +72,67 @@
 
 ## Phase 3 — Frontend: Editor
 
+> **Design decisions (grilled & locked):**
+> - Route group `app/(dashboard)/` with full sidebar layout
+> - Sidebar: workspace name (top), Forms nav link, user avatar + logout (bottom)
+> - Editor: fixed-width 3-pane — palette 240px | canvas fills | properties 300px
+> - Drag-to-reorder via `@dnd-kit/core` + `@dnd-kit/sortable` (install first)
+> - Selected field card: colored left border + subtle background
+> - Empty property panel: "Select a field to edit its properties" placeholder
+> - Save: manual only (`Cmd+S` + button), no autosave
+> - Publish: sonner toast with public link + copy button, stay on editor
+> - New form: create immediately with "Untitled form" → redirect to editor
+> - Forms list: card grid, `...` menu per card (delete/restore), click → editor
+> - Empty state: minimal — icon, copy, CTA button
+
+### 3.0 Setup
+- [x] Install `@dnd-kit/core` + `@dnd-kit/sortable`
+- [x] Create `app/(dashboard)/layout.tsx` — auth guard + full sidebar (workspace name, Forms link, user avatar + logout)
+- [x] Move existing `app/dashboard/page.tsx` → `app/(dashboard)/dashboard/page.tsx`
+
 ### 3.1 Zustand editor store
-- [ ] `apps/web/stores/form-editor.ts`
-- [ ] State shape: `{ formVersion, fields, selectedFieldId, dirty, lastSavedAt, isSaving }`
-- [ ] Actions: `setForm`, `addField`, `updateField`, `removeField`, `reorderFields`, `selectField`, `markSaved`
+- [x] `apps/web/stores/form-editor.ts`
+- [x] State shape: `{ formVersion, fields, selectedFieldId, dirty, lastSavedAt, isSaving }`
+- [x] Actions: `setForm`, `addField`, `updateField`, `removeField`, `reorderFields`, `selectField`, `markSaved`, `setIsSaving`
 
 ### 3.2 Editor page & route
-- [ ] Route: `app/(dashboard)/forms/[formId]/edit/page.tsx`
-- [ ] On mount: fetch draft via `forms.versions.getDraft`, hydrate store
-- [ ] Layout: 3-pane (palette | canvas | properties)
+- [x] Route: `app/(dashboard)/forms/[formId]/edit/page.tsx`
+- [x] On mount: fetch draft via `forms.versions.getDraft`, hydrate store
+- [x] Layout: fixed 3-pane (palette 240px | canvas fills | properties 300px)
 
 ### 3.3 Field palette (left pane)
-- [ ] List of addable field types with icons (Slice 1: `short_text`, `long_text`)
-- [ ] Click → `addField` with defaults, auto-select new field
+- [x] List of addable field types with icons (Slice 1: `short_text`, `long_text`)
+- [x] Click → `addField` with defaults, auto-select new field
 
 ### 3.4 Canvas (center pane)
-- [ ] `@dnd-kit/sortable` field list
-- [ ] Each field card: type icon, label preview, drag handle, delete button
-- [ ] Click field → `selectField`
-- [ ] On drag end → `reorderFields` (bulk UPDATE `order` on save)
+- [x] `@dnd-kit/sortable` field list
+- [x] Each field card: type icon, label preview, drag handle, delete button
+- [x] Selected card: colored left border + subtle background highlight
+- [x] Click field → `selectField`
+- [x] On drag end → `reorderFields` (bulk UPDATE `order` on save)
 
 ### 3.5 Property panel (right pane)
-- [ ] `ShortTextPanel` — label, placeholder, required toggle, min/max length
-- [ ] `LongTextPanel` — same as ShortTextPanel
-- [ ] Stub panels for remaining 6 types (Slice 3)
+- [x] Empty state: "Select a field to edit its properties" placeholder (centered, muted)
+- [x] `ShortTextPanel` — label, placeholder, required toggle, min/max length
+- [x] `LongTextPanel` — same as ShortTextPanel
+- [x] Stub panels for remaining 6 types (Slice 3)
 
 ### 3.6 Topbar
-- [ ] Form title inline-edit (updates store)
-- [ ] "Last saved X ago" indicator (reads `lastSavedAt`)
-- [ ] "Saving..." state while mutation in-flight
-- [ ] `Cmd+S` keybind → fire `forms.versions.updateDraft` mutation
-- [ ] "Publish" button → fire `forms.versions.publish` mutation → show success toast with public link
-- [ ] "View live" link (opens `/f/:slug` in new tab; disabled until first publish)
+- [x] Form title inline-edit (updates store)
+- [x] "Last saved X ago" indicator (reads `lastSavedAt`)
+- [x] "Saving..." state while mutation in-flight
+- [x] `Cmd+S` keybind → fire `forms.versions.updateDraft` mutation (manual only, no autosave)
+- [x] Save button → same mutation
+- [x] "Publish" button → fire `forms.versions.publish` → sonner toast with public link + copy button
+- [x] "View live" link (opens `/f/:slug` in new tab; disabled until first publish)
 
 ### 3.7 Forms dashboard
-- [ ] Route: `app/(dashboard)/forms/page.tsx`
-- [ ] List all workspace forms (title, status, response count placeholder, created date)
-- [ ] "New form" button → `forms.create` mutation → redirect to editor
-- [ ] Soft-delete action per form (confirm dialog)
+- [x] Route: `app/(dashboard)/forms/page.tsx`
+- [x] Card grid — each card: title, status badge (draft/published), created date, `...` menu (delete/restore)
+- [x] Click card → navigate to editor
+- [x] Empty state: icon + "No forms yet" + "Create your first form" button
+- [x] "New form" button → `forms.create` mutation (title="Untitled form") → redirect to editor
+- [x] Soft-delete via `...` menu (confirm dialog)
 
 ---
 

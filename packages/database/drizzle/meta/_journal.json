@@ -29,6 +29,13 @@
       "when": 1779553954333,
       "tag": "0003_wooden_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779564903931,
+      "tag": "0004_parched_dagger",
+      "breakpoints": true
     }
   ]
 }

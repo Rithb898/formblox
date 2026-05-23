@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
         </CardTitle>
         <CardDescription>
           {isPending && "Please wait a moment."}
-          {isSuccess && "Redirecting you to the dashboard..."}
+          {isSuccess && "Redirecting you to your forms..."}
           {isError && error?.message}
         </CardDescription>
       </CardHeader>

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { GlobalProviders } from "~/providers/global";
-import { Inter } from "next/font/google";
 import { cn } from "~/lib/utils";
 
 const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" });
@@ -18,21 +18,17 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Streamyst",
-  description: "Media Forwarding",
+  title: "Formblox",
+  description: "Build and share forms in minutes",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={cn("dark", "font-mono", inter.variable, interHeading.variable, geistMono.variable)}
+      className={cn("dark", inter.variable, interHeading.variable, geistMono.variable)}
     >
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={cn(geistSans.variable, geistMono.variable)}>
         <GlobalProviders>{children}</GlobalProviders>
       </body>
     </html>

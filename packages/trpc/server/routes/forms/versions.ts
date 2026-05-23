@@ -1,4 +1,4 @@
-import { eq, asc, and, inArray } from "@repo/database";
+import { eq, asc, and, inArray, sql } from "@repo/database";
 import { formVersionsTable, formFieldsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
@@ -64,7 +64,7 @@ export const formsVersionsRouter = router({
           .from(formFieldsTable)
           .where(eq(formFieldsTable.formVersionId, draft.id));
 
-        const incomingIds = input.fields.filter((f) => f.id).map((f) => f.id!);
+        const incomingIds = input.fields.map((f) => f.id);
         const toDelete = existingFields.map((f) => f.id).filter((id) => !incomingIds.includes(id));
 
         if (toDelete.length > 0) {
@@ -72,20 +72,20 @@ export const formsVersionsRouter = router({
         }
 
         for (const field of input.fields) {
-          if (field.id) {
-            await tx.update(formFieldsTable)
-              .set({ order: field.order, label: field.label, required: field.required, config: field.config })
-              .where(eq(formFieldsTable.id, field.id));
-          } else {
-            await tx.insert(formFieldsTable).values({
+          await tx.insert(formFieldsTable)
+            .values({
+              id: field.id,
               formVersionId: draft.id,
               order: field.order,
               type: field.type as FieldType,
               label: field.label,
               required: field.required,
               config: field.config,
+            })
+            .onConflictDoUpdate({
+              target: formFieldsTable.id,
+              set: { order: field.order, label: field.label, required: field.required, config: field.config, updatedAt: sql`now()` },
             });
-          }
         }
 
         const updatedFields = await tx.select().from(formFieldsTable)

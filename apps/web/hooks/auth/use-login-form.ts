@@ -35,7 +35,7 @@ export function useLoginForm() {
   const mutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       utils.auth.me.reset();
-      router.push("/dashboard");
+      router.push("/forms");
     },
     onError: (err) => toast.error(err.message),
   });

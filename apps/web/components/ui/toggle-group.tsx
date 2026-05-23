@@ -1,6 +1,5 @@
 "use client";
 
-import type { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group";
 import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
@@ -60,20 +59,23 @@ export function ToggleGroupItem({
   variant,
   size,
   ...props
-}: TogglePrimitive.Props &
+}: React.ComponentProps<typeof ToggleComponent> &
   VariantProps<typeof toggleVariants>): React.ReactElement {
   const context = React.useContext(ToggleGroupContext);
 
   const resolvedVariant = context.variant || variant;
   const resolvedSize = context.size || size;
+  const itemSize = (typeof resolvedSize === "string" ? resolvedSize : undefined) as "sm" | "default" | "lg" | undefined;
+  const itemVariant = (typeof resolvedVariant === "string" ? resolvedVariant : undefined) as "default" | "outline" | undefined;
+  const resolvedClassName = typeof className === "string" ? className : undefined;
 
   return (
     <ToggleComponent
-      className={className}
-      data-size={resolvedSize}
-      data-variant={resolvedVariant}
-      size={resolvedSize}
-      variant={resolvedVariant}
+      className={resolvedClassName}
+      data-size={itemSize}
+      data-variant={itemVariant}
+      size={itemSize}
+      variant={itemVariant}
       {...props}
     >
       {children}

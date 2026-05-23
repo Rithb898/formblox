@@ -10,7 +10,7 @@ export const fieldOutputSchema = z.object({
 });
 
 export const fieldInputSchema = z.object({
-  id: z.string().optional().describe("Field UUID — omit to create a new field"),
+  id: z.string().describe("Field nanoid — client-generated, used as stable key"),
   order: z.number().describe("Display order (0-indexed)"),
   type: z.string().describe("Field type (e.g. short_text, long_text)"),
   label: z.string().describe("Question label"),

@@ -1,4 +1,4 @@
-import { pgTable, uuid, jsonb, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, jsonb, timestamp, index } from "drizzle-orm/pg-core";
 import { responsesTable } from "./responses";
 import { formFieldsTable } from "./form-fields";
 
@@ -9,7 +9,7 @@ export const responseAnswersTable = pgTable(
     responseId: uuid("response_id")
       .notNull()
       .references(() => responsesTable.id, { onDelete: "cascade" }),
-    fieldId: uuid("field_id")
+    fieldId: text("field_id")
       .notNull()
       .references(() => formFieldsTable.id, { onDelete: "restrict" }),
     value: jsonb("value").notNull(),

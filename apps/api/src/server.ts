@@ -119,7 +119,7 @@ app.get("/auth/google/callback", authLimiter, async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
-    return res.redirect(`${env.FRONTEND_URL}/dashboard`);
+    return res.redirect(`${env.FRONTEND_URL}/forms`);
   } catch (err) {
     logger.error("Google OAuth callback error", err);
     return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
