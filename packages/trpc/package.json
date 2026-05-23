@@ -12,9 +12,11 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@repo/database": "workspace:*",
     "@repo/services": "workspace:*",
     "@trpc/client": "^11.8.1",
     "@trpc/server": "^11.8.1",
+    "nanoid": "^5.1.11",
     "trpc-to-openapi": "^3.1.0",
     "zod": "^4.3.5"
   }

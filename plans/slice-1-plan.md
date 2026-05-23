@@ -8,65 +8,65 @@
 ## Phase 1 — Database & Schema
 
 ### 1.1 Create `packages/forms/` domain package
-- [ ] `package.json`, `tsconfig.json`, wire into pnpm workspace
-- [ ] `field-types.ts` — `FieldType` pgEnum values + TypeScript union
-- [ ] `field-configs.ts` — Zod discriminated union for `config jsonb` (8 types, `short_text` + `long_text` fully defined, rest stubbed)
-- [ ] `field-validators.ts` — `zodForField(field)` factory
-- [ ] `response-builder.ts` — `buildResponseSchema(fields[])` (used in Slice 2)
-- [ ] `index.ts` — re-exports
+- [x] `package.json`, `tsconfig.json`, wire into pnpm workspace
+- [x] `field-types.ts` — `FieldType` pgEnum values + TypeScript union
+- [x] `field-configs.ts` — Zod discriminated union for `config jsonb` (8 types, `short_text` + `long_text` fully defined, rest stubbed)
+- [x] `field-validators.ts` — `zodForField(field)` factory
+- [x] `response-builder.ts` — `buildResponseSchema(fields[])` (used in Slice 2)
+- [x] `index.ts` — re-exports
 
 ### 1.2 Add Drizzle models
-- [ ] `packages/database/models/workspaces.ts`
-- [ ] `packages/database/models/workspace-members.ts`
-- [ ] `packages/database/models/forms.ts`
-- [ ] `packages/database/models/form-versions.ts`
-- [ ] `packages/database/models/form-fields.ts`
-- [ ] `packages/database/models/responses.ts` (needed for FK; Slice 2 fills it out)
-- [ ] `packages/database/models/response-answers.ts` (same)
-- [ ] Export all from `packages/database/schema.ts`
+- [x] `packages/database/models/workspaces.ts`
+- [x] `packages/database/models/workspace-members.ts`
+- [x] `packages/database/models/forms.ts`
+- [x] `packages/database/models/form-versions.ts`
+- [x] `packages/database/models/form-fields.ts`
+- [x] `packages/database/models/responses.ts` (needed for FK; Slice 2 fills it out)
+- [x] `packages/database/models/response-answers.ts` (same)
+- [x] Export all from `packages/database/schema.ts`
 
 ### 1.3 Generate & run migration
-- [ ] `pnpm db:generate` — generates Slice 1 migration
-- [ ] Verify migration SQL includes all indexes (see architecture doc)
-- [ ] `pnpm db:migrate` — apply to local DB
-- [ ] Verify tables exist in DB
+- [x] `pnpm db:generate` — generates Slice 1 migration
+- [x] Verify migration SQL includes all indexes (see architecture doc)
+- [x] `pnpm db:migrate` — apply to local DB
+- [x] Verify tables exist in DB
 
 ### 1.4 Auto-create personal workspace on signup
-- [ ] Find user signup service/handler
-- [ ] After user row insert, insert `workspaces` row + `workspace_members` row in same transaction
+- [x] Find user signup service/handler
+- [x] After user row insert, insert `workspaces` row + `workspace_members` row in same transaction
 
 ---
 
 ## Phase 2 — Backend (tRPC Routes)
 
 ### 2.1 Scaffold tRPC procedure ladder
-- [ ] `authedProcedure` — verify session, attach `ctx.user` (check if exists already)
-- [ ] `workspaceProcedure` — input has `workspaceId`, verify membership, attach `ctx.workspace`
-- [ ] `formProcedure` — input has `formId`, verify `form.workspace_id` in user's workspaces, attach `ctx.form`
+- [x] `authedProcedure` — verify session, attach `ctx.user` (check if exists already)
+- [x] `workspaceProcedure` — input has `workspaceId`, verify membership, attach `ctx.workspace`
+- [x] `formProcedure` — input has `formId`, verify `form.workspace_id` in user's workspaces, attach `ctx.form`
 
 ### 2.2 Workspaces router
-- [ ] `workspaces.listMine` — list workspaces for current user
-- [ ] `workspaces.get` — get single workspace by id
+- [x] `workspaces.listMine` — list workspaces for current user
+- [x] `workspaces.get` — get single workspace by id
 
 ### 2.3 Forms router — `packages/trpc/server/routes/forms/`
 
 **crud.ts**
-- [ ] `forms.create` — insert `forms` row (generate nanoid(10) slug) + `form_versions` row (status=`draft`, version_number=1) in transaction; return form + draft version
-- [ ] `forms.list` — list non-deleted forms in workspace, join latest version for title
-- [ ] `forms.get` — get form + current draft version + fields
-- [ ] `forms.softDelete` — set `deleted_at = now()`
-- [ ] `forms.restore` — clear `deleted_at`
+- [x] `forms.create` — insert `forms` row (generate nanoid(10) slug) + `form_versions` row (status=`draft`, version_number=1) in transaction; return form + draft version
+- [x] `forms.list` — list non-deleted forms in workspace, join latest version for title
+- [x] `forms.get` — get form + current draft version + fields
+- [x] `forms.softDelete` — set `deleted_at = now()`
+- [x] `forms.restore` — clear `deleted_at`
 
 **versions.ts**
-- [ ] `forms.versions.getDraft` — get current draft version + its fields (ordered by `order`)
-- [ ] `forms.versions.updateDraft` — upsert full draft: update `form_versions` row, delete removed fields, upsert remaining fields, return updated draft
-- [ ] `forms.versions.publish` — full publish transaction (validate → publish → archive old → clone new draft)
-- [ ] `forms.versions.list` — list all versions for a form
+- [x] `forms.versions.getDraft` — get current draft version + its fields (ordered by `order`)
+- [x] `forms.versions.updateDraft` — upsert full draft: update `form_versions` row, delete removed fields, upsert remaining fields, return updated draft
+- [x] `forms.versions.publish` — full publish transaction (validate → publish → archive old → clone new draft)
+- [x] `forms.versions.list` — list all versions for a form
 
 **public.ts**
-- [ ] `forms.public.getBySlug` — `publicProcedure`; find form by slug, get latest published version + fields; return 404-equivalent if no published version or `is_accepting_responses = false`
+- [x] `forms.public.getBySlug` — `publicProcedure`; find form by slug, get latest published version + fields; return 404-equivalent if no published version or `is_accepting_responses = false`
 
-### 2.4 Register new routers in root tRPC router
+### 2.4 Register new routers in root tRPC router — [x] done
 
 ---
 
