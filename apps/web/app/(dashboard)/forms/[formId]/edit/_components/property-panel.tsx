@@ -4,6 +4,12 @@ import { MousePointer2 } from "lucide-react";
 import { useFormEditorStore } from "~/stores/form-editor";
 import { ShortTextPanel } from "./panels/short-text-panel";
 import { LongTextPanel } from "./panels/long-text-panel";
+import { EmailPanel } from "./panels/email-panel";
+import { NumberPanel } from "./panels/number-panel";
+import { SingleChoicePanel } from "./panels/single-choice-panel";
+import { MultipleChoicePanel } from "./panels/multiple-choice-panel";
+import { RatingPanel } from "./panels/rating-panel";
+import { DatePanel } from "./panels/date-panel";
 
 export function PropertyPanel() {
   const { fields, selectedFieldId } = useFormEditorStore();
@@ -31,14 +37,19 @@ export function PropertyPanel() {
           <ShortTextPanel field={field} />
         ) : field.type === "long_text" ? (
           <LongTextPanel field={field} />
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              Properties for <span className="font-medium text-foreground">{field.type}</span>
-            </p>
-            <p className="text-xs text-muted-foreground/60">Coming in Slice 3</p>
-          </div>
-        )}
+        ) : field.type === "email" ? (
+          <EmailPanel field={field} />
+        ) : field.type === "number" ? (
+          <NumberPanel field={field} />
+        ) : field.type === "single_choice" ? (
+          <SingleChoicePanel field={field} />
+        ) : field.type === "multiple_choice" ? (
+          <MultipleChoicePanel field={field} />
+        ) : field.type === "rating" ? (
+          <RatingPanel field={field} />
+        ) : field.type === "date" ? (
+          <DatePanel field={field} />
+        ) : null}
       </div>
     </aside>
   );

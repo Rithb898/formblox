@@ -28,7 +28,7 @@ function TimeAgo({ date }: { date: Date }) {
 }
 
 export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlug: string | null }) {
-  const { formVersion, fields, dirty, lastSavedAt, isSaving, setIsSaving, markSaved, updateField } =
+  const { formVersion, fields, dirty, lastSavedAt, isSaving, setIsSaving, markSaved, updateField, selectField } =
     useFormEditorStore();
 
   const titleRef = useRef<HTMLInputElement>(null);
@@ -88,8 +88,23 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
         },
         duration: 8000,
       });
-    } catch {
-      toast.error("Publish failed");
+    } catch (err: unknown) {
+      let handled = false;
+      if (err instanceof Error) {
+        try {
+          const parsed = JSON.parse(err.message) as { code?: string; fieldIds?: string[] };
+          if (parsed.code === "invalid_fields" && parsed.fieldIds?.length) {
+            selectField(parsed.fieldIds[0]!);
+            const count = parsed.fieldIds.length;
+            toast.error(
+              `${count} field${count === 1 ? "" : "s"} ${count === 1 ? "has" : "have"} incomplete configuration`,
+              { description: "Fix them before publishing." },
+            );
+            handled = true;
+          }
+        } catch {}
+      }
+      if (!handled) toast.error("Publish failed");
     }
   }
 

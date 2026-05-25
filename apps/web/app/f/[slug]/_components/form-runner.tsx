@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useController, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Star } from "lucide-react";
 import { buildResponseSchema, type FieldType } from "@repo/forms";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
+import { RadioGroup, Radio } from "~/components/ui/radio-group";
+import { CheckboxGroup } from "~/components/ui/checkbox-group";
+import { Checkbox } from "~/components/ui/checkbox";
 import { cn } from "~/lib/utils";
 
 type Field = {
@@ -34,15 +37,36 @@ type FieldInputProps = {
   error?: string;
 };
 
+type ControlledFieldProps = {
+  field: Field;
+  control: Control<Record<string, unknown>>;
+  error?: string;
+};
+
+function FieldLabel({ field }: { field: Field }) {
+  return (
+    <Label htmlFor={field.id} className="text-sm font-medium">
+      {field.label}
+      {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
+    </Label>
+  );
+}
+
+function FieldError({ id, error }: { id: string; error?: string }) {
+  if (!error) return null;
+  return (
+    <p id={`${id}-error`} role="alert" className="text-sm text-destructive">
+      {error}
+    </p>
+  );
+}
+
 function ShortTextInput({ field, registration, error }: FieldInputProps) {
   const placeholder = (field.config.placeholder as string | undefined) ?? "";
-  const maxLength = (field.config.maxLength as number | undefined);
+  const maxLength = field.config.maxLength as number | undefined;
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={field.id} className="text-sm font-medium">
-        {field.label}
-        {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
-      </Label>
+      <FieldLabel field={field} />
       <Input
         id={field.id}
         placeholder={placeholder}
@@ -53,24 +77,17 @@ function ShortTextInput({ field, registration, error }: FieldInputProps) {
         aria-required={field.required}
         {...registration}
       />
-      {error && (
-        <p id={`${field.id}-error`} role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      <FieldError id={field.id} error={error} />
     </div>
   );
 }
 
 function LongTextInput({ field, registration, error }: FieldInputProps) {
   const placeholder = (field.config.placeholder as string | undefined) ?? "";
-  const maxLength = (field.config.maxLength as number | undefined);
+  const maxLength = field.config.maxLength as number | undefined;
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={field.id} className="text-sm font-medium">
-        {field.label}
-        {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
-      </Label>
+      <FieldLabel field={field} />
       <Textarea
         id={field.id}
         placeholder={placeholder}
@@ -82,11 +99,161 @@ function LongTextInput({ field, registration, error }: FieldInputProps) {
         aria-required={field.required}
         {...registration}
       />
-      {error && (
-        <p id={`${field.id}-error`} role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      <FieldError id={field.id} error={error} />
+    </div>
+  );
+}
+
+function EmailInput({ field, registration, error }: FieldInputProps) {
+  const placeholder = (field.config.placeholder as string | undefined) ?? "";
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel field={field} />
+      <Input
+        id={field.id}
+        type="email"
+        placeholder={placeholder}
+        className={cn("w-full", error && "border-destructive focus-visible:ring-destructive")}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${field.id}-error` : undefined}
+        aria-required={field.required}
+        {...registration}
+      />
+      <FieldError id={field.id} error={error} />
+    </div>
+  );
+}
+
+function NumberInput({ field, registration, error }: FieldInputProps) {
+  const placeholder = (field.config.placeholder as string | undefined) ?? "";
+  const min = field.config.min as number | undefined;
+  const max = field.config.max as number | undefined;
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel field={field} />
+      <Input
+        id={field.id}
+        type="number"
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        className={cn("w-full", error && "border-destructive focus-visible:ring-destructive")}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${field.id}-error` : undefined}
+        aria-required={field.required}
+        {...registration}
+      />
+      <FieldError id={field.id} error={error} />
+    </div>
+  );
+}
+
+function DateInput({ field, registration, error }: FieldInputProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel field={field} />
+      <Input
+        id={field.id}
+        type="date"
+        className={cn("w-full", error && "border-destructive focus-visible:ring-destructive")}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${field.id}-error` : undefined}
+        aria-required={field.required}
+        {...registration}
+      />
+      <FieldError id={field.id} error={error} />
+    </div>
+  );
+}
+
+function SingleChoiceInput({ field, control, error }: ControlledFieldProps) {
+  const { field: ctrl } = useController({ name: field.id, control });
+  const options = (field.config.options as Array<{ id: string; label: string }>) ?? [];
+  return (
+    <div className="flex flex-col gap-3" role="group" aria-labelledby={`${field.id}-label`}>
+      <Label id={`${field.id}-label`} className="text-sm font-medium">
+        {field.label}
+        {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
+      </Label>
+      <RadioGroup
+        value={(ctrl.value as string) ?? ""}
+        onValueChange={ctrl.onChange}
+        aria-required={field.required}
+        aria-describedby={error ? `${field.id}-error` : undefined}
+      >
+        {options.map((opt) => (
+          <Label key={opt.id} className="flex cursor-pointer items-center gap-2.5 font-normal">
+            <Radio value={opt.id} />
+            {opt.label}
+          </Label>
+        ))}
+      </RadioGroup>
+      <FieldError id={field.id} error={error} />
+    </div>
+  );
+}
+
+function MultipleChoiceInput({ field, control, error }: ControlledFieldProps) {
+  const { field: ctrl } = useController({ name: field.id, control });
+  const options = (field.config.options as Array<{ id: string; label: string }>) ?? [];
+  const value = (ctrl.value as string[]) ?? [];
+  return (
+    <div className="flex flex-col gap-3" role="group" aria-labelledby={`${field.id}-label`}>
+      <Label id={`${field.id}-label`} className="text-sm font-medium">
+        {field.label}
+        {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
+      </Label>
+      <CheckboxGroup
+        value={value}
+        onValueChange={ctrl.onChange}
+        aria-required={field.required}
+        aria-describedby={error ? `${field.id}-error` : undefined}
+      >
+        {options.map((opt) => (
+          <Label key={opt.id} className="flex cursor-pointer items-center gap-2.5 font-normal">
+            <Checkbox value={opt.id} />
+            {opt.label}
+          </Label>
+        ))}
+      </CheckboxGroup>
+      <FieldError id={field.id} error={error} />
+    </div>
+  );
+}
+
+function RatingInput({ field, control, error }: ControlledFieldProps) {
+  const { field: ctrl } = useController({ name: field.id, control });
+  const scale = (field.config.scale as number) ?? 5;
+  const style = (field.config.style as "star" | "number") ?? "star";
+  const value = (ctrl.value as number) ?? 0;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <FieldLabel field={field} />
+      <div className="flex gap-1" role="group" aria-label={`Rating out of ${scale}`}>
+        {Array.from({ length: scale }, (_, i) => i + 1).map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => ctrl.onChange(n === value ? 0 : n)}
+            aria-label={`${n} out of ${scale}`}
+            aria-pressed={n === value}
+            className={cn(
+              "flex size-9 items-center justify-center rounded-md border transition-all",
+              n <= value
+                ? "border-orange-400/40 bg-orange-400/10 text-orange-400"
+                : "border-border bg-background text-muted-foreground hover:border-orange-400/30 hover:text-orange-400/70",
+            )}
+          >
+            {style === "star" ? (
+              <Star className={cn("size-4", n <= value && "fill-orange-400")} />
+            ) : (
+              <span className="text-sm font-medium">{n}</span>
+            )}
+          </button>
+        ))}
+      </div>
+      <FieldError id={field.id} error={error} />
     </div>
   );
 }
@@ -121,14 +288,17 @@ export function FormRunner({ slug, title, description, fields }: Props) {
   const schema = useMemo(
     () =>
       buildResponseSchema(
-        fields.map((f) => ({ id: f.id, type: f.type as FieldType, required: f.required, config: f.config }))
+        fields.map((f) => ({ id: f.id, type: f.type as FieldType, required: f.required, config: f.config })),
       ),
-    [fields]
+    [fields],
   );
 
   const defaultValues = useMemo(
-    () => Object.fromEntries(fields.map((f) => [f.id, ""])),
-    [fields]
+    () =>
+      Object.fromEntries(
+        fields.map((f) => [f.id, f.type === "multiple_choice" ? [] : ""]),
+      ),
+    [fields],
   );
 
   const form = useForm<Record<string, unknown>>({
@@ -149,9 +319,7 @@ export function FormRunner({ slug, title, description, fields }: Props) {
       setSubmitted(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setBannerError(
-        FRIENDLY_ERRORS[msg] ?? "Something went wrong. Please try again."
-      );
+      setBannerError(FRIENDLY_ERRORS[msg] ?? "Something went wrong. Please try again.");
     }
   });
 
@@ -159,15 +327,11 @@ export function FormRunner({ slug, title, description, fields }: Props) {
 
   return (
     <form className="flex flex-col gap-8" onSubmit={onSubmit} noValidate>
-      {/* Header */}
       <div className={cn("flex flex-col gap-2", description && "pb-2")}>
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
 
-      {/* Form-level error banner */}
       {bannerError && (
         <div
           role="alert"
@@ -178,20 +342,30 @@ export function FormRunner({ slug, title, description, fields }: Props) {
         </div>
       )}
 
-      {/* Fields */}
       <div className="flex flex-col gap-6">
         {fields.map((field) => {
           const error = form.formState.errors[field.id]?.message as string | undefined;
-          const registration = form.register(field.id);
+
           if (field.type === "short_text")
-            return <ShortTextInput key={field.id} field={field} registration={registration} error={error} />;
+            return <ShortTextInput key={field.id} field={field} registration={form.register(field.id)} error={error} />;
           if (field.type === "long_text")
-            return <LongTextInput key={field.id} field={field} registration={registration} error={error} />;
+            return <LongTextInput key={field.id} field={field} registration={form.register(field.id)} error={error} />;
+          if (field.type === "email")
+            return <EmailInput key={field.id} field={field} registration={form.register(field.id)} error={error} />;
+          if (field.type === "number")
+            return <NumberInput key={field.id} field={field} registration={form.register(field.id, { valueAsNumber: true })} error={error} />;
+          if (field.type === "date")
+            return <DateInput key={field.id} field={field} registration={form.register(field.id)} error={error} />;
+          if (field.type === "single_choice")
+            return <SingleChoiceInput key={field.id} field={field} control={form.control} error={error} />;
+          if (field.type === "multiple_choice")
+            return <MultipleChoiceInput key={field.id} field={field} control={form.control} error={error} />;
+          if (field.type === "rating")
+            return <RatingInput key={field.id} field={field} control={form.control} error={error} />;
           return null;
         })}
       </div>
 
-      {/* Honeypot — NOT registered with RHF */}
       <input
         ref={honeypotRef}
         type="text"

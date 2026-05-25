@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, Type, AlignLeft } from "lucide-react";
+import { GripVertical, Trash2, Type, AlignLeft, Mail, Hash, CircleDot, SquareCheck, Star, Calendar } from "lucide-react";
 import { useFormEditorStore } from "~/stores/form-editor";
 import type { EditorField } from "~/stores/form-editor";
 import { cn } from "~/lib/utils";
@@ -10,6 +10,12 @@ import { cn } from "~/lib/utils";
 const TYPE_META: Record<string, { icon: React.ElementType; label: string }> = {
   short_text: { icon: Type, label: "Short text" },
   long_text: { icon: AlignLeft, label: "Long text" },
+  email: { icon: Mail, label: "Email" },
+  number: { icon: Hash, label: "Number" },
+  single_choice: { icon: CircleDot, label: "Single choice" },
+  multiple_choice: { icon: SquareCheck, label: "Multiple choice" },
+  rating: { icon: Star, label: "Rating" },
+  date: { icon: Calendar, label: "Date" },
 };
 
 export function FieldCard({ field }: { field: EditorField }) {
