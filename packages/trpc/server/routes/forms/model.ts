@@ -71,6 +71,21 @@ export const publicFormSchema = z.object({
   fields: z.array(fieldOutputSchema).describe("Ordered list of form fields"),
 });
 
+export const responseAnswerSchema = z.object({
+  fieldId: z.string().describe("Field nanoid the answer belongs to"),
+  label: z.string().describe("Question label from the response's own version"),
+  type: z.string().describe("Field type (e.g. short_text, long_text)"),
+  value: z.unknown().describe("The submitted answer value"),
+});
+
+export const responseListItemSchema = z.object({
+  id: z.string().describe("Response UUID"),
+  completedAt: z.date().nullable().describe("When the response was submitted"),
+  answers: z.array(responseAnswerSchema).describe("Answers ordered by field order"),
+});
+
+export const responseListSchema = z.array(responseListItemSchema);
+
 export type FieldOutput = z.infer<typeof fieldOutputSchema>;
 export type VersionWithFields = z.infer<typeof versionWithFieldsSchema>;
 export type FormWithVersion = z.infer<typeof formWithVersionSchema>;

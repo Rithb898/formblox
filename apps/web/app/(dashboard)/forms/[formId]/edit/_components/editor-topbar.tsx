@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, Save, Globe, Loader2, Check, Copy } from "lucide-react";
+import { ExternalLink, Save, Globe, Loader2, Check, Copy, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
@@ -131,6 +131,16 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
 
       {/* Actions */}
       <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          asChild
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <a href={`/forms/${formId}/responses`}>
+            <Inbox className="size-4" />
+          </a>
+        </Button>
         {publicSlug && (
           <Button
             variant="ghost"

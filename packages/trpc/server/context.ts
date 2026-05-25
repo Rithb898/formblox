@@ -3,6 +3,7 @@ import { tokenService } from "@repo/services/token";
 
 export interface Context {
   userId: string | null;
+  ip: string | null;
   req: {
     cookies: Partial<Record<string, string>>;
   };
@@ -20,5 +21,6 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
       userId = tokenService.verifyAccessToken(token).userId;
     } catch {}
   }
-  return { userId, req, res };
+  const ip = req.ip ?? null;
+  return { userId, ip, req, res };
 }

@@ -80,6 +80,7 @@ export default function PublicFormPage({
   return (
     <PageShell>
       <FormRunner
+        slug={slug}
         title={data.version.title}
         description={data.version.description}
         fields={data.fields}

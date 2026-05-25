@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
   Plus, LayoutGrid, MoreHorizontal, Pencil, Trash2,
-  RotateCcw, Loader2, Globe, FileText,
+  RotateCcw, Loader2, Globe, FileText, Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
@@ -130,6 +130,10 @@ function FormCard({
             <DropdownMenuItem onClick={() => router.push(`/forms/${form.id}/edit`)}>
               <Pencil className="size-4" />
               Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(`/forms/${form.id}/responses`)}>
+              <Inbox className="size-4" />
+              Responses
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

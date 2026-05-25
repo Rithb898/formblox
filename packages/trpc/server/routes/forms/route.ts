@@ -2,6 +2,7 @@ import { router } from "../../trpc";
 import * as crud from "./crud";
 import { formsVersionsRouter } from "./versions";
 import { formsPublicRouter } from "./public";
+import { formsResponsesRouter } from "./responses";
 
 export const formsRouter = router({
   create: crud.create,
@@ -11,4 +12,5 @@ export const formsRouter = router({
   restore: crud.restore,
   versions: formsVersionsRouter,
   public: formsPublicRouter,
+  responses: formsResponsesRouter,
 });

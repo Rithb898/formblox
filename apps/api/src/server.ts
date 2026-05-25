@@ -18,6 +18,9 @@ import { env } from "./env";
 
 export const app = express();
 
+// Trust the upstream proxy so req.ip (used by rate limiting) reflects the real client IP
+app.set("trust proxy", 1);
+
 const openApiDocument = generateOpenApiDocument(serverRouter, {
   title: "FormBlox OpenAPI",
   version: "1.0.0",
