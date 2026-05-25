@@ -3,11 +3,10 @@ import { eq, asc, and } from "@repo/database";
 import { formVersionsTable, formFieldsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
+import { fieldConfigUnion } from "@repo/forms";
 import { z } from "../../schema";
 import { formProcedure, router } from "../../trpc";
 import { fieldInputSchema, versionWithFieldsSchema } from "./model";
-
-type FieldType = "short_text" | "long_text" | "email" | "number" | "single_choice" | "multiple_choice" | "rating" | "date";
 
 function mapField(f: { id: string; order: number; type: string; label: string; required: boolean; config: unknown }) {
   return { id: f.id, order: f.order, type: f.type, label: f.label, required: f.required, config: (f.config ?? {}) as Record<string, unknown> };
@@ -68,7 +67,7 @@ export const formsVersionsRouter = router({
               id: field.id,
               formVersionId: draft.id,
               order: field.order,
-              type: field.type as FieldType,
+              type: field.type,
               label: field.label,
               required: field.required,
               config: field.config,
@@ -99,6 +98,22 @@ export const formsVersionsRouter = router({
           .limit(1);
         if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "No draft version" });
 
+        // Fetch fields once — used for validation and new draft copy.
+        const fields = await tx.select().from(formFieldsTable)
+          .where(eq(formFieldsTable.formVersionId, draft.id))
+          .orderBy(asc(formFieldsTable.order));
+
+        // Guard: reject publish if any field has an invalid config (e.g. choice with < 2 options).
+        const invalidFieldIds = fields
+          .filter((f) => !fieldConfigUnion.safeParse({ type: f.type, config: f.config ?? {} }).success)
+          .map((f) => f.id);
+        if (invalidFieldIds.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: JSON.stringify({ code: "invalid_fields", fieldIds: invalidFieldIds }),
+          });
+        }
+
         await tx.update(formVersionsTable).set({ status: "archived" })
           .where(and(eq(formVersionsTable.formId, ctx.form.id), eq(formVersionsTable.status, "published")));
 
@@ -106,10 +121,6 @@ export const formsVersionsRouter = router({
           .set({ status: "published", publishedAt: new Date() })
           .where(eq(formVersionsTable.id, draft.id))
           .returning();
-
-        const fields = await tx.select().from(formFieldsTable)
-          .where(eq(formFieldsTable.formVersionId, draft.id))
-          .orderBy(asc(formFieldsTable.order));
 
         const [newDraft] = await tx.insert(formVersionsTable).values({
           formId: ctx.form.id,

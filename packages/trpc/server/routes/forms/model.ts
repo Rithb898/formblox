@@ -1,9 +1,10 @@
+import { fieldTypeSchema } from "@repo/forms";
 import { z } from "../../schema";
 
 export const fieldOutputSchema = z.object({
   id: z.string().describe("Field UUID"),
   order: z.number().describe("Display order (0-indexed)"),
-  type: z.string().describe("Field type (e.g. short_text, long_text)"),
+  type: fieldTypeSchema.describe("Field type (e.g. short_text, long_text)"),
   label: z.string().describe("Question label shown to respondents"),
   required: z.boolean().describe("Whether the field must be answered before submitting"),
   config: z.record(z.string(), z.unknown()).describe("Type-specific configuration (e.g. min/max length, choices)"),
@@ -12,7 +13,7 @@ export const fieldOutputSchema = z.object({
 export const fieldInputSchema = z.object({
   id: z.string().describe("Field nanoid — client-generated, used as stable key"),
   order: z.number().describe("Display order (0-indexed)"),
-  type: z.string().describe("Field type (e.g. short_text, long_text)"),
+  type: fieldTypeSchema.describe("Field type (e.g. short_text, long_text)"),
   label: z.string().describe("Question label"),
   required: z.boolean().describe("Whether the field is required"),
   config: z.record(z.string(), z.unknown()).describe("Type-specific configuration"),

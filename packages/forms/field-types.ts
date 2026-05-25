@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const FIELD_TYPES = [
   "short_text",
   "long_text",
@@ -10,3 +12,5 @@ export const FIELD_TYPES = [
 ] as const;
 
 export type FieldType = (typeof FIELD_TYPES)[number];
+
+export const fieldTypeSchema = z.enum(FIELD_TYPES);
