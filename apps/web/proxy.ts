@@ -18,8 +18,7 @@ export function proxy(request: NextRequest) {
   }
 
   const hasAccessToken = request.cookies.has("access_token");
-  const hasRefreshToken = request.cookies.has("refresh_token");
-  const isAuthenticated = hasAccessToken || hasRefreshToken;
+  const isAuthenticated = hasAccessToken;
 
   const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   const isAuthPath = AUTH_PATHS.some((p) => pathname.startsWith(p));

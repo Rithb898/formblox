@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "postgres": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "postgres://postgres:aOIepexelv9CFCCrR12dTBYvsEGaODgMNa63BnQZs1MOMPTcx1OSSF59g6FrU1VH@141.148.217.25:5432/formblox"
+            ]
+        }
+    }
+}

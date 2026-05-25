@@ -94,7 +94,16 @@ export function InputGroupInput({
   className,
   ...props
 }: InputProps): React.ReactElement {
-  return <Input className={className} unstyled {...props} />;
+  return (
+    <Input
+      className={cn(
+        "min-w-0 flex-1 bg-transparent px-3 py-1 text-base outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed sm:text-sm",
+        className,
+      )}
+      unstyled
+      {...props}
+    />
+  );
 }
 
 export function InputGroupTextarea({

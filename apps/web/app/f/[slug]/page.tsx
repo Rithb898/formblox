@@ -1,5 +1,8 @@
-import { TRPCClientError } from "@trpc/client";
-import { api } from "~/trpc/server";
+"use client";
+
+import { use } from "react";
+import { Loader2 } from "lucide-react";
+import { trpc } from "~/trpc/client";
 import { FormRunner } from "./_components/form-runner";
 
 function PageShell({ children }: { children: React.ReactNode }) {
@@ -48,28 +51,39 @@ function NotAcceptingResponses() {
   );
 }
 
-export default async function PublicFormPage({
+function Loading() {
+  return (
+    <PageShell>
+      <div className="flex flex-col items-center justify-center gap-3 py-16">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Loading form…</p>
+      </div>
+    </PageShell>
+  );
+}
+
+export default function PublicFormPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const { slug } = use(params);
+  const query = trpc.forms.public.getBySlug.useQuery({ slug });
 
-  try {
-    const data = await api.forms.public.getBySlug({ slug });
-    return (
-      <PageShell>
-        <FormRunner
-          title={data.version.title}
-          description={data.version.description}
-          fields={data.fields}
-        />
-      </PageShell>
-    );
-  } catch (err) {
-    if (err instanceof TRPCClientError) {
-      if (err.message === "not_accepting_responses") return <NotAcceptingResponses />;
-    }
+  if (query.isPending) return <Loading />;
+  if (query.isError) {
+    if (query.error?.message === "not_accepting_responses") return <NotAcceptingResponses />;
     return <NotYetLive />;
   }
+
+  const data = query.data;
+  return (
+    <PageShell>
+      <FormRunner
+        title={data.version.title}
+        description={data.version.description}
+        fields={data.fields}
+      />
+    </PageShell>
+  );
 }

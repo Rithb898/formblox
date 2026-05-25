@@ -32,6 +32,7 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
     useFormEditorStore();
 
   const titleRef = useRef<HTMLInputElement>(null);
+  const utils = trpc.useUtils();
   const updateDraft = trpc.forms.versions.updateDraft.useMutation();
   const publish = trpc.forms.versions.publish.useMutation();
 
@@ -39,7 +40,7 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
     if (!formVersion || isSaving) return;
     setIsSaving(true);
     try {
-      await updateDraft.mutateAsync({
+      const data = await updateDraft.mutateAsync({
         formId,
         title: formVersion.title,
         description: formVersion.description ?? undefined,
@@ -52,6 +53,7 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
           config: f.config,
         })),
       });
+      utils.forms.versions.getDraft.setData({ formId }, data);
       markSaved();
     } catch {
       setIsSaving(false);
@@ -74,7 +76,9 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
   async function handlePublish() {
     await save();
     try {
-      const { publishedVersionId: _ } = await publish.mutateAsync({ formId });
+      await publish.mutateAsync({ formId });
+      await utils.forms.versions.getDraft.invalidate({ formId });
+      void utils.forms.list.invalidate();
       const url = `${window.location.origin}/f/${publicSlug}`;
       toast.success("Published!", {
         description: url,
@@ -96,7 +100,7 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
         <input
           ref={titleRef}
           className={cn(
-            "min-w-0 max-w-[260px] truncate bg-transparent text-sm font-medium text-foreground outline-none",
+            "min-w-0 max-w-65 truncate bg-transparent text-sm font-medium text-foreground outline-none",
             "border-b border-transparent hover:border-border focus:border-ring transition-colors",
             "placeholder:text-muted-foreground",
           )}

@@ -1,4 +1,5 @@
-import { eq, asc, and, inArray, sql } from "@repo/database";
+import { nanoid } from "nanoid";
+import { eq, asc, and } from "@repo/database";
 import { formVersionsTable, formFieldsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
@@ -59,21 +60,11 @@ export const formsVersionsRouter = router({
           }).where(eq(formVersionsTable.id, draft.id));
         }
 
-        const existingFields = await tx
-          .select({ id: formFieldsTable.id })
-          .from(formFieldsTable)
-          .where(eq(formFieldsTable.formVersionId, draft.id));
+        await tx.delete(formFieldsTable).where(eq(formFieldsTable.formVersionId, draft.id));
 
-        const incomingIds = input.fields.map((f) => f.id);
-        const toDelete = existingFields.map((f) => f.id).filter((id) => !incomingIds.includes(id));
-
-        if (toDelete.length > 0) {
-          await tx.delete(formFieldsTable).where(inArray(formFieldsTable.id, toDelete));
-        }
-
-        for (const field of input.fields) {
-          await tx.insert(formFieldsTable)
-            .values({
+        if (input.fields.length > 0) {
+          await tx.insert(formFieldsTable).values(
+            input.fields.map((field) => ({
               id: field.id,
               formVersionId: draft.id,
               order: field.order,
@@ -81,11 +72,8 @@ export const formsVersionsRouter = router({
               label: field.label,
               required: field.required,
               config: field.config,
-            })
-            .onConflictDoUpdate({
-              target: formFieldsTable.id,
-              set: { order: field.order, label: field.label, required: field.required, config: field.config, updatedAt: sql`now()` },
-            });
+            }))
+          );
         }
 
         const updatedFields = await tx.select().from(formFieldsTable)
@@ -135,6 +123,7 @@ export const formsVersionsRouter = router({
         if (fields.length > 0) {
           await tx.insert(formFieldsTable).values(
             fields.map((f) => ({
+              id: nanoid(),
               formVersionId: newDraft!.id,
               order: f.order,
               type: f.type,

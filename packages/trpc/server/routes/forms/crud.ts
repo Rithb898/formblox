@@ -46,7 +46,7 @@ export const list = workspaceProcedure
     const byForm = new Map<string, (typeof rows)[0]>();
     for (const row of rows) {
       const existing = byForm.get(row.id);
-      if (!existing || row.status === "draft") byForm.set(row.id, row);
+      if (!existing || row.status === "published") byForm.set(row.id, row);
     }
     return [...byForm.values()];
   });
