@@ -1,13 +1,13 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Inbox, Loader2, ArrowLeft } from "lucide-react";
+import { Inbox, ArrowLeft } from "lucide-react";
 import { trpc } from "~/trpc/client";
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "~/components/ui/table";
+import { cn } from "~/lib/utils";
+
+const EASE = "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]";
 
 function renderValue(value: unknown): string {
   if (value === null || value === undefined) return "—";
@@ -20,6 +20,7 @@ function renderValue(value: unknown): string {
 export default function ResponsesPage({ params }: { params: Promise<{ formId: string }> }) {
   const { formId } = use(params);
   const q = trpc.forms.responses.list.useQuery({ formId });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Build ordered union of columns from all responses
   const columns: { fieldId: string; label: string }[] = [];
@@ -36,22 +37,30 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
   const responses = q.data ?? [];
   const count = responses.length;
 
+  const selected =
+    responses.find((r) => r.id === selectedId) ?? responses[0] ?? null;
+
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden bg-[#080808] text-[#F2F2F2]">
       {/* Header */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] px-6">
         <div className="flex items-center gap-3">
           <Link
             href={`/forms/${formId}/edit`}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className={cn(
+              "flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-[#F2F2F2]",
+              EASE,
+            )}
           >
             <ArrowLeft className="size-3.5" />
             Back to editor
           </Link>
-          <span className="text-muted-foreground/40 text-xs">·</span>
-          <h1 className="text-sm font-semibold text-foreground">Responses</h1>
+          <span className="text-[#3A3A3A] text-xs">·</span>
+          <h1 className="text-sm font-semibold tracking-tight text-[#F2F2F2]">
+            Responses
+          </h1>
           {!q.isPending && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+            <span className="rounded-full border border-[#E8854A]/20 bg-[#E8854A]/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#E8854A]">
               {count}
             </span>
           )}
@@ -59,58 +68,156 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {q.isPending ? (
-          <div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            Loading…
+          <div className="flex w-full">
+            {/* Skeleton list */}
+            <div className="w-full shrink-0 border-r border-white/[0.07] p-2 lg:w-[320px]">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="mb-1 rounded-lg p-3"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <div className="mb-2 h-3 w-20 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                  <div className="h-3 w-40 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 p-8">
+              <div className="space-y-5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-2.5 w-24 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                    <div className="h-4 w-2/3 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : responses.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 py-24 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl border border-dashed border-border">
-              <Inbox className="size-6 text-muted-foreground/40" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 py-24 text-center">
+            <div className="flex size-16 items-center justify-center rounded-2xl border border-dashed border-[#E8854A]/30">
+              <Inbox className="size-6 text-[#3A3A3A]" />
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">No responses yet</p>
-              <p className="text-xs text-muted-foreground">Responses will appear here once people submit your form</p>
+            <div className="space-y-1.5">
+              <p className="text-2xl font-semibold tracking-tight text-[#3A3A3A]">
+                No responses yet
+              </p>
+              <p className="text-xs text-[#6B6B6B]">
+                Responses will appear here once people submit your form
+              </p>
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {columns.map((col) => (
-                    <TableHead key={col.fieldId} className="whitespace-nowrap">
-                      {col.label}
-                    </TableHead>
-                  ))}
-                  <TableHead className="whitespace-nowrap">Submitted</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {responses.map((response) => {
-                  const answerMap = new Map(response.answers.map((a) => [a.fieldId, a.value]));
-                  return (
-                    <TableRow key={response.id}>
-                      {columns.map((col) => (
-                        <TableCell key={col.fieldId} className="whitespace-nowrap text-sm text-foreground">
-                          {answerMap.has(col.fieldId)
-                            ? renderValue(answerMap.get(col.fieldId))
-                            : <span className="text-muted-foreground">—</span>}
-                        </TableCell>
-                      ))}
-                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                        {response.completedAt
-                          ? formatDistanceToNow(new Date(response.completedAt), { addSuffix: true })
-                          : "—"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <>
+            {/* LEFT — master list (full width on mobile when no selection, 320px on lg) */}
+            <div
+              className={cn(
+                "shrink-0 overflow-y-auto border-white/[0.07] py-2",
+                "lg:w-[320px] lg:border-r",
+                selectedId ? "hidden lg:block" : "block w-full",
+              )}
+            >
+              {responses.map((response, i) => {
+                const isSelected = selected?.id === response.id;
+                const first = response.answers[0];
+                const preview = first ? renderValue(first.value) : "No answers";
+                return (
+                  <button
+                    key={response.id}
+                    onClick={() => setSelectedId(response.id)}
+                    style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}
+                    className={cn(
+                      "animate-fade-up relative flex w-full flex-col gap-1 border-l-2 px-5 py-3 text-left",
+                      EASE,
+                      isSelected
+                        ? "border-l-[#E8854A] bg-white/[0.03]"
+                        : "border-l-transparent hover:bg-white/[0.02]",
+                    )}
+                  >
+                    <span className="font-mono text-[11px] text-[#6B6B6B]">
+                      {response.completedAt
+                        ? formatDistanceToNow(new Date(response.completedAt), {
+                            addSuffix: true,
+                          })
+                        : "—"}
+                    </span>
+                    <span
+                      className={cn(
+                        "truncate text-sm",
+                        isSelected ? "text-[#F2F2F2]" : "text-[#F2F2F2]/80",
+                      )}
+                    >
+                      {preview}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* RIGHT — detail (full width on mobile when selection exists, flex-1 on lg) */}
+            <div
+              className={cn(
+                "overflow-y-auto",
+                "lg:flex-1",
+                selectedId ? "block w-full" : "hidden lg:block lg:flex-1",
+              )}
+            >
+              {/* Mobile back button */}
+              {selectedId && (
+                <button
+                  onClick={() => setSelectedId(null)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-6 pt-5 text-xs text-[#6B6B6B] hover:text-[#F2F2F2] lg:hidden",
+                    EASE,
+                  )}
+                >
+                  <ArrowLeft className="size-3.5" />
+                  All responses
+                </button>
+              )}
+              {selected && (
+                <div key={selected.id} className="animate-fade-up px-8 py-7">
+                  <div className="mb-6 flex items-center gap-2">
+                    <span className="font-mono text-[11px] uppercase tracking-wider text-[#6B6B6B]">
+                      Submitted
+                    </span>
+                    <span className="font-mono text-xs text-[#F2F2F2]">
+                      {selected.completedAt
+                        ? formatDistanceToNow(new Date(selected.completedAt), {
+                            addSuffix: true,
+                          })
+                        : "—"}
+                    </span>
+                  </div>
+
+                  <div className="divide-y divide-white/[0.06]">
+                    {columns.map((col) => {
+                      const answerMap = new Map(
+                        selected.answers.map((a) => [a.fieldId, a.value]),
+                      );
+                      const has = answerMap.has(col.fieldId);
+                      return (
+                        <div key={col.fieldId} className="py-4">
+                          <p className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                            {col.label}
+                          </p>
+                          {has ? (
+                            <p className="break-words text-sm leading-relaxed text-[#F2F2F2]">
+                              {renderValue(answerMap.get(col.fieldId))}
+                            </p>
+                          ) : (
+                            <p className="font-mono text-sm text-[#3A3A3A]">—</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

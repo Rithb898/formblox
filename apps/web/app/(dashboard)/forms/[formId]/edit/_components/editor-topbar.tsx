@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, Save, Globe, Loader2, Check, Copy, Inbox } from "lucide-react";
+import { ExternalLink, Save, Globe, Loader2, Check, Copy, Inbox, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
@@ -47,7 +47,7 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
         fields: fields.map((f) => ({
           id: f.id,
           order: f.order,
-          type: f.type,
+          type: f.type as "number" | "date" | "email" | "short_text" | "long_text" | "single_choice" | "multiple_choice" | "rating",
           label: f.label,
           required: f.required,
           config: f.config,
@@ -92,8 +92,20 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
       let handled = false;
       if (err instanceof Error) {
         try {
-          const parsed = JSON.parse(err.message) as { code?: string; fieldIds?: string[] };
-          if (parsed.code === "invalid_fields" && parsed.fieldIds?.length) {
+          const parsed = JSON.parse(err.message) as { code?: string; fieldIds?: string[]; reason?: string };
+          if (parsed.code === "invalid_form" && parsed.reason === "title_empty") {
+            titleRef.current?.focus();
+            toast.error("Form title is required before publishing.");
+            handled = true;
+          } else if (parsed.code === "missing_labels" && parsed.fieldIds?.length) {
+            selectField(parsed.fieldIds[0]!);
+            const count = parsed.fieldIds.length;
+            toast.error(
+              `${count} field${count === 1 ? "" : "s"} ${count === 1 ? "has" : "have"} no label`,
+              { description: "Add labels before publishing." },
+            );
+            handled = true;
+          } else if (parsed.code === "invalid_fields" && parsed.fieldIds?.length) {
             selectField(parsed.fieldIds[0]!);
             const count = parsed.fieldIds.length;
             toast.error(
@@ -109,15 +121,25 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-      {/* Title */}
-      <div className="flex min-w-0 items-center gap-3">
+    <header className="flex h-14 shrink-0 items-center justify-between rounded-2xl bg-white/[0.02] px-3 ring-1 ring-white/[0.06] backdrop-blur-xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
+      {/* Back + Title */}
+      <div className="flex min-w-0 items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          asChild
+          className="shrink-0 rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+        >
+          <a href="/forms" aria-label="Back to forms">
+            <ChevronLeft className="size-4" />
+          </a>
+        </Button>
         <input
           ref={titleRef}
           className={cn(
-            "min-w-0 max-w-65 truncate bg-transparent text-sm font-medium text-foreground outline-none",
-            "border-b border-transparent hover:border-border focus:border-ring transition-colors",
-            "placeholder:text-muted-foreground",
+            "min-w-0 max-w-65 truncate rounded-lg bg-transparent px-2 py-1 text-sm font-medium tracking-tight text-[#F2F2F2] outline-none",
+            "ring-1 ring-transparent transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/[0.07] focus:bg-white/[0.03] focus:ring-[#E8854A]/60",
+            "placeholder:text-[#6B6B6B]",
           )}
           value={formVersion?.title ?? ""}
           placeholder="Untitled form"
@@ -129,30 +151,30 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
             }));
           }}
         />
-        <span className="text-xs text-muted-foreground">
+        <span className="font-mono text-[11px] text-[#6B6B6B]">
           {isSaving ? (
-            <span className="flex items-center gap-1">
-              <Loader2 className="size-3 animate-spin" /> Saving…
+            <span className="flex items-center gap-1.5">
+              <Loader2 className="size-3 animate-spin text-[#E8854A]" /> saving…
             </span>
           ) : lastSavedAt ? (
-            <span className="flex items-center gap-1 text-muted-foreground/60">
-              <Check className="size-3" /> <TimeAgo date={lastSavedAt} />
+            <span className="flex items-center gap-1.5 text-[#6B6B6B]">
+              <Check className="size-3 text-[#E8854A]" /> <TimeAgo date={lastSavedAt} />
             </span>
           ) : dirty ? (
-            <span className="text-muted-foreground/60">Unsaved</span>
+            <span className="text-[#6B6B6B]">unsaved</span>
           ) : null}
         </span>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <Button
           variant="ghost"
           size="icon-sm"
           asChild
-          className="text-muted-foreground hover:text-foreground"
+          className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
         >
-          <a href={`/forms/${formId}/responses`}>
+          <a href={`/forms/${formId}/responses`} aria-label="View responses">
             <Inbox className="size-4" />
           </a>
         </Button>
@@ -161,19 +183,20 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
             variant="ghost"
             size="icon-sm"
             asChild
-            className="text-muted-foreground hover:text-foreground"
+            className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
           >
-            <a href={`/f/${publicSlug}`} target="_blank" rel="noreferrer">
+            <a href={`/f/${publicSlug}`} target="_blank" rel="noreferrer" aria-label="Open public form">
               <ExternalLink className="size-4" />
             </a>
           </Button>
         )}
+        <div className="mx-1 h-5 w-px bg-white/[0.07]" />
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={save}
           disabled={!dirty || isSaving}
-          className="gap-1.5"
+          className="gap-1.5 rounded-full bg-white/[0.04] text-[#F2F2F2] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.08] disabled:opacity-40 active:scale-[0.98]"
         >
           <Save className="size-3.5" />
           Save
@@ -182,7 +205,7 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
           size="sm"
           onClick={handlePublish}
           disabled={publish.isPending || isSaving}
-          className="gap-1.5"
+          className="gap-1.5 rounded-full bg-[#E8854A] text-[#0a0a0a] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#E8854A]/90 disabled:opacity-40 active:scale-[0.98]"
         >
           {publish.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Globe className="size-3.5" />}
           Publish

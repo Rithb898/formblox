@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import { DashboardSidebar } from "./_components/dashboard-sidebar";
+import { DashboardSidebar, MobileNav } from "./_components/dashboard-sidebar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   try {
@@ -10,9 +10,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <DashboardSidebar />
-      <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
+    <div className="flex h-screen overflow-hidden bg-[#080808]">
+      <div className="hidden lg:block">
+        <DashboardSidebar />
+      </div>
+      <main className="flex flex-1 flex-col overflow-y-auto">
+        <MobileNav />
+        {children}
+      </main>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,19 +24,24 @@ export function useResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = trpc.auth.resetPassword.useMutation({
     onSuccess: () => {
       toast.success("Password reset successfully. Please sign in.");
       router.push("/login");
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => {
+      toast.error(err.message);
+      setFormError(err.message);
+    },
   });
 
   const form = useForm<ResetPasswordFormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = form.handleSubmit(({ newPassword }) => {
     if (!token) return;
+    setFormError(null);
     mutation.mutate({ token, newPassword });
   });
 
@@ -45,5 +51,6 @@ export function useResetPasswordForm() {
     errors: form.formState.errors,
     onSubmit,
     isPending: mutation.isPending,
+    formError,
   };
 }

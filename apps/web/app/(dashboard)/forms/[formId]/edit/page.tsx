@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { use } from "react";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Monitor } from "lucide-react";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
 import { EditorTopbar } from "./_components/editor-topbar";
@@ -44,12 +44,12 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
 
   if (draftQuery.isPending || formQuery.isPending) {
     return (
-      <div className="flex h-full flex-col">
-        <div className="flex h-12 shrink-0 items-center border-b border-border px-4">
-          <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+      <div className="flex h-full flex-col bg-[#080808]">
+        <div className="m-3 flex h-14 shrink-0 items-center rounded-2xl bg-white/[0.02] px-5 ring-1 ring-white/[0.06]">
+          <div className="h-4 w-40 animate-shimmer rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.10] to-white/[0.04] bg-[length:200%_100%]" />
         </div>
         <div className="flex flex-1 items-center justify-center">
-          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          <Loader2 className="size-5 animate-spin text-[#6B6B6B]" />
         </div>
       </div>
     );
@@ -57,9 +57,11 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
 
   if (draftQuery.isError || formQuery.isError) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3">
-        <AlertCircle className="size-8 text-destructive" />
-        <p className="text-sm text-muted-foreground">Failed to load form</p>
+      <div className="flex h-full flex-col items-center justify-center gap-4 bg-[#080808]">
+        <div className="flex size-12 items-center justify-center rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]">
+          <AlertCircle className="size-5 text-[#E8854A]" />
+        </div>
+        <p className="text-sm text-[#6B6B6B]">Failed to load form</p>
       </div>
     );
   }
@@ -67,12 +69,36 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
   const publicSlug = formQuery.data?.publicSlug ?? null;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <EditorTopbar formId={formId} publicSlug={publicSlug} />
-      <div className="flex flex-1 overflow-hidden">
-        <FieldPalette />
-        <FieldCanvas />
-        <PropertyPanel />
+    <div className="flex h-full flex-col overflow-hidden bg-[#080808] p-3">
+      {/* Desktop editor */}
+      <div className="hidden h-full flex-col overflow-hidden lg:flex">
+        <EditorTopbar formId={formId} publicSlug={publicSlug} />
+        <div className="mt-3 flex flex-1 overflow-hidden rounded-2xl ring-1 ring-white/[0.06]">
+          <FieldPalette />
+          <FieldCanvas />
+          <PropertyPanel />
+        </div>
+      </div>
+
+      {/* Mobile / tablet fallback */}
+      <div className="flex h-full flex-col items-center justify-center gap-5 text-center lg:hidden">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]">
+          <Monitor className="size-6 text-[#6B6B6B]" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-base font-semibold tracking-tight text-[#F2F2F2]">
+            Desktop browser required
+          </p>
+          <p className="text-sm text-[#6B6B6B]">
+            The form editor isn&apos;t supported on small screens.
+          </p>
+        </div>
+        <a
+          href="/forms"
+          className="text-sm text-[#E8854A] underline-offset-4 hover:underline"
+        >
+          Back to forms
+        </a>
       </div>
     </div>
   );

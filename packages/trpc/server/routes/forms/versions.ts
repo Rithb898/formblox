@@ -9,7 +9,7 @@ import { formProcedure, router } from "../../trpc";
 import { fieldInputSchema, versionWithFieldsSchema } from "./model";
 
 function mapField(f: { id: string; order: number; type: string; label: string; required: boolean; config: unknown }) {
-  return { id: f.id, order: f.order, type: f.type, label: f.label, required: f.required, config: (f.config ?? {}) as Record<string, unknown> };
+  return { id: f.id, order: f.order, type: f.type as "number" | "date" | "email" | "short_text" | "long_text" | "single_choice" | "multiple_choice" | "rating", label: f.label, required: f.required, config: (f.config ?? {}) as Record<string, unknown> };
 }
 
 async function getDraftWithFields(formId: string) {
@@ -102,6 +102,23 @@ export const formsVersionsRouter = router({
         const fields = await tx.select().from(formFieldsTable)
           .where(eq(formFieldsTable.formVersionId, draft.id))
           .orderBy(asc(formFieldsTable.order));
+
+        // Guard: reject publish if title is blank.
+        if (!draft.title?.trim()) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: JSON.stringify({ code: "invalid_form", reason: "title_empty" }),
+          });
+        }
+
+        // Guard: reject publish if any field has a blank label.
+        const blankLabelIds = fields.filter((f) => !f.label?.trim()).map((f) => f.id);
+        if (blankLabelIds.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: JSON.stringify({ code: "missing_labels", fieldIds: blankLabelIds }),
+          });
+        }
 
         // Guard: reject publish if any field has an invalid config (e.g. choice with < 2 options).
         const invalidFieldIds = fields

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,6 +20,7 @@ export function useLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const utils = trpc.useUtils();
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     const error = searchParams.get("error");
@@ -37,12 +38,18 @@ export function useLoginForm() {
       utils.auth.me.reset();
       router.push("/forms");
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => {
+      toast.error(err.message);
+      setFormError(err.message);
+    },
   });
 
   const form = useForm<LoginFormData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = form.handleSubmit((data) => mutation.mutate(data));
+  const onSubmit = form.handleSubmit((data) => {
+    setFormError(null);
+    mutation.mutate(data);
+  });
 
   const googleOAuthUrl = env.NEXT_PUBLIC_API_URL
     ? `${env.NEXT_PUBLIC_API_URL}/auth/google`
@@ -53,6 +60,7 @@ export function useLoginForm() {
     errors: form.formState.errors,
     onSubmit,
     isPending: mutation.isPending,
+    formError,
     googleOAuthUrl,
   };
 }

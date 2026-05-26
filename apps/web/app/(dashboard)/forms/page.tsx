@@ -4,21 +4,29 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Plus, LayoutGrid, MoreHorizontal, Pencil, Trash2,
-  RotateCcw, Loader2, Globe, FileText, Inbox,
+  Plus, Pencil, Trash2, Loader2, Globe, FileText, Inbox, Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import {
   Dialog, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle,
 } from "~/components/ui/dialog";
+
+const ACCENT = "#E8854A";
+const EASE = "ease-[cubic-bezier(0.32,0.72,0,1)]";
+
+// Asymmetric bento spans cycled by index. Mobile collapses to full width.
+const SPANS = [
+  "md:col-span-4",
+  "md:col-span-2",
+  "md:col-span-3",
+  "md:col-span-3",
+  "md:col-span-2",
+  "md:col-span-4",
+];
 
 type FormListItem = {
   id: string;
@@ -29,20 +37,21 @@ type FormListItem = {
   status: string;
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusPill({ status }: { status: string }) {
+  const published = status === "published";
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-        status === "published"
-          ? "bg-emerald-500/10 text-emerald-500"
-          : "bg-muted text-muted-foreground",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em]",
+        published
+          ? "bg-[#E8854A]/12 text-[#E8854A]"
+          : "bg-white/[0.06] text-[#6B6B6B]",
       )}
     >
-      {status === "published" ? (
-        <Globe className="mr-1 size-2.5" />
+      {published ? (
+        <Globe className="size-2.5" />
       ) : (
-        <FileText className="mr-1 size-2.5" />
+        <FileText className="size-2.5" />
       )}
       {status}
     </span>
@@ -86,89 +95,191 @@ function DeleteDialog({
   );
 }
 
+function QuickAction({
+  icon: Icon,
+  label,
+  onClick,
+  delay,
+  danger,
+}: {
+  icon: typeof Pencil;
+  label: string;
+  onClick: () => void;
+  delay: number;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      style={{ animationDelay: `${delay}ms` }}
+      className={cn(
+        "flex size-8 items-center justify-center rounded-full",
+        "bg-white/[0.04] text-[#8A8A8A] ring-1 ring-white/[0.06]",
+        "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        "hover:scale-105 hover:bg-white/[0.08] hover:text-white",
+        danger && "hover:bg-red-500/15 hover:text-red-400",
+        "group-hover:animate-fade-up",
+      )}
+    >
+      <Icon className="size-3.5" />
+    </button>
+  );
+}
+
 function FormCard({
   form,
+  index,
   onDelete,
-  onRestore,
 }: {
   form: FormListItem;
+  index: number;
   onDelete: (form: FormListItem) => void;
-  onRestore: (id: string) => void;
 }) {
   const router = useRouter();
-  const isDeleted = false; // soft-deleted forms are filtered out by the list query
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
+  function copyLink() {
+    const url = `${window.location.origin}/f/${form.publicSlug}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Public link copied");
+  }
 
   return (
     <div
-      onClick={() => router.push(`/forms/${form.id}/edit`)}
+      style={{ animationDelay: `${index * 70}ms` }}
       className={cn(
-        "group relative flex cursor-pointer flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all",
-        "hover:border-border/80 hover:shadow-sm",
+        SPANS[index % SPANS.length],
+        "animate-fade-up col-span-1",
+        // Outer double-bezel wrapper
+        "group relative cursor-pointer rounded-[1.75rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06]",
+        "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        "hover:ring-white/[0.12]",
       )}
+      onClick={() => router.push(`/forms/${form.id}/edit`)}
+      onMouseMove={handleMouseMove}
     >
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <h3 className="truncate text-sm font-semibold text-foreground">
+      {/* Spotlight border overlay — radial gradient follows cursor */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:opacity-100"
+        style={{
+          background:
+            "radial-gradient(420px circle at var(--mx) var(--my), rgba(232,133,74,0.18), transparent 45%)",
+        }}
+      />
+
+      {/* Inner core */}
+      <div className="relative flex h-full min-h-[8.5rem] flex-col gap-4 overflow-hidden rounded-[1.4rem] bg-[#111] p-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight text-white">
             {form.title || "Untitled form"}
           </h3>
-          <StatusBadge status={form.status} />
+          <StatusPill status={form.status} />
         </div>
 
-        {/* Actions menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => router.push(`/forms/${form.id}/edit`)}>
-              <Pencil className="size-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/forms/${form.id}/responses`)}>
-              <Inbox className="size-4" />
-              Responses
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => onDelete(form)}
-            >
-              <Trash2 className="size-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+        {/* Meta */}
+        <div className="mt-auto flex flex-col gap-1.5">
+          <p className="font-mono text-[11px] text-[#6B6B6B]">
+            /f/{form.publicSlug}
+          </p>
+          <p className="font-mono text-[11px] text-[#5A5A5A]">
+            created {formatDistanceToNow(new Date(form.createdAt), { addSuffix: true })}
+          </p>
+        </div>
 
-      {/* Footer */}
-      <p className="text-xs text-muted-foreground">
-        Created {formatDistanceToNow(new Date(form.createdAt), { addSuffix: true })}
-      </p>
+        {/* Quick actions — fade + slide up on hover, staggered */}
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 p-5",
+            "bg-gradient-to-t from-[#111] via-[#111]/90 to-transparent pt-10",
+            "translate-y-2 opacity-0",
+            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            "group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100",
+            "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100",
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <QuickAction
+            icon={Pencil}
+            label="Edit"
+            delay={0}
+            onClick={() => router.push(`/forms/${form.id}/edit`)}
+          />
+          <QuickAction
+            icon={Inbox}
+            label="Responses"
+            delay={50}
+            onClick={() => router.push(`/forms/${form.id}/responses`)}
+          />
+          <QuickAction icon={Link2} label="Copy link" delay={100} onClick={copyLink} />
+          <QuickAction
+            icon={Trash2}
+            label="Delete"
+            delay={150}
+            danger
+            onClick={() => onDelete(form)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
 
 function EmptyState({ onNew, isPending }: { onNew: () => void; isPending: boolean }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 py-24 text-center">
-      <div className="flex size-14 items-center justify-center rounded-2xl border border-dashed border-border">
-        <LayoutGrid className="size-6 text-muted-foreground/40" />
+    <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
+      <p className="select-none text-6xl font-semibold tracking-tighter text-white/[0.06] sm:text-7xl">
+        No forms yet
+      </p>
+      <button
+        type="button"
+        onClick={onNew}
+        disabled={isPending}
+        className={cn(
+          "group mt-8 flex flex-col items-center gap-3 rounded-[1.5rem] border border-dashed border-[#E8854A]/30 px-12 py-8",
+          "bg-[#E8854A]/[0.03] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "hover:border-[#E8854A]/60 hover:bg-[#E8854A]/[0.06] disabled:opacity-50",
+        )}
+      >
+        <span className="flex size-11 items-center justify-center rounded-full bg-[#E8854A]/12 text-[#E8854A] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-110">
+          {isPending ? <Loader2 className="size-5 animate-spin" /> : <Plus className="size-5" />}
+        </span>
+        <span className="text-sm font-medium text-white">Create your first form</span>
+        <span className="font-mono text-[11px] text-[#6B6B6B]">start collecting responses</span>
+      </button>
+    </div>
+  );
+}
+
+function CardSkeleton({ index }: { index: number }) {
+  return (
+    <div
+      className={cn(
+        SPANS[index % SPANS.length],
+        "col-span-1 rounded-[1.75rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06]",
+      )}
+    >
+      <div className="h-[8.5rem] animate-pulse overflow-hidden rounded-[1.4rem] bg-[#111]">
+        <div
+          className="size-full animate-shimmer"
+          style={{
+            backgroundImage:
+              "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)",
+            backgroundSize: "200% 100%",
+          }}
+        />
       </div>
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">No forms yet</p>
-        <p className="text-xs text-muted-foreground">Create your first form to get started</p>
-      </div>
-      <Button onClick={onNew} disabled={isPending} className="gap-2">
-        {isPending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-        Create your first form
-      </Button>
     </div>
   );
 }
@@ -212,45 +323,57 @@ export default function FormsPage() {
     createMutation.mutate({ workspaceId, title: "Untitled form" });
   }
 
+  // restoreMutation preserved for soft-delete restore flow.
+  void restoreMutation;
+
   const forms = formsQuery.data ?? [];
   const isLoading = workspacesQuery.isPending || formsQuery.isPending;
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
       {/* Page header */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
-        <h1 className="text-sm font-semibold text-foreground">Forms</h1>
-        <Button
-          size="sm"
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-6">
+        <h1 className="text-lg font-semibold tracking-tight text-white">Forms</h1>
+        <button
+          type="button"
           onClick={handleNew}
           disabled={createMutation.isPending || !workspaceId}
-          className="gap-1.5"
+          className={cn(
+            "group flex items-center gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-sm font-medium",
+            "bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20",
+            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            "hover:bg-[#E8854A]/20 hover:ring-[#E8854A]/40 disabled:pointer-events-none disabled:opacity-50",
+          )}
         >
-          {createMutation.isPending
-            ? <Loader2 className="size-3.5 animate-spin" />
-            : <Plus className="size-3.5" />}
           New form
-        </Button>
+          <span className="flex size-7 items-center justify-center rounded-full bg-[#E8854A] text-[#111] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:rotate-90">
+            {createMutation.isPending ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Plus className="size-3.5" />
+            )}
+          </span>
+        </button>
       </div>
 
       {/* Content */}
       <div className="flex flex-1 flex-col px-6 py-6">
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-28 animate-pulse rounded-xl border border-border bg-card" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <CardSkeleton key={i} index={i} />
             ))}
           </div>
         ) : forms.length === 0 ? (
           <EmptyState onNew={handleNew} isPending={createMutation.isPending} />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {forms.map((form) => (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+            {forms.map((form, i) => (
               <FormCard
                 key={form.id}
+                index={i}
                 form={{ ...form, createdAt: new Date(form.createdAt) }}
                 onDelete={setDeleteTarget}
-                onRestore={(id) => restoreMutation.mutate({ formId: id })}
               />
             ))}
           </div>

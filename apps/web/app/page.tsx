@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
-import { api } from "~/trpc/server";
+import type { Metadata } from "next";
+import { LandingPage } from "./_components/landing/landing-page";
 
-export default async function Home() {
-  try {
-    await api.auth.me.query({});
-    redirect("/forms");
-  } catch {
-    redirect("/login");
-  }
+export const metadata: Metadata = {
+  title: "FormBlox | Forms that ask back",
+  description: "Build conversational forms that feel like a chat.",
+};
+
+export default function Home() {
+  return <LandingPage />;
 }

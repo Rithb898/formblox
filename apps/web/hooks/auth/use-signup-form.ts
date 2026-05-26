@@ -24,17 +24,22 @@ export type SignupFormData = z.infer<typeof schema>;
 
 export function useSignupForm() {
   const [done, setDone] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = trpc.auth.signup.useMutation({
     onSuccess: () => setDone(true),
-    onError: (err) => toast.error(err.message),
+    onError: (err) => {
+      toast.error(err.message);
+      setFormError(err.message);
+    },
   });
 
   const form = useForm<SignupFormData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = form.handleSubmit(({ fullName, email, password }) =>
-    mutation.mutate({ fullName, email, password }),
-  );
+  const onSubmit = form.handleSubmit(({ fullName, email, password }) => {
+    setFormError(null);
+    mutation.mutate({ fullName, email, password });
+  });
 
   const googleOAuthUrl = env.NEXT_PUBLIC_API_URL
     ? `${env.NEXT_PUBLIC_API_URL}/auth/google`
@@ -46,6 +51,7 @@ export function useSignupForm() {
     onSubmit,
     isPending: mutation.isPending,
     done,
+    formError,
     googleOAuthUrl,
   };
 }

@@ -61,14 +61,21 @@ export function FieldDescription({
 
 export function FieldError({
   className,
+  children,
   ...props
-}: FieldPrimitive.Error.Props): React.ReactElement {
+}: React.HTMLAttributes<HTMLParagraphElement> & {
+  children?: React.ReactNode;
+}): React.ReactElement | null {
+  if (!children) return null;
   return (
-    <FieldPrimitive.Error
+    <p
+      role="alert"
       className={cn("text-destructive-foreground text-xs", className)}
       data-slot="field-error"
       {...props}
-    />
+    >
+      {children}
+    </p>
   );
 }
 

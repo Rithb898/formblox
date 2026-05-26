@@ -13,15 +13,22 @@ export type ForgotPasswordFormData = z.infer<typeof schema>;
 
 export function useForgotPasswordForm() {
   const [done, setDone] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = trpc.auth.forgotPassword.useMutation({
     onSuccess: () => setDone(true),
-    onError: (err) => toast.error(err.message),
+    onError: (err) => {
+      toast.error(err.message);
+      setFormError(err.message);
+    },
   });
 
   const form = useForm<ForgotPasswordFormData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = form.handleSubmit((data) => mutation.mutate(data));
+  const onSubmit = form.handleSubmit((data) => {
+    setFormError(null);
+    mutation.mutate(data);
+  });
 
   return {
     register: form.register,
@@ -29,5 +36,6 @@ export function useForgotPasswordForm() {
     onSubmit,
     isPending: mutation.isPending,
     done,
+    formError,
   };
 }
