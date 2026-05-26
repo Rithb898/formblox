@@ -77,6 +77,10 @@ export const responseAnswerSchema = z.object({
   label: z.string().describe("Question label from the response's own version"),
   type: z.string().describe("Field type (e.g. short_text, long_text)"),
   value: z.unknown().describe("The submitted answer value"),
+  followup: z.object({
+    aiQuestion: z.string(),
+    userAnswer: z.string().nullable(),
+  }).nullable().describe("AI follow-up Q&A for this answer, if any"),
 });
 
 export const responseListItemSchema = z.object({
@@ -87,6 +91,25 @@ export const responseListItemSchema = z.object({
 
 export const responseListSchema = z.array(responseListItemSchema);
 
+export const followupInputSchema = z.object({
+  fieldId: z.string().describe("Field nanoid that triggered the follow-up"),
+  aiQuestion: z.string().describe("The AI-generated follow-up question"),
+  userAnswer: z.string().nullable().describe("User's reply, or null if skipped"),
+});
+
+export const summaryFieldSchema = z.object({
+  label: z.string(),
+  type: z.string(),
+  summary: z.string(),
+});
+
+export const summaryDataSchema = z.object({
+  formTitle: z.string(),
+  responseCount: z.number(),
+  fields: z.array(summaryFieldSchema),
+});
+
 export type FieldOutput = z.infer<typeof fieldOutputSchema>;
 export type VersionWithFields = z.infer<typeof versionWithFieldsSchema>;
 export type FormWithVersion = z.infer<typeof formWithVersionSchema>;
+export type SummaryData = z.infer<typeof summaryDataSchema>;

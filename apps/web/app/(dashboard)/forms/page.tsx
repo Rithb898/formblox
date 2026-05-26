@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Plus, Pencil, Trash2, Loader2, Globe, FileText, Inbox, Link2,
+  Plus, Pencil, Trash2, Loader2, Globe, FileText, Inbox, Link2, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { nanoid } from "nanoid";
+import type { FieldType } from "@repo/forms";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -236,6 +238,84 @@ function FormCard({
   );
 }
 
+function GenerateModal({
+  open,
+  onOpenChange,
+  onGenerate,
+  isPending,
+  hasError,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onGenerate: (prompt: string) => void;
+  isPending: boolean;
+  hasError: boolean;
+}) {
+  const [prompt, setPrompt] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleSubmit() {
+    if (!prompt.trim()) return;
+    onGenerate(prompt.trim());
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!isPending) { onOpenChange(v); if (!v) setPrompt(""); } }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="size-4 text-[#A78BFA]" />
+            Generate form with AI
+          </DialogTitle>
+          <DialogDescription>
+            Describe the form you want and AI will build it for you.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <textarea
+            ref={textareaRef}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
+            placeholder="e.g. a customer feedback form for a coffee shop, a job application form, a weekly team standup survey…"
+            disabled={isPending}
+            rows={4}
+            className={cn(
+              "w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3",
+              "text-sm text-[#F2F2F2] placeholder:text-[#4A4A4A]",
+              "outline-none focus:border-[#7C3AED]/40 focus:ring-1 focus:ring-[#7C3AED]/20",
+              "transition-all duration-200 disabled:opacity-50",
+            )}
+          />
+          {hasError && (
+            <p className="text-xs text-red-400">
+              Couldn&apos;t generate the form. Try rephrasing your prompt.
+            </p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+            Cancel
+          </Button>
+          <button
+            onClick={handleSubmit}
+            disabled={isPending || !prompt.trim()}
+            className={cn(
+              "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium",
+              "bg-[#7C3AED]/15 text-[#A78BFA] ring-1 ring-[#7C3AED]/25",
+              "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "hover:bg-[#7C3AED]/25 disabled:pointer-events-none disabled:opacity-50",
+            )}
+          >
+            {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+            {isPending ? "Generating…" : "Generate"}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function EmptyState({ onNew, isPending }: { onNew: () => void; isPending: boolean }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
@@ -287,6 +367,9 @@ function CardSkeleton({ index }: { index: number }) {
 export default function FormsPage() {
   const router = useRouter();
   const [deleteTarget, setDeleteTarget] = useState<FormListItem | null>(null);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState(false);
 
   const workspacesQuery = trpc.workspaces.listMine.useQuery(undefined);
   const workspaceId = workspacesQuery.data?.[0]?.id;
@@ -300,6 +383,8 @@ export default function FormsPage() {
     onSuccess: (form) => router.push(`/forms/${form.id}/edit`),
     onError: () => toast.error("Failed to create form"),
   });
+
+  const updateDraftMutation = trpc.forms.versions.updateDraft.useMutation();
 
   const deleteMutation = trpc.forms.softDelete.useMutation({
     onSuccess: () => {
@@ -323,6 +408,48 @@ export default function FormsPage() {
     createMutation.mutate({ workspaceId, title: "Untitled form" });
   }
 
+  async function handleGenerate(prompt: string) {
+    if (!workspaceId) return;
+    setGenerating(true);
+    setGenerateError(false);
+    try {
+      // 1. Generate fields from AI
+      const res = await fetch("/api/ai/generate-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) throw new Error("generation_failed");
+      const { title, fields: generatedFields } = await res.json() as {
+        title: string;
+        fields: { type: string; label: string; required: boolean; config: Record<string, unknown> }[];
+      };
+
+      // 2. Create form
+      const form = await createMutation.mutateAsync({ workspaceId, title: title || "Untitled form" });
+
+      // 3. Populate draft with generated fields
+      await updateDraftMutation.mutateAsync({
+        formId: form.id,
+        title: title || "Untitled form",
+        fields: generatedFields.map((f, i) => ({
+          id: nanoid(),
+          order: i,
+          type: f.type as FieldType,
+          label: f.label,
+          required: f.required,
+          config: f.config,
+        })),
+      });
+
+      setGenerateOpen(false);
+      router.push(`/forms/${form.id}/edit`);
+    } catch {
+      setGenerateError(true);
+      setGenerating(false);
+    }
+  }
+
   // restoreMutation preserved for soft-delete restore flow.
   void restoreMutation;
 
@@ -334,26 +461,42 @@ export default function FormsPage() {
       {/* Page header */}
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-6">
         <h1 className="text-lg font-semibold tracking-tight text-white">Forms</h1>
-        <button
-          type="button"
-          onClick={handleNew}
-          disabled={createMutation.isPending || !workspaceId}
-          className={cn(
-            "group flex items-center gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-sm font-medium",
-            "bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20",
-            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-            "hover:bg-[#E8854A]/20 hover:ring-[#E8854A]/40 disabled:pointer-events-none disabled:opacity-50",
-          )}
-        >
-          New form
-          <span className="flex size-7 items-center justify-center rounded-full bg-[#E8854A] text-[#111] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:rotate-90">
-            {createMutation.isPending ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Plus className="size-3.5" />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setGenerateOpen(true)}
+            disabled={!workspaceId}
+            className={cn(
+              "flex items-center gap-2 rounded-full py-1.5 pl-3 pr-4 text-sm font-medium",
+              "bg-[#7C3AED]/10 text-[#A78BFA] ring-1 ring-[#7C3AED]/20",
+              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "hover:bg-[#7C3AED]/20 hover:ring-[#7C3AED]/40 disabled:pointer-events-none disabled:opacity-50",
             )}
-          </span>
-        </button>
+          >
+            <Sparkles className="size-3.5" />
+            Generate with AI
+          </button>
+          <button
+            type="button"
+            onClick={handleNew}
+            disabled={createMutation.isPending || !workspaceId}
+            className={cn(
+              "group flex items-center gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-sm font-medium",
+              "bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20",
+              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "hover:bg-[#E8854A]/20 hover:ring-[#E8854A]/40 disabled:pointer-events-none disabled:opacity-50",
+            )}
+          >
+            New form
+            <span className="flex size-7 items-center justify-center rounded-full bg-[#E8854A] text-[#111] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:rotate-90">
+              {createMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Plus className="size-3.5" />
+              )}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -386,6 +529,14 @@ export default function FormsPage() {
         onOpenChange={(v) => !v && setDeleteTarget(null)}
         onConfirm={() => deleteTarget && deleteMutation.mutate({ formId: deleteTarget.id })}
         isPending={deleteMutation.isPending}
+      />
+
+      <GenerateModal
+        open={generateOpen}
+        onOpenChange={(v) => { if (!generating) { setGenerateOpen(v); if (!v) { setGenerating(false); setGenerateError(false); } } }}
+        onGenerate={handleGenerate}
+        isPending={generating}
+        hasError={generateError}
       />
     </div>
   );
