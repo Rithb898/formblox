@@ -9,6 +9,7 @@ import { trpc } from "~/trpc/client";
 import { createTRPCHttpBatchClientClient } from "~/trpc/create-client";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { AuthProvider } from "./auth";
+import { PostHogProvider } from "./posthog";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,10 +35,12 @@ export const GlobalProviders: React.FC<{ children: React.ReactNode }> = ({ child
         disableTransitionOnChange
       >
         <trpc.Provider queryClient={queryClient} client={trpcClient}>
-          <TooltipProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </TooltipProvider>
-          <Toaster />
+          <PostHogProvider>
+            <TooltipProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </TooltipProvider>
+            <Toaster />
+          </PostHogProvider>
         </trpc.Provider>
       </NextThemesProvider>
     </QueryClientProvider>
