@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { FormTheme } from "@repo/forms/theme";
 
 export interface EditorField {
   id: string;
@@ -24,17 +25,19 @@ interface FormEditorState {
   formVersion: EditorFormVersion | null;
   fields: EditorField[];
   selectedFieldId: string | null;
+  theme: FormTheme | null;
   dirty: boolean;
   lastSavedAt: Date | null;
   isSaving: boolean;
   fieldErrors: Record<string, string>;
 
-  setForm: (formVersion: EditorFormVersion, fields: EditorField[]) => void;
+  setForm: (formVersion: EditorFormVersion, fields: EditorField[], theme?: FormTheme | null) => void;
   addField: (field: EditorField) => void;
   updateField: (id: string, patch: Partial<Omit<EditorField, "id">>) => void;
   removeField: (id: string) => void;
   reorderFields: (orderedIds: string[]) => void;
   selectField: (id: string | null) => void;
+  setTheme: (theme: FormTheme | null) => void;
   markSaved: () => void;
   setIsSaving: (isSaving: boolean) => void;
   setFieldErrors: (errors: Record<string, string>) => void;
@@ -45,13 +48,14 @@ export const useFormEditorStore = create<FormEditorState>((set) => ({
   formVersion: null,
   fields: [],
   selectedFieldId: null,
+  theme: null,
   dirty: false,
   lastSavedAt: null,
   isSaving: false,
   fieldErrors: {},
 
-  setForm: (formVersion, fields) =>
-    set({ formVersion, fields, dirty: false, selectedFieldId: null }),
+  setForm: (formVersion, fields, theme) =>
+    set({ formVersion, fields, theme: theme ?? null, dirty: false, selectedFieldId: null }),
 
   addField: (field) =>
     set((s) => ({ fields: [...s.fields, field], selectedFieldId: field.id, dirty: true })),
@@ -85,6 +89,8 @@ export const useFormEditorStore = create<FormEditorState>((set) => ({
     })),
 
   selectField: (id) => set({ selectedFieldId: id }),
+
+  setTheme: (theme) => set({ theme, dirty: true }),
 
   markSaved: () => set({ dirty: false, lastSavedAt: new Date(), isSaving: false }),
 

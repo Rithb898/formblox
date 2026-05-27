@@ -1,4 +1,4 @@
-import { fieldTypeSchema } from "@repo/forms";
+import { fieldTypeSchema, themeSchema } from "@repo/forms";
 import { z } from "../../schema";
 
 export const fieldOutputSchema = z.object({
@@ -38,6 +38,7 @@ export const versionWithFieldsSchema = z.object({
   description: z.string().nullable().describe("Optional form description"),
   publishedAt: z.date().nullable().describe("When this version was published"),
   createdAt: z.date().describe("When this version was created"),
+  theme: themeSchema.nullable().describe("Theme configuration (accent color + preset)"),
   fields: z.array(fieldOutputSchema).describe("Fields ordered by their display order"),
 });
 
@@ -76,6 +77,7 @@ export const publicFormSchema = z.object({
       id: z.string().describe("Published version UUID"),
       title: z.string().describe("Form title"),
       description: z.string().nullable().describe("Optional form description"),
+      theme: themeSchema.nullable().describe("Theme configuration"),
     })
     .describe("Published version metadata"),
   fields: z.array(fieldOutputSchema).describe("Ordered list of form fields"),

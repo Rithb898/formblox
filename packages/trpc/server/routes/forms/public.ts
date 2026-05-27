@@ -13,7 +13,7 @@ import db from "@repo/database";
 import { emailService } from "@repo/services/email";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
-import { buildResponseSchema } from "@repo/forms";
+import { buildResponseSchema, themeSchema } from "@repo/forms";
 import {
   rateLimit,
   withCache,
@@ -105,7 +105,7 @@ export const formsPublicRouter = router({
             publicSlug: form.publicSlug,
             isAcceptingResponses: form.isAcceptingResponses,
           },
-          version: { id: published.id, title: published.title, description: published.description },
+          version: { id: published.id, title: published.title, description: published.description, theme: themeSchema.nullable().safeParse(published.theme).data ?? null },
           fields: fields.map((f) => ({
             ...f,
             config: (f.config ?? {}) as Record<string, unknown>,

@@ -58,7 +58,7 @@ export function FieldCard({ field, index = 0 }: { field: EditorField; index?: nu
         className={cn(
           "group relative flex animate-fade-up cursor-pointer items-center gap-3 rounded-[1.25rem] bg-white/2 px-4 py-3.5 ring-1 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
           isSelected
-            ? "border-l-2 border-[#E8854A] bg-[#E8854A]/6 ring-[#E8854A]/30"
+            ? "border-l-2 border-[var(--form-accent)] bg-[color-mix(in_srgb,var(--form-accent)_6%,transparent)] ring-[color-mix(in_srgb,var(--form-accent)_30%,transparent)]"
             : error
               ? "border-l-2 border-red-500 bg-red-500/5 ring-red-500/30 hover:ring-red-500/50"
               : "ring-white/6 hover:bg-white/4 hover:ring-white/12",
@@ -92,7 +92,7 @@ export function FieldCard({ field, index = 0 }: { field: EditorField; index?: nu
           className={cn(
             "flex size-7 shrink-0 items-center justify-center rounded-full ring-1 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
             isSelected
-              ? "bg-[#E8854A]/10 text-[#E8854A] ring-[#E8854A]/30"
+              ? "bg-[color-mix(in_srgb,var(--form-accent)_10%,transparent)] text-[var(--form-accent)] ring-[color-mix(in_srgb,var(--form-accent)_30%,transparent)]"
               : "bg-white/3 text-[#6B6B6B] ring-white/6",
           )}
         >
@@ -111,7 +111,7 @@ export function FieldCard({ field, index = 0 }: { field: EditorField; index?: nu
 
         {/* Required badge */}
         {field.required && (
-          <span className="shrink-0 font-mono text-xs font-medium text-[#E8854A]">*</span>
+          <span className="shrink-0 font-mono text-xs font-medium text-[var(--form-accent)]">*</span>
         )}
 
         {/* Delete */}
@@ -126,7 +126,7 @@ export function FieldCard({ field, index = 0 }: { field: EditorField; index?: nu
                 removeField(field.id);
               }}
               aria-label="Delete field"
-              className="shrink-0 text-transparent hover:bg-white/6 hover:text-[#E8854A] group-hover:text-[#6B6B6B]"
+              className="shrink-0 text-transparent hover:bg-white/6 hover:text-[var(--form-accent)] group-hover:text-[#6B6B6B]"
             >
               <Trash2 className="size-3.5" />
             </Button>

@@ -4,20 +4,23 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { LayoutGrid } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { themeToCSSVars } from "~/lib/theme";
 import { useFormEditorStore } from "~/stores/form-editor";
 import { FieldCard } from "./field-card";
 
 export function FieldCanvas() {
-  const { fields } = useFormEditorStore();
+  const { fields, theme } = useFormEditorStore();
+  const cssVars = themeToCSSVars(theme);
 
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
 
   return (
     <div
       ref={setNodeRef}
+      style={cssVars}
       className={cn(
         "flex flex-1 flex-col overflow-y-auto bg-[#080808] transition-colors duration-150",
-        isOver && "bg-[#E8854A]/3",
+        isOver && "bg-[color-mix(in_srgb,var(--form-accent)_3%,transparent)]",
       )}
     >
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/7 px-6">

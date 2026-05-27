@@ -20,6 +20,7 @@ import { nanoid } from "nanoid";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { useFormEditorStore } from "~/stores/form-editor";
+import { themeToCSSVars } from "~/lib/theme";
 import { EditorTopbar } from "./_components/editor-topbar";
 import { FieldPalette, FIELD_GROUPS } from "./_components/field-palette";
 import { FieldCanvas } from "./_components/field-canvas";
@@ -27,7 +28,8 @@ import { PropertyPanel } from "./_components/property-panel";
 
 export default function EditorPage({ params }: { params: Promise<{ formId: string }> }) {
   const { formId } = use(params);
-  const { setForm, fields, addField, reorderFields } = useFormEditorStore();
+  const { setForm, fields, addField, reorderFields, theme } = useFormEditorStore();
+  const cssVars = themeToCSSVars(theme);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -89,6 +91,7 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
         required: f.required,
         config: f.config,
       })),
+      (d as { theme?: import("@repo/forms/theme").FormTheme | null }).theme,
     );
   }, [draftQuery.data]);
 
@@ -109,7 +112,7 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 bg-[#080808]">
         <div className="flex size-12 items-center justify-center rounded-2xl bg-white/2 ring-1 ring-white/6">
-          <AlertCircle className="size-5 text-[#E8854A]" />
+          <AlertCircle className="size-5" style={{ color: cssVars["--form-accent"] ?? "#E8854A" }} />
         </div>
         <p className="text-sm text-[#6B6B6B]">Failed to load form</p>
       </div>
@@ -143,8 +146,11 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
                   if (!item) return null;
                   const Icon = item.icon;
                   return (
-                    <div className="flex w-49 items-center gap-2.5 rounded-full bg-[#1a1a1a] px-2.5 py-2 opacity-90 shadow-lg shadow-black/50 ring-1 ring-[#E8854A]/40">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#E8854A]/10 text-[#E8854A] ring-1 ring-[#E8854A]/30">
+                    <div
+                      style={cssVars}
+                      className="flex w-49 items-center gap-2.5 rounded-full bg-[var(--form-surface-elevated)] px-2.5 py-2 opacity-90 shadow-lg shadow-black/50 ring-1 ring-[color-mix(in_srgb,var(--form-accent)_40%,transparent)]"
+                    >
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--form-accent)_10%,transparent)] text-[var(--form-accent)] ring-1 ring-[color-mix(in_srgb,var(--form-accent)_30%,transparent)]">
                         <Icon className="size-3.5" />
                       </span>
                       <span className="font-mono text-[12px] text-[#F2F2F2]">{item.label}</span>

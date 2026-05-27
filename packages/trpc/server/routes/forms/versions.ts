@@ -3,7 +3,7 @@ import { eq, asc, and } from "@repo/database";
 import { formVersionsTable, formFieldsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
-import { fieldConfigUnion } from "@repo/forms";
+import { fieldConfigUnion, themeSchema } from "@repo/forms";
 import { invalidateKeys, CacheKeys } from "@repo/services/redis";
 import { z } from "../../schema";
 import { formProcedure, router } from "../../trpc";
@@ -49,7 +49,7 @@ async function getDraftWithFields(formId: string) {
     .where(eq(formFieldsTable.formVersionId, draft.id))
     .orderBy(asc(formFieldsTable.order));
 
-  return { ...draft, fields: fields.map(mapField) };
+  return { ...draft, theme: themeSchema.nullable().safeParse(draft.theme).data ?? null, fields: fields.map(mapField) };
 }
 
 const TAGS = ["Form Versions"];
@@ -68,6 +68,7 @@ export const formsVersionsRouter = router({
         formId: z.string(),
         title: z.string().optional(),
         description: z.string().optional(),
+        theme: themeSchema.nullable().optional(),
         fields: z.array(fieldInputSchema),
       }),
     )
@@ -83,12 +84,13 @@ export const formsVersionsRouter = router({
           .limit(1);
         if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "No draft version" });
 
-        if (input.title !== undefined || input.description !== undefined) {
+        if (input.title !== undefined || input.description !== undefined || input.theme !== undefined) {
           await tx
             .update(formVersionsTable)
             .set({
               ...(input.title !== undefined ? { title: input.title } : {}),
               ...(input.description !== undefined ? { description: input.description } : {}),
+              ...(input.theme !== undefined ? { theme: input.theme } : {}),
             })
             .where(eq(formVersionsTable.id, draft.id));
         }
@@ -121,7 +123,11 @@ export const formsVersionsRouter = router({
           .where(eq(formVersionsTable.id, draft.id))
           .limit(1);
 
-        return { ...updatedVersion!, fields: updatedFields.map(mapField) };
+        return {
+          ...updatedVersion!,
+          theme: themeSchema.nullable().safeParse(updatedVersion!.theme).data ?? null,
+          fields: updatedFields.map(mapField),
+        };
       });
     }),
 
@@ -202,6 +208,7 @@ export const formsVersionsRouter = router({
             title: draft.title,
             description: draft.description,
             settings: draft.settings,
+            theme: draft.theme,
           })
           .returning();
 

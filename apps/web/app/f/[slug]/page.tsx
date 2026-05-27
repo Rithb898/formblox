@@ -98,6 +98,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
       slug={slug}
       title={data.version.title}
       description={data.version.description}
+      theme={data.version.theme}
       fields={data.fields}
     />
   );

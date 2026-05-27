@@ -87,6 +87,7 @@ export function EditorTopbar({
         formId,
         title: formVersion.title,
         description: formVersion.description ?? undefined,
+        theme: useFormEditorStore.getState().theme,
         fields: fields.map((f) => ({
           id: f.id,
           order: f.order,
