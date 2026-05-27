@@ -204,7 +204,7 @@ function DashboardSidebarContent() {
       </CossSidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="p-3 bg-linear-to-t from-zinc-950 to-transparent shrink-0">
+      <SidebarFooter className="p-3 bg-linear-to-t from-[#080808] to-transparent shrink-0">
         {user && (
           <div className="rounded-xl border border-zinc-800/40 bg-zinc-900/20 p-2 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-zinc-800/80 hover:bg-zinc-900/40">
             <div className="flex items-center justify-between gap-2.5">
@@ -367,7 +367,7 @@ export function DashboardSidebar() {
   if (isEditor) return null;
 
   return (
-    <Sidebar className="border-r border-zinc-900 bg-zinc-950 text-zinc-400">
+    <Sidebar className="border-r border-zinc-900 bg-[#080808] text-zinc-400">
       <DashboardSidebarContent />
     </Sidebar>
   );
@@ -380,7 +380,7 @@ export function MobileNav() {
   if (isEditor) return null;
 
   return (
-    <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-900 bg-zinc-950 px-4 md:hidden">
+    <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-900 bg-[#080808] px-4 md:hidden">
       <Image src="/logo.png" alt="FormBlox" width={100} height={25} className="object-contain" />
       <SidebarTrigger className="text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-200" />
     </div>
