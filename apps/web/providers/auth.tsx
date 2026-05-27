@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { trpc } from "~/trpc/client";
 import { useAuthStore } from "~/stores/auth";
 
@@ -15,17 +15,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshMutation = trpc.auth.refreshToken.useMutation();
   const logoutMutation = trpc.auth.logout.useMutation();
   const logoutAllMutation = trpc.auth.logoutAll.useMutation();
+  const refreshAttempted = useRef(false);
 
   useEffect(() => {
-    if (meQuery.data) {
-      _setUser(meQuery.data);
-      _setLoading(false);
-    }
+    if (!meQuery.data) return;
+    refreshAttempted.current = false;
+    _setUser(meQuery.data);
+    _setLoading(false);
   }, [meQuery.data]);
 
   // On 401, attempt a silent token refresh once then re-fetch
   useEffect(() => {
     if (!meQuery.error) return;
+    if (refreshAttempted.current || refreshMutation.isPending) {
+      _setUser(null);
+      _setLoading(false);
+      return;
+    }
+    refreshAttempted.current = true;
     refreshMutation.mutate(undefined, {
       onSuccess: () => meQuery.refetch(),
       onError: () => {

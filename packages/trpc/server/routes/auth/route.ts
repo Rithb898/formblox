@@ -4,11 +4,13 @@ import { getAuthenticationMethodOutputSchema } from "@repo/services/user/model";
 import { publicProcedure, protectedProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import { TRPCError } from "@trpc/server";
+import { env } from "../../env";
 
 const TAGS = ["Authentication"];
 const getPath = generatePath("/authentication");
 
 const IS_PROD = (process.env.NODE_ENV as string) === "prod";
+const domainOpt = env.COOKIE_DOMAIN ? { domain: env.COOKIE_DOMAIN } : {};
 
 const COOKIE_OPTS_ACCESS = {
   httpOnly: true,
@@ -16,6 +18,7 @@ const COOKIE_OPTS_ACCESS = {
   sameSite: "lax" as const,
   maxAge: 15 * 60 * 1000,
   path: "/",
+  ...domainOpt,
 };
 
 const COOKIE_OPTS_REFRESH = {
@@ -24,6 +27,7 @@ const COOKIE_OPTS_REFRESH = {
   sameSite: "lax" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/",
+  ...domainOpt,
 };
 
 function setAuthCookies(res: any, accessToken: string, refreshToken: string) {
@@ -32,8 +36,8 @@ function setAuthCookies(res: any, accessToken: string, refreshToken: string) {
 }
 
 function clearAuthCookies(res: any) {
-  res.clearCookie("access_token", { path: "/" });
-  res.clearCookie("refresh_token", { path: "/" });
+  res.clearCookie("access_token", { path: "/", ...domainOpt });
+  res.clearCookie("refresh_token", { path: "/", ...domainOpt });
 }
 
 function mapError(err: unknown): TRPCError {

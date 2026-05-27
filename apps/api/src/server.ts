@@ -63,6 +63,7 @@ const apiLimiter = rateLimit({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendCommand: (...args: string[]) => redisClient.call(...(args as [string, ...string[]])) as any,
   }),
+  skip: () => env.NODE_ENV !== "prod",
 });
 
 app.get("/", (req, res) => {
@@ -75,6 +76,7 @@ app.get("/health", (req, res) => {
 
 const isProd = env.NODE_ENV === "prod";
 const OAUTH_STATE_COOKIE = "oauth_state";
+const domainOpt = env.COOKIE_DOMAIN ? { domain: env.COOKIE_DOMAIN } : {};
 
 // Google OAuth routes
 app.get("/auth/google", authLimiter, async (_req, res) => {
@@ -86,6 +88,7 @@ app.get("/auth/google", authLimiter, async (_req, res) => {
     sameSite: "lax",
     maxAge: 10 * 60 * 1000,
     path: "/",
+    ...domainOpt,
   });
   const url = googleOAuth2Client.generateAuthUrl({
     scope: ["email", "profile"],
@@ -100,7 +103,7 @@ app.get("/auth/google/callback", authLimiter, async (req, res) => {
   const returnedState = req.query.state as string | undefined;
   const storedState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
 
-  res.clearCookie(OAUTH_STATE_COOKIE, { path: "/" });
+  res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", ...domainOpt });
 
   if (!code || !returnedState || !storedState || returnedState !== storedState) {
     return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
@@ -114,6 +117,7 @@ app.get("/auth/google/callback", authLimiter, async (req, res) => {
       sameSite: "lax",
       maxAge: 15 * 60 * 1000,
       path: "/",
+      ...domainOpt,
     });
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
@@ -121,6 +125,7 @@ app.get("/auth/google/callback", authLimiter, async (req, res) => {
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
+      ...domainOpt,
     });
     return res.redirect(`${env.FRONTEND_URL}/forms`);
   } catch (err) {

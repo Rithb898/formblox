@@ -379,11 +379,11 @@ App Shell
 ## 6. Open Questions Before Building
 
 - [ ] Does the chat thread show all previous Q+A or only current question?  
-      → Recommend: show history, faded (opacity-60) — feels more like iMessage
+       → Recommend: show history, faded (opacity-60) — feels more like iMessage
 - [ ] AI follow-up: blocking (must answer before next Q) or skippable?  
-      → Recommend: skippable ("Skip →" ghost button)
+       → Recommend: skippable ("Skip →" ghost button)
 - [ ] Form avatar: form's custom logo upload or auto-generated initial?  
-      → Start with initial, add upload in Slice 8 (themes)
+       → Start with initial, add upload in Slice 8 (themes)
 - [ ] Mobile: single-column chat is naturally mobile-first — no layout change needed
 - [ ] Reply area height: fixed or expands with textarea content?  
-      → Expand, max-h-32, then scroll within
+       → Expand, max-h-32, then scroll within

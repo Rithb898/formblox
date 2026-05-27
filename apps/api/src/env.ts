@@ -6,6 +6,7 @@ const envSchema = z.object({
   BASE_URL: z.string().default("http://localhost:8123"),
   FRONTEND_URL: z.string().default("http://localhost:3000"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+  COOKIE_DOMAIN: z.string().optional(),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {
