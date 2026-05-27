@@ -44,6 +44,7 @@ export const formWithVersionSchema = z.object({
   workspaceId: z.string().describe("Owning workspace UUID"),
   publicSlug: z.string().describe("URL-safe slug used in the public form link"),
   isAcceptingResponses: z.boolean().describe("Whether the form is open for new responses"),
+  visibility: z.enum(["public", "unlisted"]).describe("public = appears in explore; unlisted = link-only"),
   deletedAt: z.date().nullable().describe("Soft-delete timestamp; null if not deleted"),
   createdAt: z.date().describe("When the form was created"),
   version: versionSummarySchema.describe("Current draft version metadata"),
@@ -109,7 +110,18 @@ export const summaryDataSchema = z.object({
   fields: z.array(summaryFieldSchema),
 });
 
+export const exploreFormSchema = z.object({
+  id: z.string(),
+  publicSlug: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  responseCount: z.number(),
+  fieldCount: z.number(),
+  publishedAt: z.date().nullable(),
+});
+
 export type FieldOutput = z.infer<typeof fieldOutputSchema>;
 export type VersionWithFields = z.infer<typeof versionWithFieldsSchema>;
 export type FormWithVersion = z.infer<typeof formWithVersionSchema>;
 export type SummaryData = z.infer<typeof summaryDataSchema>;
+export type ExploreForm = z.infer<typeof exploreFormSchema>;

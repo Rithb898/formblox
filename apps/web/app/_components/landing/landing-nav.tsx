@@ -19,6 +19,7 @@ const navLinks = [
   { href: "#workflow", label: "Features" },
   { href: "#wedge", label: "AI Engine" },
   { href: "#testimonials", label: "Testimonials" },
+  { href: "/explore", label: "Explore" },
   { href: "#faq", label: "FAQ" },
 ];
 

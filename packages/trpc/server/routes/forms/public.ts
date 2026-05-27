@@ -1,4 +1,4 @@
-import { eq, and, asc } from "@repo/database";
+import { eq, and, asc, count, sql } from "@repo/database";
 import { formsTable, formVersionsTable, formFieldsTable, responsesTable, responseAnswersTable, aiFollowupsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
@@ -7,9 +7,35 @@ import { buildResponseSchema } from "@repo/forms";
 import { rateLimit } from "@repo/services/redis";
 import { z } from "../../schema";
 import { publicProcedure, router } from "../../trpc";
-import { publicFormSchema, followupInputSchema } from "./model";
+import { publicFormSchema, followupInputSchema, exploreFormSchema } from "./model";
 
 export const formsPublicRouter = router({
+  listPublic: publicProcedure
+    .output(z.array(exploreFormSchema))
+    .query(async () => {
+      const rows = await db
+        .select({
+          id: formsTable.id,
+          publicSlug: formsTable.publicSlug,
+          title: formVersionsTable.title,
+          description: formVersionsTable.description,
+          publishedAt: formVersionsTable.publishedAt,
+          fieldCount: sql<number>`cast(count(distinct ${formFieldsTable.id}) as int)`,
+          responseCount: sql<number>`cast(count(distinct ${responsesTable.id}) as int)`,
+        })
+        .from(formsTable)
+        .innerJoin(
+          formVersionsTable,
+          and(eq(formVersionsTable.formId, formsTable.id), eq(formVersionsTable.status, "published")),
+        )
+        .leftJoin(formFieldsTable, eq(formFieldsTable.formVersionId, formVersionsTable.id))
+        .leftJoin(responsesTable, and(eq(responsesTable.formVersionId, formVersionsTable.id), sql`${responsesTable.completedAt} is not null`))
+        .where(and(eq(formsTable.visibility, "public"), sql`${formsTable.deletedAt} is null`))
+        .groupBy(formsTable.id, formVersionsTable.id);
+
+      return rows;
+    }),
+
   getBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .output(publicFormSchema)

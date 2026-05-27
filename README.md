@@ -1,135 +1,181 @@
-# Turborepo starter
+# FormBlox — AI-Native Form Builder SaaS
 
-This Turborepo starter is maintained by the Turborepo core team.
+A production-style Typeform-alternative built with Turborepo, tRPC, Zod, Drizzle ORM, and Scalar. Features conversational forms, AI follow-up questions, AI response summaries, and AI form generation.
 
-## Using this example
+---
 
-Run the following command:
+## Demo
 
-```sh
-npx create-turbo@latest
-```
+| Item | Value |
+|------|-------|
+| **Live URL** | *(add deployed URL here)* |
+| **Demo email** | `rithb8981@gmail.com` |
+| **Demo password** | `Rithb@8981` |
+| **Explore page** | `/explore` — 3 themed public forms with seeded responses |
+| **API docs** | `/docs` (Scalar) |
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## Stack
 
-### Apps and Packages
+| Layer | Technology |
+|-------|-----------|
+| Monorepo | Turborepo |
+| Frontend | Next.js 16, React 19, Tailwind CSS v4 |
+| Backend | Express.js, tRPC v11 |
+| Database | PostgreSQL + Drizzle ORM |
+| Validation | Zod |
+| Auth | JWT (access + refresh), bcryptjs, Google OAuth |
+| AI | Vercel AI SDK + Claude |
+| Rate limiting | Redis (ioredis) |
+| API docs | Scalar |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+---
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## Monorepo Structure
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+formblox/
+├── apps/
+│   ├── web/          # Next.js 16 frontend (port 3000)
+│   └── api/          # Express backend (port 8123)
+└── packages/
+    ├── database/     # Drizzle schema, migrations, seed
+    ├── trpc/         # tRPC router definitions
+    ├── services/     # Auth, email, token, Redis services
+    ├── forms/        # Field types, configs, Zod validators
+    └── logger/       # Shared logger
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+## Local Setup
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+### Prerequisites
+- Node.js 18+
+- pnpm 9+
+- PostgreSQL database
+- Redis instance
 
-### Develop
+### 1. Install dependencies
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+pnpm install
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### 2. Configure environment
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+Copy `.env` to each package that needs it (or set up a root `.env`):
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```env
+DATABASE_URL=postgres://...
+REDIS_URL=redis://...
+JWT_ACCESS_SECRET=...
+JWT_REFRESH_SECRET=...
+GOOGLE_OAUTH_CLIENT_ID=...
+GOOGLE_OAUTH_CLIENT_SECRET=...
+GOOGLE_OAUTH_REDIRECT_URI=http://localhost:8123/auth/google/callback
+RESEND_API_KEY=...
+FRONTEND_URL=http://localhost:3000
+BASE_URL=http://localhost:8123
+NEXT_PUBLIC_API_URL=http://localhost:8123
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### 3. Run migrations
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```bash
+pnpm db:migrate
 ```
 
-## Useful Links
+### 4. Seed demo data
 
-Learn more about the power of Turborepo:
+Creates the demo user, workspace, and 3 themed forms with 55 seeded responses and AI follow-ups:
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+```bash
+pnpm db:seed
+```
+
+### 5. Start development
+
+```bash
+pnpm dev
+```
+
+- Frontend: http://localhost:3000
+- API: http://localhost:8123
+- API docs: http://localhost:8123/docs
+
+---
+
+## Features
+
+### Core
+- Email/password auth + Google OAuth
+- JWT access tokens (15min) + refresh tokens (7 days)
+- Email verification + password reset flow
+- Protected creator dashboard
+- Create, edit, publish, unpublish forms
+- Soft delete + restore
+
+### Forms
+- 8 field types: short text, long text, email, number, single choice, multiple choice, rating, date
+- Per-field required/optional toggle
+- Type-specific config validation (Zod)
+- Drag-and-drop field reordering (dnd-kit)
+- Version history (draft → published → archived)
+- Public (`public`) and unlisted (`unlisted`) visibility modes
+- Rate-limited public submission (10 req/60s per IP per form)
+- Honeypot spam protection
+
+### AI
+- AI follow-up questions on open-text answers (streaming, skippable)
+- AI response summary tab (streaming markdown)
+- AI form generation from natural language prompt
+
+### Public
+- `/f/[slug]` — conversational form runner, no login required
+- `/explore` — public forms gallery with bento grid layout
+
+### API
+- Full tRPC API + REST OpenAPI spec
+- Scalar API docs at `/docs`
+
+---
+
+## Seeded Demo Data
+
+After running `pnpm db:seed`:
+
+| Form | Visibility | Responses |
+|------|-----------|-----------|
+| Anime Fan Survey 2025 | Public | 20 |
+| Startup Product Feedback | Public | 15 |
+| Gamer Preferences Poll | Public | 20 |
+
+All responses include realistic answers and AI follow-up conversations.
+
+---
+
+## API Documentation
+
+Scalar docs: `{BASE_URL}/docs`  
+OpenAPI spec: `{BASE_URL}/openapi.json`
+
+Key public endpoints:
+- `GET /trpc/forms.public.listPublic` — list all public forms
+- `GET /trpc/forms.public.getBySlug` — get form by slug
+- `POST /trpc/forms.public.submit` — submit a response (rate limited)
+
+---
+
+## Scripts
+
+```bash
+pnpm dev          # start all apps in dev mode
+pnpm build        # build all apps
+pnpm db:generate  # generate Drizzle migration
+pnpm db:migrate   # run migrations
+pnpm db:seed      # seed demo data
+pnpm lint         # lint all packages
+pnpm check-types  # typecheck all packages
+```

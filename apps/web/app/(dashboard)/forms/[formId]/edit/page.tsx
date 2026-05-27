@@ -67,12 +67,13 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
   }
 
   const publicSlug = formQuery.data?.publicSlug ?? null;
+  const visibility = formQuery.data?.visibility ?? "unlisted";
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[#080808] p-3">
       {/* Desktop editor */}
       <div className="hidden h-full flex-col overflow-hidden lg:flex">
-        <EditorTopbar formId={formId} publicSlug={publicSlug} />
+        <EditorTopbar formId={formId} publicSlug={publicSlug} visibility={visibility} />
         <div className="mt-3 flex flex-1 overflow-hidden rounded-2xl ring-1 ring-white/[0.06]">
           <FieldPalette />
           <FieldCanvas />

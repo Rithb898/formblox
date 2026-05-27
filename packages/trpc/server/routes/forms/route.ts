@@ -10,6 +10,7 @@ export const formsRouter = router({
   get: crud.get,
   softDelete: crud.softDelete,
   restore: crud.restore,
+  setVisibility: crud.setVisibility,
   versions: formsVersionsRouter,
   public: formsPublicRouter,
   responses: formsResponsesRouter,

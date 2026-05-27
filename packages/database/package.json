@@ -4,6 +4,7 @@
   "scripts": {
     "db:migrate": "dotenv -- drizzle-kit migrate",
     "db:generate": "dotenv -- drizzle-kit generate",
+    "db:seed": "dotenv -- tsx seed.ts",
     "dev": "dotenv -- drizzle-kit studio"
   },
   "devDependencies": {
@@ -17,8 +18,10 @@
   },
   "dependencies": {
     "@repo/forms": "workspace:*",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
+    "nanoid": "^5.1.5",
     "pg": "^8.16.3",
     "zod": "^4.3.5"
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, Save, Globe, Loader2, Check, Copy, Inbox, ChevronLeft } from "lucide-react";
+import { ExternalLink, Save, Globe, Loader2, Check, Inbox, ChevronLeft, Lock, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
@@ -27,7 +27,16 @@ function TimeAgo({ date }: { date: Date }) {
   return <span>{label}</span>;
 }
 
-export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlug: string | null }) {
+export function EditorTopbar({
+  formId,
+  publicSlug,
+  visibility: initialVisibility,
+}: {
+  formId: string;
+  publicSlug: string | null;
+  visibility: "public" | "unlisted";
+}) {
+  const [visibility, setVisibilityState] = useState<"public" | "unlisted">(initialVisibility);
   const { formVersion, fields, dirty, lastSavedAt, isSaving, setIsSaving, markSaved, updateField, selectField } =
     useFormEditorStore();
 
@@ -35,6 +44,19 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
   const utils = trpc.useUtils();
   const updateDraft = trpc.forms.versions.updateDraft.useMutation();
   const publish = trpc.forms.versions.publish.useMutation();
+  const setVisibilityMutation = trpc.forms.setVisibility.useMutation();
+
+  async function handleToggleVisibility() {
+    const next = visibility === "public" ? "unlisted" : "public";
+    setVisibilityState(next);
+    try {
+      await setVisibilityMutation.mutateAsync({ formId, visibility: next });
+      toast.success(next === "public" ? "Form is now public" : "Form is now unlisted");
+    } catch {
+      setVisibilityState(visibility);
+      toast.error("Failed to update visibility");
+    }
+  }
 
   const save = useCallback(async () => {
     if (!formVersion || isSaving) return;
@@ -190,6 +212,23 @@ export function EditorTopbar({ formId, publicSlug }: { formId: string; publicSlu
             </a>
           </Button>
         )}
+        <button
+          type="button"
+          onClick={handleToggleVisibility}
+          disabled={setVisibilityMutation.isPending}
+          title={visibility === "public" ? "Public — visible on explore page" : "Unlisted — only via direct link"}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em]",
+            "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            "disabled:pointer-events-none disabled:opacity-50",
+            visibility === "public"
+              ? "bg-[#E8854A]/12 text-[#E8854A] hover:bg-[#E8854A]/20"
+              : "bg-white/[0.04] text-[#6B6B6B] hover:bg-white/[0.08] hover:text-[#F2F2F2]",
+          )}
+        >
+          {visibility === "public" ? <Eye className="size-3" /> : <Lock className="size-3" />}
+          {visibility}
+        </button>
         <div className="mx-1 h-5 w-px bg-white/[0.07]" />
         <Button
           variant="ghost"

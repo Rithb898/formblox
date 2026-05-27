@@ -65,6 +65,12 @@ export const get = formProcedure
     return { ...ctx.form, version: version! };
   });
 
+export const setVisibility = formProcedure
+  .input(z.object({ formId: z.string(), visibility: z.enum(["public", "unlisted"]) }))
+  .mutation(async ({ ctx, input }) => {
+    await db.update(formsTable).set({ visibility: input.visibility }).where(eq(formsTable.id, ctx.form.id));
+  });
+
 export const softDelete = formProcedure
   .input(z.object({ formId: z.string() }))
   .mutation(async ({ ctx }) => {
