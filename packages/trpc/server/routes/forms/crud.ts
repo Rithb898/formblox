@@ -73,6 +73,7 @@ export const get = formProcedure
 export const setVisibility = formProcedure
   .meta({ openapi: { method: "PATCH", path: "/forms/{formId}/visibility", tags: TAGS } })
   .input(z.object({ formId: z.string(), visibility: z.enum(["public", "unlisted"]) }))
+  .output(z.void())
   .mutation(async ({ ctx, input }) => {
     await db.update(formsTable).set({ visibility: input.visibility }).where(eq(formsTable.id, ctx.form.id));
   });
@@ -80,6 +81,7 @@ export const setVisibility = formProcedure
 export const softDelete = formProcedure
   .meta({ openapi: { method: "DELETE", path: "/forms/{formId}", tags: TAGS } })
   .input(z.object({ formId: z.string() }))
+  .output(z.void())
   .mutation(async ({ ctx }) => {
     await db.update(formsTable).set({ deletedAt: new Date() }).where(eq(formsTable.id, ctx.form.id));
   });
@@ -87,6 +89,7 @@ export const softDelete = formProcedure
 export const restore = formProcedure
   .meta({ openapi: { method: "POST", path: "/forms/{formId}/restore", tags: TAGS } })
   .input(z.object({ formId: z.string() }))
+  .output(z.void())
   .mutation(async ({ ctx }) => {
     await db.update(formsTable).set({ deletedAt: null }).where(eq(formsTable.id, ctx.form.id));
   });
