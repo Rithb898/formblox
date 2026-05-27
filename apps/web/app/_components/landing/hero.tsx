@@ -67,14 +67,14 @@ export function Hero() {
         >
           I want to build a {/* Form Type Dropdown Trigger */}
           <span className="relative inline-block mx-1.5">
-            <Button
+            <button
               type="button"
               onClick={() => setActiveDropdown(activeDropdown === "form" ? null : "form")}
               className="inline-flex items-center gap-2 border-b-[3px] border-[#E8854A] pb-1 text-[#E8854A] hover:bg-[#E8854A]/5 px-3 py-0.5 rounded-xl transition-colors cursor-pointer outline-none tracking-normal font-semibold"
             >
               {formType}
               <ChevronDown className="size-4 md:size-6 text-[#E8854A]/80 shrink-0" />
-            </Button>
+            </button>
 
             <AnimatePresence>
               {activeDropdown === "form" && (
@@ -83,25 +83,24 @@ export function Hero() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-3.5 z-30 w-44 rounded-2xl border border-white/[0.08] bg-[#0c0c0c]/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-[#E8854A]/30 flex flex-col gap-1"
+                  className="absolute left-1/2 -translate-x-1/2 mt-3.5 z-30 w-44 rounded-2xl border border-white/8 bg-[#0c0c0c]/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-[#E8854A]/30 flex flex-col gap-1"
                 >
                   {formOptions.map((o) => (
-                    <Button
+                    <button
                       type="button"
                       key={o}
                       onClick={() => {
                         setFormType(o);
                         setActiveDropdown(null);
                       }}
-                      className={`w-full rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all flex items-center justify-between tracking-wide leading-normal ${
-                        formType === o
+                      className={`w-full rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all flex items-center justify-between tracking-wide leading-normal ${formType === o
                           ? "bg-[#E8854A]/12 text-[#E8854A]"
-                          : "text-zinc-200 hover:bg-white/[0.06] hover:text-white"
-                      }`}
+                          : "text-zinc-200 hover:bg-white/6 hover:text-white"
+                        }`}
                     >
                       <span>{o} Form</span>
                       {formType === o && <Check className="size-3.5 text-[#E8854A]" />}
-                    </Button>
+                    </button>
                   ))}
                 </motion.div>
               )}
@@ -109,14 +108,14 @@ export function Hero() {
           </span>{" "}
           questionnaire that feels like {/* Feel Type Dropdown Trigger */}
           <span className="relative inline-block mx-1.5">
-            <Button
+            <button
               type="button"
               onClick={() => setActiveDropdown(activeDropdown === "feel" ? null : "feel")}
               className="inline-flex items-center gap-2 border-b-[3px] border-[#E8854A] pb-1 text-[#E8854A] hover:bg-[#E8854A]/5 px-3 py-0.5 rounded-xl transition-colors cursor-pointer outline-none tracking-normal font-semibold"
             >
               {feelType}
               <ChevronDown className="size-4 md:size-6 text-[#E8854A]/80 shrink-0" />
-            </Button>
+            </button>
 
             <AnimatePresence>
               {activeDropdown === "feel" && (
@@ -125,32 +124,31 @@ export function Hero() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-3.5 z-30 w-44 rounded-2xl border border-white/[0.08] bg-[#0c0c0c]/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-[#E8854A]/30 flex flex-col gap-1"
+                  className="absolute left-1/2 -translate-x-1/2 mt-3.5 z-30 w-44 rounded-2xl border border-white/8 bg-[#0c0c0c]/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-[#E8854A]/30 flex flex-col gap-1"
                 >
                   {feelOptions.map((o) => (
-                    <Button
+                    <button
                       type="button"
                       key={o}
                       onClick={() => {
                         setFeelType(o);
                         setActiveDropdown(null);
                       }}
-                      className={`w-full rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all flex items-center justify-between tracking-wide leading-normal ${
-                        feelType === o
+                      className={`w-full rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all flex items-center justify-between tracking-wide leading-normal ${feelType === o
                           ? "bg-[#E8854A]/12 text-[#E8854A]"
-                          : "text-zinc-200 hover:bg-white/[0.06] hover:text-white"
-                      }`}
+                          : "text-zinc-200 hover:bg-white/6 hover:text-white"
+                        }`}
                     >
                       <span>{o}</span>
                       {feelType === o && <Check className="size-3.5 text-[#E8854A]" />}
-                    </Button>
+                    </button>
                   ))}
                 </motion.div>
               )}
             </AnimatePresence>
           </span>{" "}
           to capture {/* Auto-moving animated text segment (banner style) */}
-          <span className="inline-block relative overflow-hidden h-[1.25em] align-middle px-3 border-b-[3px] border-dashed border-[#6B6B6B] min-w-[200px] sm:min-w-[260px] md:min-w-[290px] text-[#F2F2F2] font-semibold tracking-tight mx-1.5 pb-1 select-none">
+          <span className="inline-block relative overflow-hidden h-[1.25em] align-middle px-3 border-b-[3px] border-dashed border-[#6B6B6B] min-w-50 sm:min-w-65 md:min-w-72.5 text-[#F2F2F2] font-semibold tracking-tight mx-1.5 pb-1 select-none">
             <AnimatePresence mode="wait">
               <motion.span
                 key={captureInput}
@@ -252,7 +250,7 @@ export function Hero() {
                       <span>Completion rate</span>
                       <span className="text-emerald-400 font-semibold">+18.4%</span>
                     </div>
-                    <div className="h-2 w-full bg-white/[0.04] rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
+                    <div className="h-2 w-full bg-white/4 rounded-full overflow-hidden p-0.5 border border-white/4">
                       <div className="h-full w-[94%] bg-[#E8854A] rounded-full" />
                     </div>
                     <p className="text-[9px] text-zinc-500 font-mono">Completion vs drop-offs</p>
@@ -264,7 +262,7 @@ export function Hero() {
                         cx="24"
                         cy="24"
                         r="20"
-                        className="stroke-white/[0.04] fill-none"
+                        className="stroke-white/4 fill-none"
                         strokeWidth="3"
                       />
                       <circle
@@ -291,11 +289,11 @@ export function Hero() {
               span: "md:col-span-7",
               renderGraphic: () => (
                 <div className="mt-4 space-y-2.5 text-[10px]">
-                  <div className="flex justify-between border-b border-white/[0.04] pb-1.5 text-zinc-500 font-mono">
+                  <div className="flex justify-between border-b border-white/4 pb-1.5 text-zinc-500 font-mono">
                     <span>Telemetric fields</span>
                     <span className="text-zinc-400">Chrome SSR / Console Logs</span>
                   </div>
-                  <div className="flex justify-between border-b border-white/[0.04] pb-1.5 text-zinc-500 font-mono">
+                  <div className="flex justify-between border-b border-white/4 pb-1.5 text-zinc-500 font-mono">
                     <span>Validation rules</span>
                     <span className="text-red-400 bg-red-400/10 px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-semibold font-sans">
                       Strict
@@ -319,12 +317,12 @@ export function Hero() {
                     {["A", "M", "E", "S"].map((init, idx) => (
                       <div
                         key={idx}
-                        className="flex size-7 items-center justify-center rounded-full bg-[#E8854A]/20 text-[#E8854A] font-mono text-[9px] font-semibold border-[2px] border-[#111]"
+                        className="flex size-7 items-center justify-center rounded-full bg-[#E8854A]/20 text-[#E8854A] font-mono text-[9px] font-semibold border-2 border-[#111]"
                       >
                         {init}
                       </div>
                     ))}
-                    <div className="flex size-7 items-center justify-center rounded-full bg-white/[0.03] text-zinc-400 font-mono text-[8px] font-semibold border-[2px] border-[#111] leading-none">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-white/3 text-zinc-400 font-mono text-[8px] font-semibold border-2 border-[#111] leading-none">
                       +28
                     </div>
                   </div>
@@ -351,7 +349,7 @@ export function Hero() {
             return (
               <div
                 onMouseMove={handleMouseMove}
-                className={`${form.span} group relative cursor-default rounded-[1.75rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/[0.12] col-span-1`}
+                className={`${form.span} group relative cursor-default rounded-[1.75rem] bg-white/2 p-1.5 ring-1 ring-white/6 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/12 col-span-1`}
               >
                 {/* Spotlight border overlay — radial gradient follows cursor */}
                 <div
@@ -364,18 +362,17 @@ export function Hero() {
                 />
 
                 {/* Inner core */}
-                <div className="relative flex h-full min-h-[9rem] flex-col justify-between overflow-hidden rounded-[1.4rem] bg-[#111] p-5 border border-white/[0.02]">
+                <div className="relative flex h-full min-h-36 flex-col justify-between overflow-hidden rounded-[1.4rem] bg-[#111] p-5 border border-white/2">
                   {/* Header */}
-                  <div className="flex items-start justify-between gap-3 border-b border-white/[0.04] pb-3">
+                  <div className="flex items-start justify-between gap-3 border-b border-white/4 pb-3">
                     <h4 className="min-w-0 flex-1 truncate text-[13px] font-semibold text-white tracking-tight">
                       {form.title}
                     </h4>
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.08em] ${
-                        published
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.08em] ${published
                           ? "bg-[#E8854A]/12 text-[#E8854A]"
-                          : "bg-white/[0.06] text-[#6B6B6B]"
-                      }`}
+                          : "bg-white/6 text-[#6B6B6B]"
+                        }`}
                     >
                       {published ? (
                         <Globe className="size-2 text-[#E8854A]" />
@@ -398,23 +395,23 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring, delay: 0.3 }}
-              className="mt-16 w-full max-w-5xl rounded-3xl bg-white/[0.01] p-2 ring-1 ring-white/[0.06] relative shadow-2xl overflow-hidden"
+              className="mt-16 w-full max-w-5xl rounded-3xl bg-white/1 p-2 ring-1 ring-white/6 relative shadow-2xl overflow-hidden"
             >
               {/* Dynamic background lighting flares */}
               <div className="pointer-events-none absolute -left-1/4 -top-1/4 -z-10 h-96 w-96 rounded-full bg-[#E8854A]/8 blur-[100px] animate-pulse" />
               <div className="pointer-events-none absolute -right-1/4 -bottom-1/4 -z-10 h-96 w-96 rounded-full bg-orange-500/5 blur-[100px]" />
 
               {/* Dashboard Container Layout (Sidebar Removed) */}
-              <div className="rounded-[1.4rem] bg-[#090909] border border-white/[0.04] overflow-hidden text-left flex flex-col min-h-[460px]">
+              <div className="rounded-[1.4rem] bg-[#090909] border border-white/4 overflow-hidden text-left flex flex-col min-h-115">
                 {/* Elegant macOS-style Window Header */}
-                <div className="flex items-center justify-between border-b border-white/[0.05] bg-[#0c0c0c]/85 px-6 py-4">
+                <div className="flex items-center justify-between border-b border-white/5 bg-[#0c0c0c]/85 px-6 py-4">
                   <div className="flex items-center gap-2.5">
                     <div className="flex gap-1.5">
                       <span className="size-2 rounded-full bg-red-500/20 border border-red-500/30" />
                       <span className="size-2 rounded-full bg-yellow-500/20 border border-yellow-500/30" />
                       <span className="size-2 rounded-full bg-green-500/20 border border-green-500/30" />
                     </div>
-                    <span className="h-4 w-px bg-white/[0.08] mx-1" />
+                    <span className="h-4 w-px bg-white/8 mx-1" />
                     <span className="font-mono text-[10px] tracking-wider text-zinc-400 flex items-center gap-1.5">
                       <Globe className="size-3 text-[#E8854A] animate-pulse" />
                       visual-forms-dashboard
@@ -422,15 +419,14 @@ export function Hero() {
                   </div>
 
                   {/* Mock Dashboard Tabs */}
-                  <div className="flex gap-1.5 bg-white/[0.03] p-1 rounded-xl border border-white/[0.04]">
+                  <div className="flex gap-1.5 bg-white/3 p-1 rounded-xl border border-white/4">
                     {["All Forms", "Active", "Archived"].map((tab, idx) => (
                       <span
                         key={idx}
-                        className={`font-mono text-[9px] uppercase tracking-wider px-3 py-1 rounded-lg ${
-                          idx === 0
+                        className={`font-mono text-[9px] uppercase tracking-wider px-3 py-1 rounded-lg ${idx === 0
                             ? "bg-[#E8854A]/12 text-[#E8854A] font-semibold border border-[#E8854A]/20"
                             : "text-zinc-500"
-                        }`}
+                          }`}
                       >
                         {tab}
                       </span>
@@ -450,7 +446,7 @@ export function Hero() {
                         Interactive bento showcase of active form states
                       </p>
                     </div>
-                    <span className="font-mono text-[8px] bg-white/[0.03] text-emerald-400 ring-1 ring-emerald-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="font-mono text-[8px] bg-white/3 text-emerald-400 ring-1 ring-emerald-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
                       Sync Normal
                     </span>
                   </div>
@@ -463,7 +459,7 @@ export function Hero() {
                   </div>
 
                   {/* Footer System info */}
-                  <div className="border-t border-white/[0.04] pt-4 flex items-center justify-between text-[9px] text-zinc-500 font-mono">
+                  <div className="border-t border-white/4 pt-4 flex items-center justify-between text-[9px] text-zinc-500 font-mono">
                     <span>Performance: 98% Score</span>
                     <span className="flex items-center gap-1.5">
                       <span className="size-1.5 bg-emerald-500 rounded-full animate-pulse" />
