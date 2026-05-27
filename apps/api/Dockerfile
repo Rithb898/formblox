@@ -20,19 +20,20 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 COPY --from=installer /app/node_modules ./node_modules
+COPY --from=installer /app/apps ./apps
+COPY --from=installer /app/packages ./packages
 COPY --from=pruner /app/out/full/ .
-RUN pnpm turbo build --filter=@repo/api
+RUN pnpm turbo build --filter=@repo/api --no-tui
 
 # Production runner
 FROM base AS runner
 WORKDIR /app
-ENV NODE_ENV=production
+ENV NODE_ENV=prod
 
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 apiuser
 
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/dist ./dist
 COPY --from=builder --chown=apiuser:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=apiuser:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 
 USER apiuser
 EXPOSE 8123

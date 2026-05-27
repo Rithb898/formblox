@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+.turbo
+.git
+*.md
+plans
+docs
+apps/*/node_modules
+packages/*/node_modules
+apps/web/.next
+apps/api/dist

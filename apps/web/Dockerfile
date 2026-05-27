@@ -20,14 +20,16 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 COPY --from=installer /app/node_modules ./node_modules
+COPY --from=installer /app/apps ./apps
+COPY --from=installer /app/packages ./packages
 COPY --from=pruner /app/out/full/ .
 ENV SKIP_ENV_VALIDATION=1
-RUN pnpm turbo build --filter=web
+RUN pnpm turbo build --filter=web --no-tui
 
 # Production runner
 FROM base AS runner
 WORKDIR /app
-ENV NODE_ENV=production
+ENV NODE_ENV=prod
 
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
