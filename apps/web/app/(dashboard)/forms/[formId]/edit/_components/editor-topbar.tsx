@@ -133,7 +133,8 @@ export function EditorTopbar({
         continue;
       }
       if (f.type === "single_choice" || f.type === "multiple_choice") {
-        const options = (f.config.options as Array<{ id: string; label: string }> | undefined) ?? [];
+        const options =
+          (f.config.options as Array<{ id: string; label: string }> | undefined) ?? [];
         const filled = options.filter((o) => o.label?.trim());
         if (filled.length < 2) errors[f.id] = "Add at least 2 options";
       } else if (f.type === "rating") {
@@ -190,7 +191,7 @@ export function EditorTopbar({
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between rounded-2xl bg-white/[0.02] px-3 ring-1 ring-white/[0.06] backdrop-blur-xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
+    <header className="flex h-14 shrink-0 items-center justify-between rounded-2xl bg-white/2 px-3 ring-1 ring-white/6 backdrop-blur-xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
       {/* Back + Title */}
       <div className="flex min-w-0 items-center gap-2">
         <Tooltip>
@@ -199,7 +200,7 @@ export function EditorTopbar({
               variant="ghost"
               size="icon-sm"
               asChild
-              className="shrink-0 rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+              className="shrink-0 rounded-full text-[#6B6B6B] hover:bg-white/6 hover:text-[#F2F2F2]"
             >
               <a href="/forms" aria-label="Back to forms">
                 <ChevronLeft className="size-4" />
@@ -212,7 +213,7 @@ export function EditorTopbar({
           ref={titleRef}
           className={cn(
             "min-w-0 max-w-65 truncate rounded-lg bg-transparent px-2 py-1 text-sm font-medium tracking-tight text-[#F2F2F2] outline-none",
-            "ring-1 ring-transparent transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/[0.07] focus:bg-white/[0.03] focus:ring-[#E8854A]/60",
+            "ring-1 ring-transparent transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/7 focus:bg-white/3 focus:ring-[#E8854A]/60",
             "placeholder:text-[#6B6B6B]",
           )}
           value={formVersion?.title ?? ""}
@@ -248,7 +249,7 @@ export function EditorTopbar({
               variant="ghost"
               size="icon-sm"
               asChild
-              className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+              className="rounded-full text-[#6B6B6B] hover:bg-white/6 hover:text-[#F2F2F2]"
             >
               <a href={`/forms/${formId}/responses`} aria-label="View responses">
                 <Inbox className="size-4" />
@@ -264,7 +265,7 @@ export function EditorTopbar({
                 variant="ghost"
                 size="icon-sm"
                 asChild
-                className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+                className="rounded-full text-[#6B6B6B] hover:bg-white/6 hover:text-[#F2F2F2]"
               >
                 <a
                   href={`/f/${publicSlug}`}
@@ -300,10 +301,12 @@ export function EditorTopbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {visibility === "public" ? "Public — visible on explore page" : "Unlisted — only via direct link"}
+            {visibility === "public"
+              ? "Public — visible on explore page"
+              : "Unlisted — only via direct link"}
           </TooltipContent>
         </Tooltip>
-        <div className="mx-1 h-5 w-px bg-white/[0.07]" />
+        <div className="mx-1 h-5 w-px bg-white/7" />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -311,7 +314,7 @@ export function EditorTopbar({
               size="sm"
               onClick={save}
               disabled={!dirty || isSaving}
-              className="gap-1.5 rounded-full bg-white/[0.04] text-[#F2F2F2] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.08] disabled:opacity-40 active:scale-[0.98]"
+              className="gap-1.5 rounded-full bg-white/4 text-[#F2F2F2] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/8 disabled:opacity-40 active:scale-[0.98]\"
             >
               <Save className="size-3.5" />
               Save

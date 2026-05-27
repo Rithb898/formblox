@@ -14,7 +14,13 @@ import { emailService } from "@repo/services/email";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { buildResponseSchema } from "@repo/forms";
-import { rateLimit, withCache, invalidateKeys, invalidatePattern, CacheKeys } from "@repo/services/redis";
+import {
+  rateLimit,
+  withCache,
+  invalidateKeys,
+  invalidatePattern,
+  CacheKeys,
+} from "@repo/services/redis";
 import { z, zodUndefinedModel } from "../../schema";
 import { publicProcedure, router } from "../../trpc";
 import { publicFormSchema, followupInputSchema, exploreFormSchema } from "./model";
@@ -28,36 +34,36 @@ export const formsPublicRouter = router({
     .output(z.array(exploreFormSchema))
     .query(async () => {
       return withCache(CacheKeys.formsPublicList(), 300, async () => {
-      const rows = await db
-        .select({
-          id: formsTable.id,
-          publicSlug: formsTable.publicSlug,
-          title: formVersionsTable.title,
-          description: formVersionsTable.description,
-          publishedAt: formVersionsTable.publishedAt,
-          fieldCount: sql<number>`cast(count(distinct ${formFieldsTable.id}) as int)`,
-          responseCount: sql<number>`cast(count(distinct ${responsesTable.id}) as int)`,
-        })
-        .from(formsTable)
-        .innerJoin(
-          formVersionsTable,
-          and(
-            eq(formVersionsTable.formId, formsTable.id),
-            eq(formVersionsTable.status, "published"),
-          ),
-        )
-        .leftJoin(formFieldsTable, eq(formFieldsTable.formVersionId, formVersionsTable.id))
-        .leftJoin(
-          responsesTable,
-          and(
-            eq(responsesTable.formVersionId, formVersionsTable.id),
-            sql`${responsesTable.completedAt} is not null`,
-          ),
-        )
-        .where(and(eq(formsTable.visibility, "public"), sql`${formsTable.deletedAt} is null`))
-        .groupBy(formsTable.id, formVersionsTable.id);
+        const rows = await db
+          .select({
+            id: formsTable.id,
+            publicSlug: formsTable.publicSlug,
+            title: formVersionsTable.title,
+            description: formVersionsTable.description,
+            publishedAt: formVersionsTable.publishedAt,
+            fieldCount: sql<number>`cast(count(distinct ${formFieldsTable.id}) as int)`,
+            responseCount: sql<number>`cast(count(distinct ${responsesTable.id}) as int)`,
+          })
+          .from(formsTable)
+          .innerJoin(
+            formVersionsTable,
+            and(
+              eq(formVersionsTable.formId, formsTable.id),
+              eq(formVersionsTable.status, "published"),
+            ),
+          )
+          .leftJoin(formFieldsTable, eq(formFieldsTable.formVersionId, formVersionsTable.id))
+          .leftJoin(
+            responsesTable,
+            and(
+              eq(responsesTable.formVersionId, formVersionsTable.id),
+              sql`${responsesTable.completedAt} is not null`,
+            ),
+          )
+          .where(and(eq(formsTable.visibility, "public"), sql`${formsTable.deletedAt} is null`))
+          .groupBy(formsTable.id, formVersionsTable.id);
 
-      return rows;
+        return rows;
       });
     }),
 
@@ -67,41 +73,44 @@ export const formsPublicRouter = router({
     .output(publicFormSchema)
     .query(async ({ input }) => {
       return withCache(CacheKeys.formSlug(input.slug), 1800, async () => {
-      const [form] = await db
-        .select()
-        .from(formsTable)
-        .where(eq(formsTable.publicSlug, input.slug))
-        .limit(1);
+        const [form] = await db
+          .select()
+          .from(formsTable)
+          .where(eq(formsTable.publicSlug, input.slug))
+          .limit(1);
 
-      if (!form || form.deletedAt) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!form || form.deletedAt) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const [published] = await db
-        .select()
-        .from(formVersionsTable)
-        .where(
-          and(eq(formVersionsTable.formId, form.id), eq(formVersionsTable.status, "published")),
-        )
-        .limit(1);
+        const [published] = await db
+          .select()
+          .from(formVersionsTable)
+          .where(
+            and(eq(formVersionsTable.formId, form.id), eq(formVersionsTable.status, "published")),
+          )
+          .limit(1);
 
-      if (!published) throw new TRPCError({ code: "NOT_FOUND", message: "not_published" });
-      if (!form.isAcceptingResponses)
-        throw new TRPCError({ code: "FORBIDDEN", message: "not_accepting_responses" });
+        if (!published) throw new TRPCError({ code: "NOT_FOUND", message: "not_published" });
+        if (!form.isAcceptingResponses)
+          throw new TRPCError({ code: "FORBIDDEN", message: "not_accepting_responses" });
 
-      const fields = await db
-        .select()
-        .from(formFieldsTable)
-        .where(eq(formFieldsTable.formVersionId, published.id))
-        .orderBy(asc(formFieldsTable.order));
+        const fields = await db
+          .select()
+          .from(formFieldsTable)
+          .where(eq(formFieldsTable.formVersionId, published.id))
+          .orderBy(asc(formFieldsTable.order));
 
-      return {
-        form: {
-          id: form.id,
-          publicSlug: form.publicSlug,
-          isAcceptingResponses: form.isAcceptingResponses,
-        },
-        version: { id: published.id, title: published.title, description: published.description },
-        fields: fields.map((f) => ({ ...f, config: (f.config ?? {}) as Record<string, unknown> })),
-      };
+        return {
+          form: {
+            id: form.id,
+            publicSlug: form.publicSlug,
+            isAcceptingResponses: form.isAcceptingResponses,
+          },
+          version: { id: published.id, title: published.title, description: published.description },
+          fields: fields.map((f) => ({
+            ...f,
+            config: (f.config ?? {}) as Record<string, unknown>,
+          })),
+        };
       });
     }),
 

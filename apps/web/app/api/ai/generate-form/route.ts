@@ -22,7 +22,10 @@ const generatedFormSchema = z.object({
               .array(z.string())
               .nullable()
               .describe("For single_choice/multiple_choice: 3–5 short label strings"),
-            scale: z.union([z.literal(5), z.literal(10)]).nullable().describe("For rating: 5 or 10"),
+            scale: z
+              .union([z.literal(5), z.literal(10)])
+              .nullable()
+              .describe("For rating: 5 or 10"),
             style: z
               .union([z.literal("star"), z.literal("number")])
               .nullable()

@@ -97,7 +97,7 @@ function Avatar({ initial }: { initial: string }) {
 
 function AiAvatar() {
   return (
-    <div className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full border border-white/[0.08] bg-[#1E1E1E]">
+    <div className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full border border-white/8 bg-[#1E1E1E]">
       <Sparkles className="size-3.5 text-[#9B9B9B]" />
     </div>
   );
@@ -129,7 +129,7 @@ function QuestionBubble({
   return (
     <div className={cn("flex items-end gap-2.5 animate-bubble-in-left", faded && "opacity-60")}>
       <Avatar initial={initial} />
-      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
+      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-white/7 bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
         {field.label}
         {field.required && <span className="ml-1 text-[#E8854A]">*</span>}
       </div>
@@ -140,7 +140,7 @@ function QuestionBubble({
 function AnswerBubble({ text, faded }: { text: string; faded: boolean }) {
   return (
     <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
-      <div className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-br-sm bg-[#E8854A] px-4 py-3 text-[15px] leading-relaxed text-[#0a0a0a]">
+      <div className="max-w-[80%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm bg-[#E8854A] px-4 py-3 text-[15px] leading-relaxed text-[#0a0a0a]">
         {text || "—"}
       </div>
     </div>
@@ -151,7 +151,7 @@ function AiFollowUpBubble({ text, streaming = false }: { text: string; streaming
   return (
     <div className="flex animate-bubble-in-left items-end gap-2.5">
       <AiAvatar />
-      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3">
+      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-white/7 bg-[#141414] px-4 py-3">
         <span className="mb-1.5 flex items-center gap-1.5">
           <Sparkles className="size-3 text-[#6B6B6B]" />
           <span className="font-mono text-[10px] uppercase tracking-widest text-[#6B6B6B]">AI</span>
@@ -159,7 +159,7 @@ function AiFollowUpBubble({ text, streaming = false }: { text: string; streaming
         <p className="text-[15px] leading-relaxed text-[#F2F2F2]">
           {text}
           {streaming && (
-            <span className="ml-0.5 inline-block size-[3px] animate-pulse rounded-full bg-[#9B9B9B] align-middle" />
+            <span className="ml-0.5 inline-block size-0.75 animate-pulse rounded-full bg-[#9B9B9B] align-middle" />
           )}
         </p>
       </div>
@@ -179,7 +179,7 @@ function AiFollowUpAnswer({
   if (skipped) {
     return (
       <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
-        <span className="rounded-full border border-white/[0.07] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[#3A3A3A]">
+        <span className="rounded-full border border-white/7 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[#3A3A3A]">
           Skipped
         </span>
       </div>
@@ -187,7 +187,7 @@ function AiFollowUpAnswer({
   }
   return (
     <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
-      <div className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-br-sm border border-white/[0.07] bg-[#1A1A1A] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
+      <div className="max-w-[80%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm border border-white/7 bg-[#1A1A1A] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
         {text}
       </div>
     </div>
@@ -200,7 +200,7 @@ function SuccessState() {
       <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#E8854A]">
         <Check className="size-4 text-[#0a0a0a]" />
       </div>
-      <div className="rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
+      <div className="rounded-2xl rounded-bl-sm border border-white/7 bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
         Thanks — we got it.
       </div>
     </div>
@@ -211,7 +211,7 @@ function AllDoneState() {
   return (
     <div className="flex animate-bubble-in-left items-end gap-2.5">
       <AiAvatar />
-      <div className="rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
+      <div className="rounded-2xl rounded-bl-sm border border-white/7 bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
         That's all — thank you for sharing!
       </div>
     </div>
@@ -460,7 +460,9 @@ export function FormRunner({ slug, title, description, fields }: Props) {
       setSubmitted(true);
 
       // Determine if there are eligible follow-ups to show (use ref to avoid stale closure)
-      const eligible = ordered.filter((f) => isFollowupEligible(f) && aiFollowupsRef.current.has(f.id));
+      const eligible = ordered.filter(
+        (f) => isFollowupEligible(f) && aiFollowupsRef.current.has(f.id),
+      );
       if (eligible.length > 0) {
         setDebrief({ tag: "active", index: 0 });
       } else {
@@ -533,7 +535,7 @@ export function FormRunner({ slug, title, description, fields }: Props) {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-[#080808] text-[#F2F2F2]">
+    <div className="relative flex min-h-dvh flex-col bg-[#080808] text-[#F2F2F2]">
       {/* Radial glow */}
       <div
         aria-hidden="true"
@@ -544,12 +546,12 @@ export function FormRunner({ slug, title, description, fields }: Props) {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#080808]/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-white/6 bg-[#080808]/70 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-5 py-3.5">
           <h1 className="truncate text-sm font-semibold tracking-tight text-[#F2F2F2]">{title}</h1>
           <span className="shrink-0 font-mono text-xs text-[#6B6B6B]">{counter}</span>
         </div>
-        <div className="h-[2px] w-full bg-white/[0.04]">
+        <div className="h-0.5 w-full bg-white/4">
           <div
             className="h-full bg-[#E8854A] transition-[width] duration-500 ease-out"
             style={{ width: `${progressPct}%` }}
@@ -650,7 +652,8 @@ export function FormRunner({ slug, title, description, fields }: Props) {
             </div>
           )}
 
-          {debrief.tag === "done" && (eligibleFollowupFields.length > 0 ? <AllDoneState /> : <SuccessState />)}
+          {debrief.tag === "done" &&
+            (eligibleFollowupFields.length > 0 ? <AllDoneState /> : <SuccessState />)}
 
           <div ref={threadEndRef} className={debrief.tag === "done" ? "pb-16" : ""} />
         </div>
@@ -658,7 +661,7 @@ export function FormRunner({ slug, title, description, fields }: Props) {
 
       {/* Form reply footer */}
       {showFormFooter && (
-        <footer className="sticky bottom-0 z-20 border-t border-white/[0.06] bg-[#080808]/80 backdrop-blur-xl">
+        <footer className="sticky bottom-0 z-20 border-t border-white/6 bg-[#080808]/80 backdrop-blur-xl">
           <div className="mx-auto w-full max-w-2xl px-5 py-4">
             {fieldError && (
               <p role="alert" className="mb-2 text-xs font-medium text-[#E8854A]">
@@ -678,11 +681,13 @@ export function FormRunner({ slug, title, description, fields }: Props) {
 
       {/* Debrief reply footer */}
       {showDebriefFooter && currentDebriefField && (
-        <footer className="sticky bottom-0 z-20 border-t border-white/[0.06] bg-[#080808]/80 backdrop-blur-xl">
+        <footer className="sticky bottom-0 z-20 border-t border-white/6 bg-[#080808]/80 backdrop-blur-xl">
           <div className="mx-auto w-full max-w-2xl px-5 py-4">
             <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[#6B6B6B]">
               <Sparkles className="size-3" />
-              AI follow-up · {String(debrief.tag === "active" ? debrief.index + 1 : 1).padStart(2, "0")} / {String(eligibleFollowupFields.length).padStart(2, "0")}
+              AI follow-up ·{" "}
+              {String(debrief.tag === "active" ? debrief.index + 1 : 1).padStart(2, "0")} /{" "}
+              {String(eligibleFollowupFields.length).padStart(2, "0")}
             </p>
             <FollowupReplyArea
               key={currentDebriefField.id}
@@ -696,7 +701,7 @@ export function FormRunner({ slug, title, description, fields }: Props) {
 
       {/* Waiting on AI to finish streaming before showing debrief input */}
       {debrief.tag === "active" && waitingOnAi && (
-        <footer className="sticky bottom-0 z-20 border-t border-white/[0.06] bg-[#080808]/80 backdrop-blur-xl">
+        <footer className="sticky bottom-0 z-20 border-t border-white/6 bg-[#080808]/80 backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-5 py-4">
             <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
               <Loader2 className="size-3.5 animate-spin" />
@@ -706,7 +711,7 @@ export function FormRunner({ slug, title, description, fields }: Props) {
               <Button
                 type="button"
                 onClick={() => void handleDebriefAnswer(currentDebriefField.id, null)}
-                className="cursor-pointer rounded-full border border-white/[0.08] px-3 py-1.5 text-xs text-[#6B6B6B] transition-colors hover:border-white/20 hover:text-[#F2F2F2]"
+                className="cursor-pointer rounded-full border border-white/8 px-3 py-1.5 text-xs text-[#6B6B6B] transition-colors hover:border-white/20 hover:text-[#F2F2F2]"
               >
                 Skip
               </Button>
@@ -800,13 +805,13 @@ function FollowupReplyArea({
         rows={1}
         autoFocus
         disabled={pending}
-        className="max-h-32 min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#141414] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50"
+        className="max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/8 bg-[#141414] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50"
       />
       <Button
         type="button"
         onClick={onSkip}
         disabled={pending}
-        className="cursor-pointer shrink-0 rounded-full border border-white/[0.08] px-3 py-2 text-xs text-[#6B6B6B] transition-all hover:border-white/20 hover:text-[#F2F2F2] disabled:opacity-40"
+        className="cursor-pointer shrink-0 rounded-full border border-white/8 px-3 py-2 text-xs text-[#6B6B6B] transition-all hover:border-white/20 hover:text-[#F2F2F2] disabled:opacity-40"
       >
         Skip
       </Button>
@@ -890,7 +895,7 @@ function TextReply({
         disabled={disabled}
         autoComplete="off"
         aria-required={field.required}
-        className={cn(TEXT_INPUT_CLASS, "[color-scheme:dark]")}
+        className={cn(TEXT_INPUT_CLASS, "scheme-dark")}
       />
       <SendButton disabled={disabled} />
     </form>
@@ -942,7 +947,7 @@ function LongTextReply({
         rows={1}
         disabled={disabled}
         aria-required={field.required}
-        className="max-h-32 min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#141414] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50"
+        className="max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/8 bg-[#141414] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50"
       />
       <SendButton disabled={disabled} />
     </form>
@@ -966,7 +971,7 @@ function SingleChoiceReply({
           key={opt.id}
           disabled={disabled}
           onClick={() => onSubmit(opt.id)}
-          className="cursor-pointer rounded-full border border-[#E8854A]/40 bg-[#E8854A]/[0.06] px-4 py-2 text-sm text-[#F2F2F2] transition-all hover:border-[#E8854A] hover:bg-[#E8854A]/15 disabled:cursor-not-allowed disabled:opacity-40"
+          className="cursor-pointer rounded-full border border-[#E8854A]/40 bg-[#E8854A]/6 px-4 py-2 text-sm text-[#F2F2F2] transition-all hover:border-[#E8854A] hover:bg-[#E8854A]/15 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {opt.label}
         </Button>
@@ -1012,7 +1017,7 @@ function MultipleChoiceReply({
                 "cursor-pointer rounded-full border px-4 py-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40",
                 on
                   ? "border-[#E8854A] bg-[#E8854A] text-[#0a0a0a]"
-                  : "border-[#E8854A]/40 bg-[#E8854A]/[0.06] text-[#F2F2F2] hover:border-[#E8854A] hover:bg-[#E8854A]/15",
+                  : "border-[#E8854A]/40 bg-[#E8854A]/6 text-[#F2F2F2] hover:border-[#E8854A] hover:bg-[#E8854A]/15",
               )}
             >
               {opt.label}
@@ -1021,7 +1026,10 @@ function MultipleChoiceReply({
         })}
       </div>
       <div className="flex justify-end">
-        <SendButton disabled={disabled || (field.required && selected.length === 0)} pending={pending} />
+        <SendButton
+          disabled={disabled || (field.required && selected.length === 0)}
+          pending={pending}
+        />
       </div>
     </form>
   );
@@ -1056,7 +1064,7 @@ function RatingReply({
               "flex size-11 cursor-pointer items-center justify-center rounded-xl border transition-all disabled:cursor-not-allowed disabled:opacity-40",
               active
                 ? "border-[#E8854A] bg-[#E8854A]/15 text-[#E8854A]"
-                : "border-white/[0.08] bg-[#141414] text-[#6B6B6B] hover:border-[#E8854A]/50",
+                : "border-white/8 bg-[#141414] text-[#6B6B6B] hover:border-[#E8854A]/50",
             )}
           >
             {style === "star" ? (

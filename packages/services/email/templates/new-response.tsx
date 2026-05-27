@@ -1,13 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Body, Container, Head, Heading, Html, Link, Preview, Text } from "@react-email/components";
 
 interface NewResponseEmailProps {
   formTitle: string;

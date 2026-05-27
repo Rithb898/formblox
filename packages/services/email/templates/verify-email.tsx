@@ -1,13 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Body, Container, Head, Heading, Html, Link, Preview, Text } from "@react-email/components";
 
 interface VerifyEmailProps {
   link: string;
@@ -22,8 +13,8 @@ export function VerifyEmail({ link }: VerifyEmailProps) {
         <Container style={container}>
           <Heading style={h1}>Verify your email</Heading>
           <Text style={text}>
-            Thanks for signing up! Click the button below to verify your email
-            address and get started.
+            Thanks for signing up! Click the button below to verify your email address and get
+            started.
           </Text>
           <Text style={text}>This link expires in 24 hours.</Text>
           <Link href={link} style={button}>

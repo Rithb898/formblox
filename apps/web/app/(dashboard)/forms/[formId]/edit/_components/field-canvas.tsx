@@ -17,10 +17,10 @@ export function FieldCanvas() {
       ref={setNodeRef}
       className={cn(
         "flex flex-1 flex-col overflow-y-auto bg-[#080808] transition-colors duration-150",
-        isOver && "bg-[#E8854A]/[0.03]",
+        isOver && "bg-[#E8854A]/3",
       )}
     >
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] px-6">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/7 px-6">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#6B6B6B]">
           Canvas
         </span>
@@ -39,7 +39,7 @@ export function FieldCanvas() {
               isOver && "opacity-60",
             )}
           >
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-white/2 ring-1 ring-white/6">
               <LayoutGrid className="size-5 text-[#6B6B6B]" />
             </div>
             <p className="text-sm text-[#6B6B6B]">Add a field from the left to get started</p>

@@ -12,7 +12,6 @@ import {
   CreditCard,
   HelpCircle,
   Settings,
-  ExternalLink,
   Copy,
   Check,
 } from "lucide-react";
@@ -88,8 +87,6 @@ function DashboardSidebarContent() {
   const utils = trpc.useUtils();
 
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  const [billingOpen, setBillingOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("");
 
   const updateWorkspace = trpc.workspaces.update.useMutation({
@@ -113,24 +110,8 @@ function DashboardSidebarContent() {
   const navItems = [
     { href: "/forms", label: "Forms", icon: LayoutGrid },
     { href: "/explore", label: "Explore", icon: Compass },
-    {
-      href: "#billing",
-      label: "Plan & Billing",
-      icon: CreditCard,
-      onClick: (e: React.MouseEvent) => {
-        e.preventDefault();
-        setBillingOpen(true);
-      },
-    },
-    {
-      href: "#help",
-      label: "Help & Support",
-      icon: HelpCircle,
-      onClick: (e: React.MouseEvent) => {
-        e.preventDefault();
-        setHelpOpen(true);
-      },
-    },
+    { href: "/billing", label: "Plan & Billing", icon: CreditCard },
+    { href: "/help", label: "Help & Support", icon: HelpCircle },
   ];
 
   return (
@@ -139,7 +120,13 @@ function DashboardSidebarContent() {
       <SidebarHeader className="p-0">
         {/* Wordmark logo */}
         <div className="flex h-14 items-center border-b border-zinc-900/60 px-5 shrink-0">
-          <Image src="/logo.png" alt="FormBlox" width={100} height={25} className="object-contain" />
+          <Image
+            src="/logo.png"
+            alt="FormBlox"
+            width={100}
+            height={25}
+            className="object-contain"
+          />
         </div>
 
         {/* Workspace selector */}
@@ -182,8 +169,8 @@ function DashboardSidebarContent() {
       {/* Content scroll area */}
       <CossSidebarContent className="p-3 gap-1 overflow-y-auto">
         <SidebarMenu className="gap-1">
-          {navItems.map(({ href, label, icon: Icon, onClick }) => {
-            const active = !onClick && pathname.startsWith(href);
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const active = pathname.startsWith(href);
             const content = (
               <>
                 {active && (
@@ -207,18 +194,9 @@ function DashboardSidebarContent() {
 
             return (
               <SidebarMenuItem key={href}>
-                {onClick ? (
-                  <SidebarMenuButton
-                    onClick={onClick}
-                    className={cn(itemClassName, "w-full text-left cursor-pointer")}
-                  >
-                    {content}
-                  </SidebarMenuButton>
-                ) : (
-                  <SidebarMenuButton render={<Link href={href} />} className={itemClassName}>
-                    {content}
-                  </SidebarMenuButton>
-                )}
+                <SidebarMenuButton render={<Link href={href} />} className={itemClassName}>
+                  {content}
+                </SidebarMenuButton>
               </SidebarMenuItem>
             );
           })}
@@ -297,7 +275,10 @@ function DashboardSidebarContent() {
           <div className="space-y-5 px-6 py-5">
             {/* Name field */}
             <div className="space-y-2">
-              <label htmlFor="wName" className="text-[11px] font-mono text-zinc-500 uppercase tracking-widest">
+              <label
+                htmlFor="wName"
+                className="text-[11px] font-mono text-zinc-500 uppercase tracking-widest"
+              >
                 Workspace Name
               </label>
               <Input
@@ -306,7 +287,10 @@ function DashboardSidebarContent() {
                 onChange={(e) => setWorkspaceName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && isDirty && !updateWorkspace.isPending) {
-                    updateWorkspace.mutate({ workspaceId: workspace!.id, name: workspaceName.trim() });
+                    updateWorkspace.mutate({
+                      workspaceId: workspace!.id,
+                      name: workspaceName.trim(),
+                    });
                   }
                 }}
                 placeholder="Enter workspace name"
@@ -317,7 +301,9 @@ function DashboardSidebarContent() {
             {/* Info rows */}
             <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 divide-y divide-zinc-800/60 overflow-hidden">
               <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Workspace ID</span>
+                <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                  Workspace ID
+                </span>
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono text-[11px] text-zinc-400 truncate max-w-35">
                     {workspace?.id ?? "—"}
@@ -326,7 +312,9 @@ function DashboardSidebarContent() {
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Created</span>
+                <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                  Created
+                </span>
                 <span className="font-mono text-[11px] text-zinc-400">
                   {workspace?.createdAt
                     ? new Date(workspace.createdAt).toLocaleDateString("en-US", {
@@ -365,133 +353,6 @@ function DashboardSidebarContent() {
                 "Save changes"
               )}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Billing & Plan Limits Dialog */}
-      <Dialog open={billingOpen} onOpenChange={setBillingOpen}>
-        <DialogContent className="sm:max-w-md bg-[#0a0a0a] border-white/5 text-[#F2F2F2]">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold tracking-tight text-[#F2F2F2]">
-              Plan & Billing
-            </DialogTitle>
-            <DialogDescription className="text-sm text-[#6B6B6B]">
-              Manage your subscription and monitor active usage limits.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-5 py-4">
-            <div className="relative overflow-hidden rounded-xl border border-[#E8854A]/20 bg-linear-to-r from-[#E8854A]/5 to-[#E8854A]/12 p-4">
-              <div className="absolute right-3 top-3 rounded-full bg-[#E8854A]/20 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#E8854A]">
-                Active
-              </div>
-              <span className="text-[10px] font-mono text-[#E8854A] uppercase tracking-widest font-semibold">
-                Current plan
-              </span>
-              <h4 className="mt-1 text-2xl font-bold tracking-tight text-[#F2F2F2]">
-                Free Beta Plan
-              </h4>
-              <p className="mt-1 text-xs text-[#6B6B6B]">
-                Enjoy all premium features free during our public beta.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <span className="text-[10px] font-mono text-[#6B6B6B] uppercase tracking-widest font-semibold block">
-                Usage limits
-              </span>
-              {[
-                { label: "Forms Created", value: "3 / 5 forms", pct: 60 },
-                { label: "Monthly Submissions", value: "55 / 1,000", pct: 5.5 },
-                { label: "AI Summary Credits", value: "8 / 10 runs", pct: 80 },
-              ].map(({ label, value, pct }) => (
-                <div key={label} className="space-y-1.5">
-                  <div className="flex justify-between text-xs text-[#6B6B6B]">
-                    <span>{label}</span>
-                    <span className="font-mono text-[#F2F2F2] font-medium">{value}</span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-white/4 overflow-hidden">
-                    <div className="h-full rounded-full bg-[#E8854A]" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:justify-between items-center">
-            <span className="text-[10px] font-mono text-[#6B6B6B]">Next renewal: June 2026</span>
-            <Button
-              type="button"
-              onClick={() => {
-                setBillingOpen(false);
-                window.open("/#pricing", "_blank");
-              }}
-              className="w-full sm:w-auto bg-linear-to-r from-[#E8854A] to-[#f39c59] hover:opacity-90 text-xs font-semibold text-[#0a0a0a] transition-all duration-300 shadow-[0_0_12px_rgba(232,133,74,0.2)]"
-            >
-              Upgrade to Pro
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Help & Support Dialog */}
-      <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
-        <DialogContent className="sm:max-w-md bg-[#0a0a0a] border-white/5 text-[#F2F2F2]">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold tracking-tight text-[#F2F2F2]">
-              Help & Support
-            </DialogTitle>
-            <DialogDescription className="text-sm text-[#6B6B6B]">
-              Need help? Search our FAQs or contact support.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4 max-h-75 overflow-y-auto pr-1">
-            {[
-              {
-                q: "How do I publish a form?",
-                a: (
-                  <>
-                    In the form editor, click the{" "}
-                    <strong className="text-[#E8854A]">Publish</strong> button in the topbar. Once
-                    published, your form is live and accessible via its public link.
-                  </>
-                ),
-              },
-              {
-                q: "What are unlisted forms?",
-                a: "Unlisted forms are published but hidden from the explore templates page. Only people with the direct link can view and submit them.",
-              },
-              {
-                q: "Can I use AI to analyze responses?",
-                a: (
-                  <>
-                    Yes! Inside any form&apos;s responses panel, go to the{" "}
-                    <strong className="text-[#E8854A]">Summary</strong> tab to let our AI build
-                    streaming synthesis summaries of your responses.
-                  </>
-                ),
-              },
-            ].map(({ q, a }) => (
-              <div key={q} className="rounded-xl border border-white/5 bg-white/2 p-3 space-y-1">
-                <h5 className="text-xs font-semibold text-[#F2F2F2]">{q}</h5>
-                <p className="text-xs text-[#6B6B6B]">{a}</p>
-              </div>
-            ))}
-          </div>
-          <DialogFooter className="gap-2 sm:justify-between items-center">
-            <a
-              href="mailto:support@formblox.com"
-              className="text-xs text-[#E8854A] hover:underline flex items-center gap-1"
-            >
-              support@formblox.com <ExternalLink className="size-3" />
-            </a>
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-white/10 text-xs hover:bg-white/4 hover:text-[#F2F2F2]"
-              >
-                Close
-              </Button>
-            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>

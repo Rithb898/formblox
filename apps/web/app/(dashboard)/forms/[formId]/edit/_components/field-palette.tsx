@@ -142,16 +142,16 @@ function PaletteItem({
       onClick={handleAdd}
       style={{ animationDelay: `${(groupIndex * 3 + typeIndex) * 35}ms` }}
       className={cn(
-        "group flex w-full animate-fade-up items-center justify-start gap-2.5 rounded-full bg-white/[0.02] px-2.5 py-2 text-left ring-1 ring-white/[0.06]",
+        "group flex w-full animate-fade-up items-center justify-start gap-2.5 rounded-full bg-white/2 px-2.5 py-2 text-left ring-1 ring-white/6",
         "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-        "hover:bg-white/[0.05] hover:ring-[#E8854A]/30",
+        "hover:bg-white/5 hover:ring-[#E8854A]/30",
         "active:scale-[0.98]",
         isDragging && "opacity-40",
       )}
       {...attributes}
       {...listeners}
     >
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.03] text-[#6B6B6B] ring-1 ring-white/[0.06] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:bg-[#E8854A]/10 group-hover:text-[#E8854A] group-hover:ring-[#E8854A]/30">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/3 text-[#6B6B6B] ring-1 ring-white/6 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:bg-[#E8854A]/10 group-hover:text-[#E8854A] group-hover:ring-[#E8854A]/30">
         <Icon className="size-3.5" />
       </span>
       <span className="min-w-0 truncate font-mono text-[12px] text-[#F2F2F2]">{label}</span>
@@ -161,8 +161,8 @@ function PaletteItem({
 
 export function FieldPalette() {
   return (
-    <aside className="flex h-full w-[220px] shrink-0 flex-col border-r border-white/[0.07] bg-[#0d0d0d]">
-      <div className="flex h-14 shrink-0 items-center border-b border-white/[0.07] px-4">
+    <aside className="flex h-full w-55 shrink-0 flex-col border-r border-white/7 bg-[#0d0d0d]">
+      <div className="flex h-14 shrink-0 items-center border-b border-white/7 px-4">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#6B6B6B]">
           Fields
         </span>

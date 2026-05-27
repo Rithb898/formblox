@@ -1,13 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Body, Container, Head, Heading, Html, Link, Preview, Text } from "@react-email/components";
 
 interface ResetPasswordProps {
   link: string;
@@ -22,8 +13,8 @@ export function ResetPassword({ link }: ResetPasswordProps) {
         <Container style={container}>
           <Heading style={h1}>Reset your password</Heading>
           <Text style={text}>
-            Someone requested a password reset for your account. Click the
-            button below to set a new password.
+            Someone requested a password reset for your account. Click the button below to set a new
+            password.
           </Text>
           <Text style={text}>This link expires in 1 hour.</Text>
           <Text style={text}>

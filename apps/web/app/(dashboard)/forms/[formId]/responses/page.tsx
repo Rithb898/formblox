@@ -62,23 +62,27 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
       <div className="flex flex-1 overflow-hidden">
         {q.isPending ? (
           <div className="flex w-full">
-            <div className="w-full shrink-0 border-r border-white/[0.07] p-3 lg:w-[300px]">
+            <div className="w-full shrink-0 border-r border-white/7 p-3 lg:w-75">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="mb-2 rounded-xl p-4" style={{ animationDelay: `${i * 60}ms` }}>
+                <div
+                  key={i}
+                  className="mb-2 rounded-xl p-4"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
                   <div className="mb-3 flex items-center gap-2">
-                    <div className="h-5 w-5 animate-shimmer rounded-md bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
-                    <div className="h-2.5 w-16 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                    <div className="h-5 w-5 animate-shimmer rounded-md bg-linear-to-r from-white/4 via-white/8 to-white/4 bg-size-[200%_100%]" />
+                    <div className="h-2.5 w-16 animate-shimmer rounded bg-linear-to-r from-white/4 via-white/8 to-white/4 bg-size-[200%_100%]" />
                   </div>
-                  <div className="h-3 w-3/4 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                  <div className="h-3 w-3/4 animate-shimmer rounded bg-linear-to-r from-white/4 via-white/8 to-white/4 bg-size-[200%_100%]" />
                 </div>
               ))}
             </div>
             <div className="flex-1 p-8">
               <div className="space-y-6">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-white/[0.06] p-5 space-y-3">
-                    <div className="h-2.5 w-32 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
-                    <div className="h-4 w-2/3 animate-shimmer rounded bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
+                  <div key={i} className="rounded-2xl border border-white/6 p-5 space-y-3">
+                    <div className="h-2.5 w-32 animate-shimmer rounded bg-linear-to-r from-white/4 via-white/8 to-white/4 bg-size-[200%_100%]" />
+                    <div className="h-4 w-2/3 animate-shimmer rounded bg-linear-to-r from-white/4 via-white/8 to-white/4 bg-size-[200%_100%]" />
                   </div>
                 ))}
               </div>
@@ -90,7 +94,9 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
               <Inbox className="size-6 text-[#3A3A3A]" />
             </div>
             <div className="space-y-1.5">
-              <p className="text-2xl font-semibold tracking-tight text-[#3A3A3A]">No responses yet</p>
+              <p className="text-2xl font-semibold tracking-tight text-[#3A3A3A]">
+                No responses yet
+              </p>
               <p className="text-xs text-[#6B6B6B]">
                 Responses will appear here once people submit your form
               </p>
@@ -101,8 +107,8 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
             {/* LEFT — master list */}
             <div
               className={cn(
-                "shrink-0 overflow-y-auto border-white/[0.07] p-3",
-                "lg:w-[300px] lg:border-r",
+                "shrink-0 overflow-y-auto border-white/7 p-3",
+                "lg:w-75 lg:border-r",
                 selectedId ? "hidden lg:block" : "block w-full",
               )}
             >
@@ -120,26 +126,28 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                     style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}
                     className={cn(
                       "animate-fade-up group relative mb-1.5 w-full rounded-xl px-4 py-3.5 text-left transition-all duration-200",
-                      isSelected
-                        ? "bg-white/[0.06] ring-1 ring-white/[0.1]"
-                        : "hover:bg-white/[0.03]",
+                      isSelected ? "bg-white/6 ring-1 ring-white/10" : "hover:bg-white/3",
                     )}
                   >
                     {/* Index + timestamp row */}
                     <div className="mb-2 flex items-center justify-between">
-                      <div className={cn(
-                        "flex items-center justify-center rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold transition-colors duration-200",
-                        isSelected
-                          ? "bg-[#E8854A]/20 text-[#E8854A]"
-                          : "bg-white/[0.05] text-[#4A4A4A] group-hover:text-[#6B6B6B]",
-                      )}>
+                      <div
+                        className={cn(
+                          "flex items-center justify-center rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold transition-colors duration-200",
+                          isSelected
+                            ? "bg-[#E8854A]/20 text-[#E8854A]"
+                            : "bg-white/5 text-[#4A4A4A] group-hover:text-[#6B6B6B]",
+                        )}
+                      >
                         #{idx}
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="size-2.5 text-[#4A4A4A]" />
                         <span className="font-mono text-[10px] text-[#4A4A4A]">
                           {response.completedAt
-                            ? formatDistanceToNow(new Date(response.completedAt), { addSuffix: true })
+                            ? formatDistanceToNow(new Date(response.completedAt), {
+                                addSuffix: true,
+                              })
                             : "—"}
                         </span>
                       </div>
@@ -147,10 +155,14 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
 
                     {/* Preview */}
                     {preview ? (
-                      <p className={cn(
-                        "truncate text-xs leading-relaxed transition-colors duration-200",
-                        isSelected ? "text-[#D4D4D4]" : "text-[#6B6B6B] group-hover:text-[#9B9B9B]",
-                      )}>
+                      <p
+                        className={cn(
+                          "truncate text-xs leading-relaxed transition-colors duration-200",
+                          isSelected
+                            ? "text-[#D4D4D4]"
+                            : "text-[#6B6B6B] group-hover:text-[#9B9B9B]",
+                        )}
+                      >
                         {preview}
                       </p>
                     ) : (
@@ -193,10 +205,10 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                       <div className="flex items-center gap-1.5">
                         <Hash className="size-3 text-[#4A4A4A]" />
                         <span className="font-mono text-xs font-semibold text-[#6B6B6B]">
-                          {responses.length - responses.findIndex(r => r.id === selected.id)}
+                          {responses.length - responses.findIndex((r) => r.id === selected.id)}
                         </span>
                       </div>
-                      <div className="h-3 w-px bg-white/[0.1]" />
+                      <div className="h-3 w-px bg-white/10" />
                       <div className="flex items-center gap-1.5">
                         <Clock className="size-3 text-[#4A4A4A]" />
                         <span className="font-mono text-xs text-[#6B6B6B]">
@@ -217,11 +229,11 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                       return (
                         <div
                           key={col.fieldId}
-                          className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-colors duration-200 hover:border-white/[0.1] hover:bg-white/[0.03]"
+                          className="group rounded-2xl border border-white/6 bg-white/2 p-5 transition-colors duration-200 hover:border-white/10 hover:bg-white/3"
                         >
                           {/* Question label */}
                           <p className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4A4A4A]">
-                            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-white/[0.05] font-mono text-[9px] text-[#3A3A3A]">
+                            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-white/5 font-mono text-[9px] text-[#3A3A3A]">
                               {idx + 1}
                             </span>
                             {col.label}
@@ -229,7 +241,7 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
 
                           {/* Answer value */}
                           {value ? (
-                            <p className="break-words text-sm leading-relaxed text-[#E8E8E8]">
+                            <p className="wrap-break-word text-sm leading-relaxed text-[#E8E8E8]">
                               {value}
                             </p>
                           ) : (
@@ -238,7 +250,7 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
 
                           {/* AI followup */}
                           {answer?.followup && (
-                            <div className="mt-4 rounded-xl border border-[#7C3AED]/20 bg-[#7C3AED]/[0.05] p-4">
+                            <div className="mt-4 rounded-xl border border-[#7C3AED]/20 bg-[#7C3AED]/5 p-4">
                               <div className="mb-2 flex items-center gap-1.5">
                                 <Sparkles className="size-3 text-[#9B6DFF]" aria-hidden="true" />
                                 <span className="font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[#7C5CBF]">
@@ -249,7 +261,7 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                                 {answer.followup.aiQuestion}
                               </p>
                               {answer.followup.userAnswer ? (
-                                <p className="break-words text-sm leading-relaxed text-[#E8E8E8]">
+                                <p className="wrap-break-word text-sm leading-relaxed text-[#E8E8E8]">
                                   {answer.followup.userAnswer}
                                 </p>
                               ) : (

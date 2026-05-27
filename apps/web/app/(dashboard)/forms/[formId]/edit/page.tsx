@@ -95,8 +95,8 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
   if (draftQuery.isPending || formQuery.isPending) {
     return (
       <div className="flex h-full flex-col bg-[#080808]">
-        <div className="m-3 flex h-14 shrink-0 items-center rounded-2xl bg-white/[0.02] px-5 ring-1 ring-white/[0.06]">
-          <div className="h-4 w-40 animate-shimmer rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.10] to-white/[0.04] bg-[length:200%_100%]" />
+        <div className="m-3 flex h-14 shrink-0 items-center rounded-2xl bg-white/2 px-5 ring-1 ring-white/6">
+          <div className="h-4 w-40 animate-shimmer rounded-full bg-linear-to-r from-white/4 via-white/10 to-white/4 bg-size-[200%_100%]" />
         </div>
         <div className="flex flex-1 items-center justify-center">
           <Loader2 className="size-5 animate-spin text-[#6B6B6B]" />
@@ -108,7 +108,7 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
   if (draftQuery.isError || formQuery.isError) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 bg-[#080808]">
-        <div className="flex size-12 items-center justify-center rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]">
+        <div className="flex size-12 items-center justify-center rounded-2xl bg-white/2 ring-1 ring-white/6">
           <AlertCircle className="size-5 text-[#E8854A]" />
         </div>
         <p className="text-sm text-[#6B6B6B]">Failed to load form</p>
@@ -130,33 +130,35 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="mt-3 flex flex-1 overflow-hidden rounded-2xl ring-1 ring-white/[0.06]">
+          <div className="mt-3 flex flex-1 overflow-hidden rounded-2xl ring-1 ring-white/6">
             <FieldPalette />
             <FieldCanvas />
             <PropertyPanel />
           </div>
           <DragOverlay dropAnimation={null}>
-            {activeId?.startsWith("palette::") ? (() => {
-              const type = activeId.replace("palette::", "");
-              const item = FIELD_GROUPS.flatMap((g) => g.types).find((t) => t.type === type);
-              if (!item) return null;
-              const Icon = item.icon;
-              return (
-                <div className="flex w-[196px] items-center gap-2.5 rounded-full bg-[#1a1a1a] px-2.5 py-2 opacity-90 shadow-lg shadow-black/50 ring-1 ring-[#E8854A]/40">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#E8854A]/10 text-[#E8854A] ring-1 ring-[#E8854A]/30">
-                    <Icon className="size-3.5" />
-                  </span>
-                  <span className="font-mono text-[12px] text-[#F2F2F2]">{item.label}</span>
-                </div>
-              );
-            })() : null}
+            {activeId?.startsWith("palette::")
+              ? (() => {
+                  const type = activeId.replace("palette::", "");
+                  const item = FIELD_GROUPS.flatMap((g) => g.types).find((t) => t.type === type);
+                  if (!item) return null;
+                  const Icon = item.icon;
+                  return (
+                    <div className="flex w-49 items-center gap-2.5 rounded-full bg-[#1a1a1a] px-2.5 py-2 opacity-90 shadow-lg shadow-black/50 ring-1 ring-[#E8854A]/40">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#E8854A]/10 text-[#E8854A] ring-1 ring-[#E8854A]/30">
+                        <Icon className="size-3.5" />
+                      </span>
+                      <span className="font-mono text-[12px] text-[#F2F2F2]">{item.label}</span>
+                    </div>
+                  );
+                })()
+              : null}
           </DragOverlay>
         </DndContext>
       </div>
 
       {/* Mobile / tablet fallback */}
       <div className="flex h-full flex-col items-center justify-center gap-5 text-center lg:hidden">
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-white/2 ring-1 ring-white/6">
           <Monitor className="size-6 text-[#6B6B6B]" />
         </div>
         <div className="space-y-2">
@@ -167,7 +169,11 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
             The form editor isn&apos;t supported on small screens.
           </p>
         </div>
-        <Button variant="link" asChild className="text-sm text-[#E8854A] underline-offset-4 hover:underline">
+        <Button
+          variant="link"
+          asChild
+          className="text-sm text-[#E8854A] underline-offset-4 hover:underline"
+        >
           <Link href="/forms">Back to forms</Link>
         </Button>
       </div>
