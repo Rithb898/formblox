@@ -18,7 +18,13 @@ export function Hero() {
   const feelOptions = ["a chat", "a quiz", "an interview"] as const;
 
   // Auto-scrolling horizontal text banner for the last text segment
-  const captureOptions = ["lead emails", "user feedback", "bug reports", "onboarding data", "customer reviews"] as const;
+  const captureOptions = [
+    "lead emails",
+    "user feedback",
+    "bug reports",
+    "onboarding data",
+    "customer reviews",
+  ] as const;
   const [captureIndex, setCaptureIndex] = useState(0);
 
   useEffect(() => {
@@ -31,7 +37,7 @@ export function Hero() {
   const captureInput = captureOptions[captureIndex]!;
 
   return (
-    <motion.section 
+    <motion.section
       id="preview"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -58,9 +64,7 @@ export function Hero() {
           transition={{ ...spring, delay: 0.15 }}
           className="mt-10 max-w-5xl text-3xl font-semibold leading-[1.6] tracking-tight text-[#F2F2F2] sm:text-5xl md:text-6xl select-none"
         >
-          I want to build a{" "}
-          
-          {/* Form Type Dropdown Trigger */}
+          I want to build a {/* Form Type Dropdown Trigger */}
           <span className="relative inline-block mx-1.5">
             <button
               onClick={() => setActiveDropdown(activeDropdown === "form" ? null : "form")}
@@ -100,9 +104,7 @@ export function Hero() {
               )}
             </AnimatePresence>
           </span>{" "}
-          questionnaire that feels like{" "}
-
-          {/* Feel Type Dropdown Trigger */}
+          questionnaire that feels like {/* Feel Type Dropdown Trigger */}
           <span className="relative inline-block mx-1.5">
             <button
               onClick={() => setActiveDropdown(activeDropdown === "feel" ? null : "feel")}
@@ -142,9 +144,7 @@ export function Hero() {
               )}
             </AnimatePresence>
           </span>{" "}
-          to capture{" "}
-
-          {/* Auto-moving animated text segment (banner style) */}
+          to capture {/* Auto-moving animated text segment (banner style) */}
           <span className="inline-block relative overflow-hidden h-[1.25em] align-middle px-3 border-b-[3px] border-dashed border-[#6B6B6B] min-w-[200px] sm:min-w-[260px] md:min-w-[290px] text-[#F2F2F2] font-semibold tracking-tight mx-1.5 pb-1 select-none">
             <AnimatePresence mode="wait">
               <motion.span
@@ -169,7 +169,8 @@ export function Hero() {
           transition={{ ...spring, delay: 0.2 }}
           className="mt-6 max-w-xl text-base leading-relaxed text-[#6B6B6B] sm:text-lg"
         >
-          FormBlox automatically morphs custom input configurations into luxury micro-animations tailored to your exact brand feel.
+          FormBlox automatically morphs custom input configurations into luxury micro-animations
+          tailored to your exact brand feel.
         </motion.p>
 
         {/* Animated CTA Button */}
@@ -208,7 +209,10 @@ export function Hero() {
                     </span>
                   </div>
                   {/* Premium visual SVG sparkline chart */}
-                  <svg className="w-full h-14 text-[#E8854A] overflow-visible mt-2" viewBox="0 0 100 30">
+                  <svg
+                    className="w-full h-14 text-[#E8854A] overflow-visible mt-2"
+                    viewBox="0 0 100 30"
+                  >
                     <defs>
                       <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#E8854A" stopOpacity="0.22" />
@@ -251,10 +255,27 @@ export function Hero() {
                   {/* Radial progress ring */}
                   <div className="relative size-12 shrink-0">
                     <svg className="size-full -rotate-90">
-                      <circle cx="24" cy="24" r="20" className="stroke-white/[0.04] fill-none" strokeWidth="3" />
-                      <circle cx="24" cy="24" r="20" className="stroke-[#E8854A] fill-none" strokeWidth="3" strokeDasharray="125" strokeDashoffset="12" strokeLinecap="round" />
+                      <circle
+                        cx="24"
+                        cy="24"
+                        r="20"
+                        className="stroke-white/[0.04] fill-none"
+                        strokeWidth="3"
+                      />
+                      <circle
+                        cx="24"
+                        cy="24"
+                        r="20"
+                        className="stroke-[#E8854A] fill-none"
+                        strokeWidth="3"
+                        strokeDasharray="125"
+                        strokeDashoffset="12"
+                        strokeLinecap="round"
+                      />
                     </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-semibold text-white">94%</div>
+                    <div className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-semibold text-white">
+                      94%
+                    </div>
                   </div>
                 </div>
               ),
@@ -271,7 +292,9 @@ export function Hero() {
                   </div>
                   <div className="flex justify-between border-b border-white/[0.04] pb-1.5 text-zinc-500 font-mono">
                     <span>Validation rules</span>
-                    <span className="text-red-400 bg-red-400/10 px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-semibold font-sans">Strict</span>
+                    <span className="text-red-400 bg-red-400/10 px-2 py-0.5 rounded text-[8px] uppercase tracking-wider font-semibold font-sans">
+                      Strict
+                    </span>
                   </div>
                   <div className="flex justify-between text-zinc-500 font-mono">
                     <span>Submissions</span>
@@ -289,7 +312,10 @@ export function Hero() {
                   {/* Glassmorphic user avatars overlapping stack */}
                   <div className="flex -space-x-2.5 overflow-hidden">
                     {["A", "M", "E", "S"].map((init, idx) => (
-                      <div key={idx} className="flex size-7 items-center justify-center rounded-full bg-[#E8854A]/20 text-[#E8854A] font-mono text-[9px] font-semibold border-[2px] border-[#111]">
+                      <div
+                        key={idx}
+                        className="flex size-7 items-center justify-center rounded-full bg-[#E8854A]/20 text-[#E8854A] font-mono text-[9px] font-semibold border-[2px] border-[#111]"
+                      >
                         {init}
                       </div>
                     ))}
@@ -298,7 +324,9 @@ export function Hero() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[8px] text-zinc-500 font-mono uppercase tracking-widest leading-none mb-1">Total submissions</p>
+                    <p className="text-[8px] text-zinc-500 font-mono uppercase tracking-widest leading-none mb-1">
+                      Total submissions
+                    </p>
                     <p className="text-sm font-semibold text-white">482 responses</p>
                   </div>
                 </div>
@@ -339,10 +367,16 @@ export function Hero() {
                     </h4>
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.08em] ${
-                        published ? "bg-[#E8854A]/12 text-[#E8854A]" : "bg-white/[0.06] text-[#6B6B6B]"
+                        published
+                          ? "bg-[#E8854A]/12 text-[#E8854A]"
+                          : "bg-white/[0.06] text-[#6B6B6B]"
                       }`}
                     >
-                      {published ? <Globe className="size-2 text-[#E8854A]" /> : <FileText className="size-2" />}
+                      {published ? (
+                        <Globe className="size-2 text-[#E8854A]" />
+                      ) : (
+                        <FileText className="size-2" />
+                      )}
                       {form.status}
                     </span>
                   </div>
@@ -367,7 +401,6 @@ export function Hero() {
 
               {/* Dashboard Container Layout (Sidebar Removed) */}
               <div className="rounded-[1.4rem] bg-[#090909] border border-white/[0.04] overflow-hidden text-left flex flex-col min-h-[460px]">
-                
                 {/* Elegant macOS-style Window Header */}
                 <div className="flex items-center justify-between border-b border-white/[0.05] bg-[#0c0c0c]/85 px-6 py-4">
                   <div className="flex items-center gap-2.5">
@@ -405,10 +438,16 @@ export function Hero() {
                   {/* Inner Header */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-white">Visual Response Workspace</h3>
-                      <p className="text-[10px] text-zinc-500 font-mono">Interactive bento showcase of active form states</p>
+                      <h3 className="text-base font-semibold text-white">
+                        Visual Response Workspace
+                      </h3>
+                      <p className="text-[10px] text-zinc-500 font-mono">
+                        Interactive bento showcase of active form states
+                      </p>
                     </div>
-                    <span className="font-mono text-[8px] bg-white/[0.03] text-emerald-400 ring-1 ring-emerald-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Sync Normal</span>
+                    <span className="font-mono text-[8px] bg-white/[0.03] text-emerald-400 ring-1 ring-emerald-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      Sync Normal
+                    </span>
                   </div>
 
                   {/* Bento Cards Grid */}
@@ -427,7 +466,6 @@ export function Hero() {
                     </span>
                   </div>
                 </div>
-
               </div>
             </motion.div>
           );

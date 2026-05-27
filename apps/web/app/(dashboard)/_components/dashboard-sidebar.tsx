@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { LayoutGrid, LogOut, ChevronsUpDown, Loader2, Menu } from "lucide-react";
 import { trpc } from "~/trpc/client";
 import { useAuthStore } from "~/stores/auth";
@@ -18,7 +19,12 @@ import { Sheet, SheetTrigger, SheetContent } from "~/components/ui/sheet";
 import { Button } from "~/components/ui/button";
 
 function getInitials(name: string) {
-  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 function SidebarContent() {
@@ -27,18 +33,13 @@ function SidebarContent() {
   const workspacesQuery = trpc.workspaces.listMine.useQuery(undefined);
   const workspace = workspacesQuery.data?.[0];
 
-  const navItems = [
-    { href: "/forms", label: "Forms", icon: LayoutGrid },
-  ];
+  const navItems = [{ href: "/forms", label: "Forms", icon: LayoutGrid }];
 
   return (
     <>
       {/* Wordmark */}
-      <div className="flex h-14 items-center gap-2 border-b border-white/[0.07] px-4">
-        <div className="size-2 shrink-0 rounded-full bg-[#E8854A]" />
-        <span className="text-sm font-semibold tracking-tight text-[#F2F2F2]">
-          FormBlox
-        </span>
+      <div className="flex h-14 items-center border-b border-white/[0.07] px-4">
+        <Image src="/logo.png" alt="FormBlox" width={100} height={25} className="object-contain" />
       </div>
 
       {/* Workspace header */}
@@ -72,7 +73,7 @@ function SidebarContent() {
                 "relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 active
                   ? "bg-[#E8854A]/12 font-medium text-[#E8854A]"
-                  : "text-[#6B6B6B] hover:bg-white/[0.04] hover:text-[#F2F2F2]",
+                  : "text-[#6B6B6B] hover:bg-white/4 hover:text-[#F2F2F2]",
               )}
             >
               {active && (
@@ -90,9 +91,9 @@ function SidebarContent() {
         <div className="border-t border-white/[0.07] p-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.04]">
+              <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/4">
                 <Avatar className="size-7 shrink-0">
-                  <AvatarFallback className="bg-white/[0.06] text-xs text-[#F2F2F2]">
+                  <AvatarFallback className="bg-white/6 text-xs text-[#F2F2F2]">
                     {getInitials(user.fullName)}
                   </AvatarFallback>
                 </Avatar>
@@ -108,10 +109,7 @@ function SidebarContent() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="top" className="w-48">
-              <DropdownMenuItem
-                className="text-red-400 focus:text-red-400"
-                onClick={logout}
-              >
+              <DropdownMenuItem className="text-red-400 focus:text-red-400" onClick={logout}>
                 <LogOut className="size-4" />
                 Sign out
               </DropdownMenuItem>
@@ -136,16 +134,13 @@ export function MobileNav() {
 
   return (
     <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0d0d0d] px-4 lg:hidden">
-      <div className="flex items-center gap-2">
-        <div className="size-2 shrink-0 rounded-full bg-[#E8854A]" />
-        <span className="text-sm font-semibold tracking-tight text-[#F2F2F2]">FormBlox</span>
-      </div>
+      <Image src="/logo.png" alt="FormBlox" width={100} height={25} className="object-contain" />
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+            className="text-[#6B6B6B] hover:bg-white/6 hover:text-[#F2F2F2]"
             aria-label="Open navigation"
           >
             <Menu className="size-5" />

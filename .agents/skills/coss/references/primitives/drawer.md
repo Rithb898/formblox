@@ -47,7 +47,7 @@ import {
   DrawerMenuTrigger,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
 ```
 
 ## Minimal pattern
@@ -85,9 +85,7 @@ Drawer with handle:
       <DrawerTitle>Edit Profile</DrawerTitle>
       <DrawerDescription>Make changes to your profile here.</DrawerDescription>
     </DrawerHeader>
-    <DrawerPanel>
-      {/* Form content */}
-    </DrawerPanel>
+    <DrawerPanel>{/* Form content */}</DrawerPanel>
     <DrawerFooter>
       <Button>Save</Button>
       <DrawerClose render={<Button variant="ghost" />}>Cancel</DrawerClose>

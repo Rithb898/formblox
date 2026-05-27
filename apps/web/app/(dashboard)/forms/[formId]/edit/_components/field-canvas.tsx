@@ -55,12 +55,14 @@ export function FieldCanvas() {
             <div className="flex size-12 items-center justify-center rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]">
               <LayoutGrid className="size-5 text-[#6B6B6B]" />
             </div>
-            <p className="text-sm text-[#6B6B6B]">
-              Add a field from the left to get started
-            </p>
+            <p className="text-sm text-[#6B6B6B]">Add a field from the left to get started</p>
           </div>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
             <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
               <div className="flex flex-col gap-2.5">
                 {fields.map((field, i) => (

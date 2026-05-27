@@ -20,15 +20,18 @@ const items = [
   },
   {
     question: "Can I embed forms on my website?",
-    answer: "You can share a public link that opens in a dedicated page. Embed support is on the roadmap.",
+    answer:
+      "You can share a public link that opens in a dedicated page. Embed support is on the roadmap.",
   },
   {
     question: "Is there a free tier?",
-    answer: "FormBlox is free during the beta. Pricing will be announced before any paid plans launch.",
+    answer:
+      "FormBlox is free during the beta. Pricing will be announced before any paid plans launch.",
   },
   {
     question: "Can I export responses to CSV?",
-    answer: "Direct CSV and JSON export are scheduled on our immediate features roadmap. You can view and manage all submissions in real-time within your Responses dashboard.",
+    answer:
+      "Direct CSV and JSON export are scheduled on our immediate features roadmap. You can view and manage all submissions in real-time within your Responses dashboard.",
   },
 ];
 
@@ -114,9 +117,7 @@ export function LandingFaq() {
       <div className="mx-auto max-w-3xl">
         <ScrollReveal>
           <div className="mb-10 text-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8854A]">
-              FAQ
-            </p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8854A]">FAQ</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tighter text-[#F2F2F2] sm:text-4xl">
               Frequently Asked Questions.
             </h2>

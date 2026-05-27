@@ -64,7 +64,10 @@ function VerifyEmailContent() {
             )}
             {isError && (
               <span className="flex size-12 items-center justify-center rounded-full bg-destructive/10 ring-1 ring-destructive/20">
-                <IconAlertCircle className="size-6 text-destructive-foreground" aria-hidden="true" />
+                <IconAlertCircle
+                  className="size-6 text-destructive-foreground"
+                  aria-hidden="true"
+                />
               </span>
             )}
           </div>

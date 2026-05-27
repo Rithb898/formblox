@@ -41,9 +41,7 @@ export const fieldConfigSchemas = {
   rating: z.object({
     scale: z.union([z.literal(5), z.literal(10)]),
     style: z.union([z.literal("star"), z.literal("number")]),
-    labels: z
-      .object({ min: z.string(), max: z.string() })
-      .optional(),
+    labels: z.object({ min: z.string(), max: z.string() }).optional(),
   }),
 
   date: z.object({

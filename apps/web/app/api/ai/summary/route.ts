@@ -5,11 +5,13 @@ import { aiModel, SUMMARY_SYSTEM_PROMPT } from "~/lib/ai";
 const bodySchema = z.object({
   formTitle: z.string(),
   responseCount: z.number().int().positive(),
-  fields: z.array(z.object({
-    label: z.string(),
-    type: z.string(),
-    summary: z.string(),
-  })),
+  fields: z.array(
+    z.object({
+      label: z.string(),
+      type: z.string(),
+      summary: z.string(),
+    }),
+  ),
 });
 
 export async function POST(req: Request) {

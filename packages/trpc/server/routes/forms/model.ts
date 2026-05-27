@@ -7,7 +7,9 @@ export const fieldOutputSchema = z.object({
   type: fieldTypeSchema.describe("Field type (e.g. short_text, long_text)"),
   label: z.string().describe("Question label shown to respondents"),
   required: z.boolean().describe("Whether the field must be answered before submitting"),
-  config: z.record(z.string(), z.unknown()).describe("Type-specific configuration (e.g. min/max length, choices)"),
+  config: z
+    .record(z.string(), z.unknown())
+    .describe("Type-specific configuration (e.g. min/max length, choices)"),
 });
 
 export const fieldInputSchema = z.object({
@@ -44,7 +46,9 @@ export const formWithVersionSchema = z.object({
   workspaceId: z.string().describe("Owning workspace UUID"),
   publicSlug: z.string().describe("URL-safe slug used in the public form link"),
   isAcceptingResponses: z.boolean().describe("Whether the form is open for new responses"),
-  visibility: z.enum(["public", "unlisted"]).describe("public = appears in explore; unlisted = link-only"),
+  visibility: z
+    .enum(["public", "unlisted"])
+    .describe("public = appears in explore; unlisted = link-only"),
   deletedAt: z.date().nullable().describe("Soft-delete timestamp; null if not deleted"),
   createdAt: z.date().describe("When the form was created"),
   version: versionSummarySchema.describe("Current draft version metadata"),
@@ -60,16 +64,20 @@ export const formListItemSchema = z.object({
 });
 
 export const publicFormSchema = z.object({
-  form: z.object({
-    id: z.string().describe("Form UUID"),
-    publicSlug: z.string().describe("Public URL slug"),
-    isAcceptingResponses: z.boolean().describe("Whether new responses are accepted"),
-  }).describe("Form metadata"),
-  version: z.object({
-    id: z.string().describe("Published version UUID"),
-    title: z.string().describe("Form title"),
-    description: z.string().nullable().describe("Optional form description"),
-  }).describe("Published version metadata"),
+  form: z
+    .object({
+      id: z.string().describe("Form UUID"),
+      publicSlug: z.string().describe("Public URL slug"),
+      isAcceptingResponses: z.boolean().describe("Whether new responses are accepted"),
+    })
+    .describe("Form metadata"),
+  version: z
+    .object({
+      id: z.string().describe("Published version UUID"),
+      title: z.string().describe("Form title"),
+      description: z.string().nullable().describe("Optional form description"),
+    })
+    .describe("Published version metadata"),
   fields: z.array(fieldOutputSchema).describe("Ordered list of form fields"),
 });
 
@@ -78,10 +86,13 @@ export const responseAnswerSchema = z.object({
   label: z.string().describe("Question label from the response's own version"),
   type: z.string().describe("Field type (e.g. short_text, long_text)"),
   value: z.unknown().describe("The submitted answer value"),
-  followup: z.object({
-    aiQuestion: z.string(),
-    userAnswer: z.string().nullable(),
-  }).nullable().describe("AI follow-up Q&A for this answer, if any"),
+  followup: z
+    .object({
+      aiQuestion: z.string(),
+      userAnswer: z.string().nullable(),
+    })
+    .nullable()
+    .describe("AI follow-up Q&A for this answer, if any"),
 });
 
 export const responseListItemSchema = z.object({

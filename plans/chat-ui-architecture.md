@@ -1,4 +1,5 @@
 # FormBlox — Chat UI Architecture
+
 > Vibe: **Ethereal Glass / AI-Native**  
 > Layout: **Editorial Split** (runner) + **Asymmetric Bento** (dashboard)  
 > Motion: **Spring Physics** throughout — no linear easing ever
@@ -8,6 +9,7 @@
 ## 1. Design System
 
 ### Palette
+
 ```
 Background:   #080808  (OLED near-black — NOT pure black)
 Surface:      #111111  (card base)
@@ -21,6 +23,7 @@ Text-ghost:   #3A3A3A
 ```
 
 ### Typography
+
 - **Display / Brand:** `Geist` — `tracking-tighter`, `leading-none`
 - **UI / Labels:** `Geist` regular — `tracking-normal`
 - **Mono / Data:** `Geist Mono` — response counts, IDs, timestamps
@@ -28,6 +31,7 @@ Text-ghost:   #3A3A3A
 - NO Inter. NO Helvetica.
 
 ### Motion Spec
+
 - **Spring:** `stiffness: 120, damping: 22` — all interactive elements
 - **Entry:** `translateY(16px) + blur(6px) + opacity(0)` → resolved over `700ms`
 - **Easing:** `cubic-bezier(0.32, 0.72, 0, 1)` for all CSS transitions
@@ -35,6 +39,7 @@ Text-ghost:   #3A3A3A
 - No element appears without entering
 
 ### Double-Bezel Rule (all cards)
+
 ```
 Outer shell: bg-white/[0.03] + ring-1 ring-white/[0.06] + p-1.5 + rounded-[2rem]
 Inner core:  bg-[#111111] + shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] + rounded-[calc(2rem-6px)]
@@ -45,16 +50,18 @@ Inner core:  bg-[#111111] + shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] + ro
 ## 2. Screen Inventory
 
 ### Screen A — Landing `/`
+
 **Purpose:** Communicate the wedge in 3 seconds: "Forms that think."
 
 **Layout:** Asymmetric Editorial Split
+
 ```
 LEFT (55%)                      RIGHT (45%)
 ─────────────────────────────   ──────────────────────────────
 Eyebrow pill: "AI-native forms" Live animated chat preview
                                 (the form runner in miniature,
 H1 (massive, left-aligned):     running a fake form loop)
-"Forms that                     
+"Forms that
  ask back."                     No screenshot. No mockup.
                                 Actual interactive demo.
 Sub (max 2 lines):
@@ -65,7 +72,7 @@ CTA pill-button:
 [ Start building → ]
 
 Social proof micro-row:
-"47 forms created this hour"    
+"47 forms created this hour"
 (Geist Mono, text-ghost)
 ```
 
@@ -100,6 +107,7 @@ BENTO GRID
 ```
 
 **Form Card anatomy (Double-Bezel):**
+
 - Outer shell wraps everything
 - Inner: Title (Geist medium), muted meta line (Geist Mono), status pill
 - Status pill: amber for DRAFT, white/10 for PUBLISHED
@@ -107,6 +115,7 @@ BENTO GRID
 - Hover action row slides up from bottom of card with staggered icon buttons
 
 **Empty state:**
+
 - Centered within grid area
 - Large ghost text: "No forms yet"
 - Dashed amber border box with `+ Create your first form` CTA
@@ -141,6 +150,7 @@ TOPBAR (floating glass pill, NOT full-width sticky)
 ```
 
 **Canvas card anatomy:**
+
 - Q-number in Geist Mono, text-ghost (Q1, Q2...)
 - Field type micro-icon (Phosphor Light, 14px)
 - Label text or "(Untitled)" in ghost
@@ -148,7 +158,7 @@ TOPBAR (floating glass pill, NOT full-width sticky)
 
 ---
 
-### Screen D — Form Runner `/f/:slug`  ← THE KEY SCREEN
+### Screen D — Form Runner `/f/:slug` ← THE KEY SCREEN
 
 **Concept:** The form IS a chat. The brand/form is the left-side entity. The user is the right-side entity.
 
@@ -163,28 +173,28 @@ TOPBAR (floating glass pill, NOT full-width sticky)
 
   CHAT THREAD (scrollable)
   ─────────────────────────────────────────────
-  
+
   [Form avatar — amber circle, initial]
   ┌──────────────────────────────┐
   │  "What's your name?"         │   ← QUESTION BUBBLE
   └──────────────────────────────┘
-  
+
                     [User bubble]
                     ┌────────────────────────┐
                     │  "Rithb"               │  ← ANSWER BUBBLE
                     └────────────────────────┘
-  
+
   [Form avatar]
   ┌──────────────────────────────┐
   │  "How satisfied are you      │
   │   with our product?"         │
   └──────────────────────────────┘
-  
+
   [AI follow-up — subtle amber indicator]
   ┌──────────────────────────────┐
   │  "Tell me more about that."  │   ← AI FOLLOW-UP BUBBLE
   └──────────────────────────────┘    (slightly different bg)
-  
+
   ─────────────────────────────────────────────
   REPLY AREA (sticky bottom)
   ┌──────────────────────────────────────────┐
@@ -194,23 +204,28 @@ TOPBAR (floating glass pill, NOT full-width sticky)
 ```
 
 **Question bubble style:**
+
 - Left-aligned, max-w-md
 - Double-bezel card in Surface color
 - Form avatar: 28px amber circle, form initial, Geist Mono
 
 **Answer bubble style:**
+
 - Right-aligned, max-w-xs
 - Solid amber background, dark text
 - No avatar
 
 **AI follow-up bubble:**
+
 - Left-aligned, distinct — Surface-2 bg, amber left-border 2px, amber "AI" eyebrow tag
 
 **Typing indicator:**
+
 - Three dots in a bubble, spring bounce animation (staggered per dot)
 - Appears before each new question bubble enters
 
 **Reply area by field type:**
+
 ```
 text / long_text  →  single/multi line input, send on Enter or button
 single_choice     →  horizontal pill options, tap to select → auto-advance
@@ -221,6 +236,7 @@ date              →  native date input, styled
 ```
 
 **Bubble entry animation:**
+
 - Slides in from left (form) or right (user), `translateX(20px) opacity(0)` → resolved
 - Spring: `stiffness: 160, damping: 26`
 - User bubble: immediate; form bubble: 400ms delay (simulates "thinking")
@@ -230,19 +246,21 @@ date              →  native date input, styled
 ### Screen E — Response Viewer `/forms/[id]/responses`
 
 **Layout:** Two-column split
+
 ```
 LEFT (320px sidebar)           RIGHT (flex-1)
 ─────────────────────────────  ──────────────────────────────
 Response list                  Selected response — chat replay
-(Geist Mono timestamps)        
+(Geist Mono timestamps)
                                Shows the exact chat thread
 Hover: amber left-bar          as it happened, read-only
-                               
+
 Filter/search bar at top       AI Summary tab at top
                                (Claude summary of all responses)
 ```
 
 **AI Summary tab:**
+
 - Full-width card, amber eyebrow: "AI Summary"
 - Paragraph prose from Claude, not bullet points
 - "Generated from 47 responses" in Geist Mono below
@@ -298,6 +316,7 @@ App Shell
 ## 4. Interaction Choreography
 
 ### Form Runner Flow (happy path)
+
 ```
 1. Page loads
    → Header fades in (translateY entry)
@@ -326,6 +345,7 @@ App Shell
 ```
 
 ### Editor DnD
+
 ```
 - Drag field from palette → canvas: card materializes with spring drop
 - Reorder on canvas: layoutId transition (Framer Motion layout prop)
@@ -334,6 +354,7 @@ App Shell
 ```
 
 ### Dashboard Form Card
+
 ```
 - Hover: spotlight border (CSS @property animation from cursor)
 - Hover: action row slides up (translateY from bottom, staggered per icon)
@@ -344,25 +365,25 @@ App Shell
 
 ## 5. What Makes It Different from Typeform/Tally
 
-| Axis | Typeform | Tally | FormBlox |
-|---|---|---|---|
-| UX metaphor | Slide carousel | Standard form | **Chat thread** |
-| AI | None | None | **Follow-up + Summary + Generate** |
-| Aesthetic | Light, corporate | Notion-minimal | **Ethereal glass, amber, cinematic** |
-| Form history | Hidden | Hidden | **Visible chat history in thread** |
-| Response view | Table | Table | **Chat replay of each response** |
-| Color | Blue | Black/white | **Warm amber on near-black** |
+| Axis          | Typeform         | Tally          | FormBlox                             |
+| ------------- | ---------------- | -------------- | ------------------------------------ |
+| UX metaphor   | Slide carousel   | Standard form  | **Chat thread**                      |
+| AI            | None             | None           | **Follow-up + Summary + Generate**   |
+| Aesthetic     | Light, corporate | Notion-minimal | **Ethereal glass, amber, cinematic** |
+| Form history  | Hidden           | Hidden         | **Visible chat history in thread**   |
+| Response view | Table            | Table          | **Chat replay of each response**     |
+| Color         | Blue             | Black/white    | **Warm amber on near-black**         |
 
 ---
 
 ## 6. Open Questions Before Building
 
 - [ ] Does the chat thread show all previous Q+A or only current question?  
-  → Recommend: show history, faded (opacity-60) — feels more like iMessage
+      → Recommend: show history, faded (opacity-60) — feels more like iMessage
 - [ ] AI follow-up: blocking (must answer before next Q) or skippable?  
-  → Recommend: skippable ("Skip →" ghost button)
+      → Recommend: skippable ("Skip →" ghost button)
 - [ ] Form avatar: form's custom logo upload or auto-generated initial?  
-  → Start with initial, add upload in Slice 8 (themes)
+      → Start with initial, add upload in Slice 8 (themes)
 - [ ] Mobile: single-column chat is naturally mobile-first — no layout change needed
 - [ ] Reply area height: fixed or expands with textarea content?  
-  → Expand, max-h-32, then scroll within
+      → Expand, max-h-32, then scroll within

@@ -55,7 +55,8 @@ export function FinalCta() {
               Start building in 60 seconds.
             </h2>
             <p className="mx-auto mt-4 max-w-md text-[14px] leading-relaxed text-[#8E8E93]">
-              Experience conversational UI that captures deeper answers. Get started with our 3-Pane Editor and AI features today.
+              Experience conversational UI that captures deeper answers. Get started with our 3-Pane
+              Editor and AI features today.
             </p>
 
             <div className="mt-8 flex justify-center">

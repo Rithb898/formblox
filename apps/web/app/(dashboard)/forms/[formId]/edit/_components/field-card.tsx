@@ -2,7 +2,18 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, Type, AlignLeft, Mail, Hash, CircleDot, SquareCheck, Star, Calendar } from "lucide-react";
+import {
+  GripVertical,
+  Trash2,
+  Type,
+  AlignLeft,
+  Mail,
+  Hash,
+  CircleDot,
+  SquareCheck,
+  Star,
+  Calendar,
+} from "lucide-react";
 import { useFormEditorStore } from "~/stores/form-editor";
 import type { EditorField } from "~/stores/form-editor";
 import { cn } from "~/lib/utils";
@@ -49,9 +60,7 @@ export function FieldCard({ field, index = 0 }: { field: EditorField; index?: nu
       )}
     >
       {/* Q-number */}
-      <span className="shrink-0 font-mono text-[11px] text-[#6B6B6B]">
-        Q{index + 1}
-      </span>
+      <span className="shrink-0 font-mono text-[11px] text-[#6B6B6B]">Q{index + 1}</span>
 
       {/* Drag handle */}
       <button

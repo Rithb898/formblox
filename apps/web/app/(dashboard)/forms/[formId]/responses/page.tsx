@@ -38,8 +38,7 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
   const responses = q.data ?? [];
   const count = responses.length;
 
-  const selected =
-    responses.find((r) => r.id === selectedId) ?? responses[0] ?? null;
+  const selected = responses.find((r) => r.id === selectedId) ?? responses[0] ?? null;
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[#080808] text-[#F2F2F2]">
@@ -207,7 +206,10 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                               {answer.followup && (
                                 <div className="mt-3 rounded-xl border border-[#7C3AED]/20 bg-[#7C3AED]/[0.06] p-3">
                                   <div className="mb-1.5 flex items-center gap-1.5">
-                                    <Sparkles className="size-3 text-[#7C3AED]" aria-hidden="true" />
+                                    <Sparkles
+                                      className="size-3 text-[#7C3AED]"
+                                      aria-hidden="true"
+                                    />
                                     <span className="font-mono text-[10px] uppercase tracking-wider text-[#7C3AED]">
                                       AI asked
                                     </span>

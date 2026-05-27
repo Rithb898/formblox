@@ -15,7 +15,9 @@ export const workspaceMembersTable = pgTable(
     role: varchar("role", { length: 20 }).notNull().default("owner"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (table) => [uniqueIndex("workspace_members_workspace_user_idx").on(table.workspaceId, table.userId)],
+  (table) => [
+    uniqueIndex("workspace_members_workspace_user_idx").on(table.workspaceId, table.userId),
+  ],
 );
 
 export type SelectWorkspaceMember = typeof workspaceMembersTable.$inferSelect;

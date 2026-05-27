@@ -1,4 +1,5 @@
 # FormBlox QA Report — Playwright Multi-Device Pass
+
 **Date:** 2026-05-27  
 **Devices tested:** Desktop 1920×1080, Laptop 1440×900, Tablet 768×1024, Mobile 390×844  
 **Branch:** main  
@@ -8,32 +9,33 @@
 
 ## Top Issue Per Screen (TL;DR)
 
-| Screen | Most Critical Issue |
-|---|---|
-| Login | No error message shown for wrong credentials (silent 401) |
-| Signup | No error shown for mismatched passwords or empty required fields |
-| Forgot Password | No validation feedback on empty submit |
-| Dashboard | Mobile: 220px sidebar leaves only 170px main area — content clipped |
-| Editor | Tablet/Mobile: 3-pane layout collapses to unusable — canvas <30px wide |
-| Chat Runner | Empty required-field answers accepted silently (no block) |
-| Response Viewer | Mobile: detail panel starts at x=572, entirely off-screen |
+| Screen          | Most Critical Issue                                                    |
+| --------------- | ---------------------------------------------------------------------- |
+| Login           | No error message shown for wrong credentials (silent 401)              |
+| Signup          | No error shown for mismatched passwords or empty required fields       |
+| Forgot Password | No validation feedback on empty submit                                 |
+| Dashboard       | Mobile: 220px sidebar leaves only 170px main area — content clipped    |
+| Editor          | Tablet/Mobile: 3-pane layout collapses to unusable — canvas <30px wide |
+| Chat Runner     | Empty required-field answers accepted silently (no block)              |
+| Response Viewer | Mobile: detail panel starts at x=572, entirely off-screen              |
 
 ---
 
 ## 1. Summary Table
 
-| Device | Login | Signup | Forgot Pw | Dashboard | Editor | Chat Runner | Responses |
-|---|---|---|---|---|---|---|---|
-| Desktop 1920×1080 | Issues | Issues | Issues | Pass | Pass | Issues | Pass |
-| Laptop 1440×900 | Issues | Issues | Issues | Pass | Pass | Issues | Pass |
-| Tablet 768×1024 | Issues | Issues | Issues | Pass | **Critical** | Pass | Pass |
-| Mobile 390×844 | Issues | Issues | Issues | Issues | **Critical** | Pass | **Critical** |
+| Device            | Login  | Signup | Forgot Pw | Dashboard | Editor       | Chat Runner | Responses    |
+| ----------------- | ------ | ------ | --------- | --------- | ------------ | ----------- | ------------ |
+| Desktop 1920×1080 | Issues | Issues | Issues    | Pass      | Pass         | Issues      | Pass         |
+| Laptop 1440×900   | Issues | Issues | Issues    | Pass      | Pass         | Issues      | Pass         |
+| Tablet 768×1024   | Issues | Issues | Issues    | Pass      | **Critical** | Pass        | Pass         |
+| Mobile 390×844    | Issues | Issues | Issues    | Issues    | **Critical** | Pass        | **Critical** |
 
 ---
 
 ## 2. Issues List
 
 ### #1 — Missing login error messages
+
 - **Severity:** Critical
 - **Devices:** All
 - **Screen:** Login
@@ -45,6 +47,7 @@
 ---
 
 ### #2 — Missing signup validation messages
+
 - **Severity:** Critical
 - **Devices:** All
 - **Screen:** Signup
@@ -56,6 +59,7 @@
 ---
 
 ### #3 — Forgot-password form accepts empty email
+
 - **Severity:** High
 - **Devices:** All
 - **Screen:** Forgot Password
@@ -67,6 +71,7 @@
 ---
 
 ### #4 — Publish allowed with untitled form and untitled questions
+
 - **Severity:** High
 - **Devices:** All (desktop confirmed)
 - **Screen:** Editor
@@ -78,6 +83,7 @@
 ---
 
 ### #5 — Chat runner accepts empty answers on required fields
+
 - **Severity:** High
 - **Devices:** All
 - **Screen:** Chat Runner
@@ -89,6 +95,7 @@
 ---
 
 ### #6 — 3-pane editor completely unusable on tablet (768px)
+
 - **Severity:** Critical
 - **Devices:** Tablet 768×1024
 - **Screen:** Editor
@@ -100,6 +107,7 @@
 ---
 
 ### #7 — 3-pane editor completely unusable on mobile (390px)
+
 - **Severity:** Critical
 - **Devices:** Mobile 390×844
 - **Screen:** Editor
@@ -111,6 +119,7 @@
 ---
 
 ### #8 — Mobile dashboard: sidebar crushes main content
+
 - **Severity:** High
 - **Devices:** Mobile 390×844
 - **Screen:** Dashboard
@@ -122,6 +131,7 @@
 ---
 
 ### #9 — Response detail panel off-screen on mobile
+
 - **Severity:** High
 - **Devices:** Mobile 390×844
 - **Screen:** Response Viewer
@@ -133,6 +143,7 @@
 ---
 
 ### #10 — Dashboard hover-only controls inaccessible on touch (tablet)
+
 - **Severity:** Medium
 - **Devices:** Tablet 768×1024, Mobile 390×844
 - **Screen:** Dashboard
@@ -144,6 +155,7 @@
 ---
 
 ### #11 — Runner progress counter heading shows "Untitled form" title
+
 - **Severity:** Low
 - **Devices:** All
 - **Screen:** Chat Runner
@@ -154,6 +166,7 @@
 ---
 
 ### #12 — Laptop: editor and dashboard render correctly (no distinct issues vs desktop)
+
 - **Severity:** N/A
 - **Devices:** Laptop 1440×900
 - **Screen:** All
@@ -165,19 +178,19 @@
 
 ## 3. Validation Findings
 
-| Location | What Fired | What Was Missing | Message Quality |
-|---|---|---|---|
-| Login — empty submit | Nothing | Required field errors | N/A — nothing shown |
-| Login — invalid email "abc" | Nothing (browser may hint, but app doesn't) | Email format error | N/A |
-| Login — wrong password | Nothing visible (silent 401 in console) | "Invalid credentials" banner | N/A — completely silent |
-| Signup — empty submit | Nothing | Per-field required errors | N/A |
-| Signup — mismatched passwords | Nothing | "Passwords do not match" | N/A |
-| Signup — weak password | Nothing beyond static hint text | Live strength indicator / error | Weak — static only |
-| Forgot password — empty email | Nothing | "Email is required" | N/A |
-| Editor Publish — untitled form/fields | Nothing — publishes immediately | Guard modal or inline errors | N/A |
-| Chat runner — empty required answer | Nothing — advances to next Q | Inline error bubble | N/A |
-| Chat runner — email field format | Not tested (no email field in test form) | Should validate "not@email" | Unknown |
-| Chat runner — number field letters | Not tested (no number field in test form) | Should reject non-numeric | Unknown |
+| Location                              | What Fired                                  | What Was Missing                | Message Quality         |
+| ------------------------------------- | ------------------------------------------- | ------------------------------- | ----------------------- |
+| Login — empty submit                  | Nothing                                     | Required field errors           | N/A — nothing shown     |
+| Login — invalid email "abc"           | Nothing (browser may hint, but app doesn't) | Email format error              | N/A                     |
+| Login — wrong password                | Nothing visible (silent 401 in console)     | "Invalid credentials" banner    | N/A — completely silent |
+| Signup — empty submit                 | Nothing                                     | Per-field required errors       | N/A                     |
+| Signup — mismatched passwords         | Nothing                                     | "Passwords do not match"        | N/A                     |
+| Signup — weak password                | Nothing beyond static hint text             | Live strength indicator / error | Weak — static only      |
+| Forgot password — empty email         | Nothing                                     | "Email is required"             | N/A                     |
+| Editor Publish — untitled form/fields | Nothing — publishes immediately             | Guard modal or inline errors    | N/A                     |
+| Chat runner — empty required answer   | Nothing — advances to next Q                | Inline error bubble             | N/A                     |
+| Chat runner — email field format      | Not tested (no email field in test form)    | Should validate "not@email"     | Unknown                 |
+| Chat runner — number field letters    | Not tested (no number field in test form)   | Should reject non-numeric       | Unknown                 |
 
 **Overall verdict:** Validation is almost entirely absent throughout the app. Every form submission path allows invalid data through silently.
 
@@ -224,6 +237,7 @@
 All screenshots are under `qa-screenshots/<device>/` relative to this report file.
 
 ### Desktop
+
 - [Login page](qa-screenshots/desktop/desktop-01-login.png)
 - [Login empty validation](qa-screenshots/desktop/desktop-02-login-empty-validation.png)
 - [Login invalid email](qa-screenshots/desktop/desktop-03-login-invalid-email.png)
@@ -252,6 +266,7 @@ All screenshots are under `qa-screenshots/<device>/` relative to this report fil
 - [Response detail](qa-screenshots/desktop/desktop-31-response-detail.png)
 
 ### Laptop
+
 - [Login](qa-screenshots/laptop/laptop-01-login.png)
 - [Dashboard](qa-screenshots/laptop/laptop-02-dashboard.png)
 - [Dashboard hover](qa-screenshots/laptop/laptop-03-dashboard-hover.png)
@@ -259,6 +274,7 @@ All screenshots are under `qa-screenshots/<device>/` relative to this report fil
 - [Responses](qa-screenshots/laptop/laptop-05-responses.png)
 
 ### Tablet
+
 - [Login (redirected to dashboard — already logged in)](qa-screenshots/tablet/tablet-01-login.png)
 - [Dashboard](qa-screenshots/tablet/tablet-02-dashboard.png)
 - [Editor — broken 3-pane layout](qa-screenshots/tablet/tablet-04-editor-broken-layout.png)
@@ -269,6 +285,7 @@ All screenshots are under `qa-screenshots/<device>/` relative to this report fil
 - [Responses](qa-screenshots/tablet/tablet-09-responses.png)
 
 ### Mobile
+
 - [Login (redirected)](qa-screenshots/mobile/mobile-01-login.png)
 - [Dashboard — sidebar overflow](qa-screenshots/mobile/mobile-02-dashboard.png)
 - [Editor — completely broken](qa-screenshots/mobile/mobile-03-editor.png)

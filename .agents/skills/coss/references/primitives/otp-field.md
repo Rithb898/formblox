@@ -20,11 +20,7 @@ npm install @base-ui/react lucide-react
 ## Canonical imports
 
 ```tsx
-import {
-  OTPField,
-  OTPFieldInput,
-  OTPFieldSeparator,
-} from "@/components/ui/otp-field"
+import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@/components/ui/otp-field";
 ```
 
 ## Minimal pattern

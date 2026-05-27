@@ -20,11 +20,7 @@ npm install @base-ui/react
 ## Canonical imports
 
 ```tsx
-import {
-  Collapsible,
-  CollapsiblePanel,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
 ```
 
 ## Minimal pattern
@@ -32,9 +28,7 @@ import {
 ```tsx
 <Collapsible>
   <CollapsibleTrigger>Can I access the file in the cloud?</CollapsibleTrigger>
-  <CollapsiblePanel>
-    Yes, you can access the file in the cloud.
-  </CollapsiblePanel>
+  <CollapsiblePanel>Yes, you can access the file in the cloud.</CollapsiblePanel>
 </Collapsible>
 ```
 

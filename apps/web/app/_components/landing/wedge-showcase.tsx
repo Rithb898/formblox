@@ -28,7 +28,10 @@ export function WedgeShowcase() {
   return (
     <section id="wedge" className="px-4 py-20 relative">
       {/* Absolute glow flare behind the comparison grid */}
-      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E8854A] opacity-[0.035] blur-[140px]" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E8854A] opacity-[0.035] blur-[140px]"
+      />
 
       <div className="mx-auto max-w-6xl">
         <ScrollReveal>
@@ -41,7 +44,9 @@ export function WedgeShowcase() {
               Forms that talk back.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#8E8E93]">
-              Static forms miss crucial details. FormBlox uses dynamic AI auto-follow ups to interview your respondents, capturing granular insights while doubling completion rates.
+              Static forms miss crucial details. FormBlox uses dynamic AI auto-follow ups to
+              interview your respondents, capturing granular insights while doubling completion
+              rates.
             </p>
           </div>
         </ScrollReveal>
@@ -54,26 +59,36 @@ export function WedgeShowcase() {
               <div className="relative flex-grow rounded-[calc(2rem-6px)] bg-[#0d0d0d] border border-white/[0.01] p-6 flex flex-col justify-between min-h-[420px]">
                 <div>
                   <div className="flex justify-between items-center border-b border-white/[0.04] pb-3 mb-6">
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider">Traditional Form</span>
-                    <span className="font-mono text-[9px] text-zinc-600 bg-white/[0.02] px-2 py-0.5 rounded border border-white/[0.03]">Static</span>
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider">
+                      Traditional Form
+                    </span>
+                    <span className="font-mono text-[9px] text-zinc-600 bg-white/[0.02] px-2 py-0.5 rounded border border-white/[0.03]">
+                      Static
+                    </span>
                   </div>
 
                   {/* Form fields */}
                   <div className="space-y-4 text-left">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono text-zinc-500 uppercase">1. Full Name</label>
+                      <label className="text-[10px] font-mono text-zinc-500 uppercase">
+                        1. Full Name
+                      </label>
                       <div className="w-full rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-xs text-zinc-400">
                         Elena Vasquez
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono text-zinc-500 uppercase">2. Cancellation Reason</label>
+                      <label className="text-[10px] font-mono text-zinc-500 uppercase">
+                        2. Cancellation Reason
+                      </label>
                       <div className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-xs text-white">
                         "The dashboard loading speed is slow."
                       </div>
                     </div>
                     <div className="space-y-1 opacity-40">
-                      <label className="text-[10px] font-mono text-zinc-500 uppercase">3. What was slow?</label>
+                      <label className="text-[10px] font-mono text-zinc-500 uppercase">
+                        3. What was slow?
+                      </label>
                       <div className="w-full rounded-lg border border-white/[0.04] bg-white/[0.01] px-3 py-2 text-xs text-zinc-600 italic">
                         No field provided to ask context...
                       </div>
@@ -87,9 +102,7 @@ export function WedgeShowcase() {
                     <TrendingDown className="size-3.5 text-red-500/80" />
                     <span>Average Completion</span>
                   </div>
-                  <span className="font-mono text-sm font-semibold text-zinc-400">
-                    34%
-                  </span>
+                  <span className="font-mono text-sm font-semibold text-zinc-400">34%</span>
                 </div>
               </div>
             </div>
@@ -115,7 +128,9 @@ export function WedgeShowcase() {
               <div className="relative flex-grow rounded-[calc(2rem-6px)] bg-[#111] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/[0.02] p-6 flex flex-col justify-between min-h-[420px]">
                 <div>
                   <div className="flex justify-between items-center border-b border-white/[0.05] pb-3 mb-6">
-                    <span className="font-mono text-[10px] text-[#E8854A] uppercase tracking-wider font-semibold">FormBlox Workspace</span>
+                    <span className="font-mono text-[10px] text-[#E8854A] uppercase tracking-wider font-semibold">
+                      FormBlox Workspace
+                    </span>
                     <div className="flex items-center gap-1.5 font-mono text-[9px] text-[#E8854A] bg-[#E8854A]/5 px-2 py-0.5 rounded border border-[#E8854A]/10">
                       <span className="size-1.5 rounded-full bg-[#E8854A] animate-pulse" />
                       <span>AI Enabled</span>
@@ -184,7 +199,8 @@ export function WedgeShowcase() {
                             <Sparkles className="size-2.5 text-[#E8854A] animate-pulse" />
                             <span>AI Auto-Follow Up</span>
                           </div>
-                          I see. Is it the chart rendering, database queries, or general page load that feels slow?
+                          I see. Is it the chart rendering, database queries, or general page load
+                          that feels slow?
                         </div>
                       </motion.div>
                     )}

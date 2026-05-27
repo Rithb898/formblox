@@ -76,9 +76,7 @@ export default function PrivacyPage() {
             <h1 className="text-3xl font-semibold tracking-tighter text-[#F2F2F2] sm:text-5xl">
               Privacy Policy
             </h1>
-            <p className="mt-3 text-xs font-mono text-[#6B6B6B]">
-              Last updated: May 27, 2026
-            </p>
+            <p className="mt-3 text-xs font-mono text-[#6B6B6B]">Last updated: May 27, 2026</p>
           </div>
         </ScrollReveal>
 
@@ -102,7 +100,10 @@ export default function PrivacyPage() {
               {/* Introduction */}
               <div className="mb-8 border-b border-white/[0.06] pb-6">
                 <p className="text-sm leading-relaxed text-[#B0B0B0]">
-                  At FormBlox, we believe privacy is a fundamental right. This document details our absolute commitment to user data security, explaining exactly what information we collect, how it is routed, and the comprehensive control schemas you maintain over your workspace.
+                  At FormBlox, we believe privacy is a fundamental right. This document details our
+                  absolute commitment to user data security, explaining exactly what information we
+                  collect, how it is routed, and the comprehensive control schemas you maintain over
+                  your workspace.
                 </p>
               </div>
 
@@ -113,9 +114,7 @@ export default function PrivacyPage() {
                     <h2 className="text-base font-semibold tracking-tight text-[#F2F2F2]">
                       {sec.title}
                     </h2>
-                    <p className="text-xs leading-relaxed text-[#8E8E93]">
-                      {sec.content}
-                    </p>
+                    <p className="text-xs leading-relaxed text-[#8E8E93]">{sec.content}</p>
                   </div>
                 ))}
               </div>
@@ -124,9 +123,13 @@ export default function PrivacyPage() {
               <div className="mt-10 rounded-xl border border-dashed border-[#E8854A]/25 bg-[#E8854A]/4 p-4 flex gap-3 items-start">
                 <Eye className="size-4.5 text-[#E8854A] shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-[#E8854A] uppercase tracking-wider font-mono">Zero Public Training Policy</p>
+                  <p className="text-xs font-semibold text-[#E8854A] uppercase tracking-wider font-mono">
+                    Zero Public Training Policy
+                  </p>
                   <p className="text-[11px] leading-relaxed text-zinc-400">
-                    FormBlox respects content ownership. Under no circumstances do we lease, sell, or utilize private form response telemetry to train public generative model networks.
+                    FormBlox respects content ownership. Under no circumstances do we lease, sell,
+                    or utilize private form response telemetry to train public generative model
+                    networks.
                   </p>
                 </div>
               </div>

@@ -35,7 +35,7 @@ import {
   AlertDialogPopup,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 ```
 
 ## Minimal pattern
@@ -48,15 +48,11 @@ import {
   <AlertDialogPopup>
     <AlertDialogHeader>
       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-      <AlertDialogDescription>
-        This action cannot be undone.
-      </AlertDialogDescription>
+      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
     </AlertDialogHeader>
     <AlertDialogFooter>
       <AlertDialogClose render={<Button variant="ghost" />}>Cancel</AlertDialogClose>
-      <AlertDialogClose render={<Button variant="destructive" />}>
-        Delete Account
-      </AlertDialogClose>
+      <AlertDialogClose render={<Button variant="destructive" />}>Delete Account</AlertDialogClose>
     </AlertDialogFooter>
   </AlertDialogPopup>
 </AlertDialog>

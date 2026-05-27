@@ -59,7 +59,9 @@ function ResetPasswordContent() {
       <Card className={cardClass}>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl tracking-tight">Reset password</CardTitle>
-          <CardDescription className="text-[#6B6B6B]">Enter your new password below</CardDescription>
+          <CardDescription className="text-[#6B6B6B]">
+            Enter your new password below
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -89,7 +91,10 @@ function ResetPasswordContent() {
             <p className="text-xs text-[#6B6B6B]">Must be at least 8 characters long.</p>
 
             {formError && (
-              <p role="alert" className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]">
+              <p
+                role="alert"
+                className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]"
+              >
                 {formError}
               </p>
             )}

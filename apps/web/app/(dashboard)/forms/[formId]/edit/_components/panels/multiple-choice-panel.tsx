@@ -39,9 +39,7 @@ export function MultipleChoicePanel({ field }: { field: EditorField }) {
       </div>
 
       <div className="flex flex-col gap-3 border-t border-white/[0.07] pt-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B6B6B]">
-          Options
-        </p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B6B6B]">Options</p>
         <div className="flex flex-col gap-2">
           {options.map((opt, i) => (
             <div key={opt.id} className="flex items-center gap-2">
@@ -90,7 +88,9 @@ export function MultipleChoicePanel({ field }: { field: EditorField }) {
               type="number"
               min={0}
               value={config.min ?? ""}
-              onChange={(e) => updateConfig({ min: e.target.value ? Number(e.target.value) : undefined })}
+              onChange={(e) =>
+                updateConfig({ min: e.target.value ? Number(e.target.value) : undefined })
+              }
               placeholder="—"
               className="border-white/[0.07] bg-white/[0.02] text-sm text-[#F2F2F2] focus-visible:ring-[#E8854A]/40"
             />
@@ -101,7 +101,9 @@ export function MultipleChoicePanel({ field }: { field: EditorField }) {
               type="number"
               min={1}
               value={config.max ?? ""}
-              onChange={(e) => updateConfig({ max: e.target.value ? Number(e.target.value) : undefined })}
+              onChange={(e) =>
+                updateConfig({ max: e.target.value ? Number(e.target.value) : undefined })
+              }
               placeholder="—"
               className="border-white/[0.07] bg-white/[0.02] text-sm text-[#F2F2F2] focus-visible:ring-[#E8854A]/40"
             />

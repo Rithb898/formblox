@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
 import { Menu } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -34,7 +35,7 @@ export function LandingNav() {
     <header className="fixed inset-x-0 top-4 z-40 px-4">
       <div
         onMouseMove={handleMouseMove}
-        className="group relative mx-auto max-w-4xl rounded-full bg-white/[0.01] p-1 ring-1 ring-white/[0.06] transition-all duration-500 hover:ring-white/[0.1]"
+        className="group relative mx-auto max-w-4xl rounded-full bg-white/1 p-1 ring-1 ring-white/6 transition-all duration-500 hover:ring-white/10"
       >
         {/* Spotlight border overlay — radial gradient follows cursor */}
         <div
@@ -46,10 +47,15 @@ export function LandingNav() {
           }}
         />
 
-        <nav className="relative flex h-12 items-center justify-between rounded-full bg-[#111] px-2 pl-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/[0.01]">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight text-[#F2F2F2]">
-            <span className="size-2 rounded-full bg-[#E8854A] animate-pulse" />
-            FormBlox
+        <nav className="relative flex h-12 items-center justify-between rounded-full bg-[#111] px-2 pl-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/1">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="FormBlox"
+              width={100}
+              height={25}
+              className="object-contain"
+            />
           </Link>
 
           <div className="hidden items-center gap-1 md:flex">
@@ -69,7 +75,7 @@ export function LandingNav() {
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 rounded-full text-xs text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2] px-3.5"
+              className="h-8 rounded-full text-xs text-[#6B6B6B] hover:bg-white/6 hover:text-[#F2F2F2] px-3.5"
             >
               <Link href="/login">Login</Link>
             </Button>
@@ -84,29 +90,41 @@ export function LandingNav() {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="rounded-full text-[#F2F2F2] hover:bg-white/[0.06] size-8 animate-none"
+                  className="rounded-full text-[#F2F2F2] hover:bg-white/6 size-8 animate-none"
                   aria-label="Open menu"
                 >
                   <Menu className="size-3.5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent
-                className="border-white/[0.08] bg-[#080808] text-[#F2F2F2]"
-                showCloseButton
-              >
+              <SheetContent className="border-white/8 bg-[#080808] text-[#F2F2F2]" showCloseButton>
                 <SheetHeader>
-                  <SheetTitle className="text-[#F2F2F2]">FormBlox</SheetTitle>
+                  <SheetTitle>
+                    <Image
+                      src="/logo.png"
+                      alt="FormBlox"
+                      width={100}
+                      height={25}
+                      className="object-contain"
+                    />
+                  </SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-2 px-4 mt-6">
                   {navLinks.map((link) => (
                     <SheetClose key={link.href} asChild>
-                      <a href={link.href} className="rounded-xl px-3 py-2 text-sm text-[#6B6B6B] hover:bg-white/[0.04] hover:text-[#F2F2F2]">
+                      <a
+                        href={link.href}
+                        className="rounded-xl px-3 py-2 text-sm text-[#6B6B6B] hover:bg-white/4 hover:text-[#F2F2F2]"
+                      >
                         {link.label}
                       </a>
                     </SheetClose>
                   ))}
                   <div className="mt-4 grid gap-2">
-                    <Button variant="outline" asChild className="rounded-full border-white/[0.08] bg-white/[0.03] text-[#F2F2F2]">
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="rounded-full border-white/8 bg-white/3 text-[#F2F2F2]"
+                    >
                       <Link href="/login">Login</Link>
                     </Button>
                     <LandingButton href="/signup" fullWidth>

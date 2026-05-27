@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { ScrollReveal } from "./scroll-reveal";
 import { useInView } from "motion/react";
-import { Type, Star, ToggleLeft, CheckCircle2, Globe, TrendingUp, FileText, Inbox } from "lucide-react";
+import {
+  Type,
+  Star,
+  ToggleLeft,
+  CheckCircle2,
+  Globe,
+  TrendingUp,
+  FileText,
+  Inbox,
+} from "lucide-react";
 
 type StatItem = {
   label: string;
@@ -57,15 +66,7 @@ function AnimatedNumber({
   );
 }
 
-function MockStatCard({
-  stat,
-  hasRun,
-  index,
-}: {
-  stat: StatItem;
-  hasRun: boolean;
-  index: number;
-}) {
+function MockStatCard({ stat, hasRun, index }: { stat: StatItem; hasRun: boolean; index: number }) {
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
@@ -92,11 +93,7 @@ function MockStatCard({
       <div className="relative flex h-full min-h-[11rem] flex-col justify-between overflow-hidden rounded-[1.4rem] bg-[#111] p-6 border border-white/[0.02] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] text-center">
         <div>
           <p className="text-3xl font-semibold tracking-tighter text-[#F2F2F2] sm:text-4xl">
-            <AnimatedNumber
-              value={stat.value}
-              suffix={stat.suffix}
-              hasRun={hasRun}
-            />
+            <AnimatedNumber value={stat.value} suffix={stat.suffix} hasRun={hasRun} />
           </p>
           <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.1em] text-[#6B6B6B] leading-none">
             {stat.label}
@@ -122,7 +119,10 @@ export function StatsBar() {
       renderGraphic: () => (
         <div className="mt-3.5 flex gap-2 justify-center">
           {[Type, Star, ToggleLeft].map((Icon, idx) => (
-            <div key={idx} className="flex size-7 items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.05] text-[#E8854A] shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]">
+            <div
+              key={idx}
+              className="flex size-7 items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.05] text-[#E8854A] shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]"
+            >
               <Icon className="size-3.5" />
             </div>
           ))}
@@ -154,7 +154,9 @@ export function StatsBar() {
         <div className="mt-3.5 space-y-2">
           <div className="flex justify-between items-center text-[9px] font-mono text-zinc-500 leading-none">
             <span>vs 44% industry</span>
-            <span className="text-emerald-400 font-semibold bg-emerald-400/10 px-1.5 py-0.5 rounded-full scale-95 origin-right">+48%</span>
+            <span className="text-emerald-400 font-semibold bg-emerald-400/10 px-1.5 py-0.5 rounded-full scale-95 origin-right">
+              +48%
+            </span>
           </div>
           <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
             <div className="h-full w-[92%] bg-[#E8854A] rounded-full shadow-[0_0_8px_rgba(232,133,74,0.4)]" />
@@ -185,12 +187,7 @@ export function StatsBar() {
           {/* 4-Card Statistics Bento Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, index) => (
-              <MockStatCard
-                key={stat.label}
-                stat={stat}
-                index={index}
-                hasRun={inView}
-              />
+              <MockStatCard key={stat.label} stat={stat} index={index} hasRun={inView} />
             ))}
           </div>
         </div>

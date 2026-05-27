@@ -35,9 +35,7 @@ export function SingleChoicePanel({ field }: { field: EditorField }) {
       </div>
 
       <div className="flex flex-col gap-3 border-t border-white/[0.07] pt-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B6B6B]">
-          Options
-        </p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B6B6B]">Options</p>
         <div className="flex flex-col gap-2">
           {options.map((opt, i) => (
             <div key={opt.id} className="flex items-center gap-2">

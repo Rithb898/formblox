@@ -23,8 +23,12 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
-  logout: async () => { window.location.href = "/login"; },
-  logoutAll: async () => { window.location.href = "/login"; },
+  logout: async () => {
+    window.location.href = "/login";
+  },
+  logoutAll: async () => {
+    window.location.href = "/login";
+  },
   _setUser: (user) => set({ user }),
   _setLoading: (isLoading) => set({ isLoading }),
   _setLogout: (logout) => set({ logout }),

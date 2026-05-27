@@ -9,6 +9,7 @@ This section walks through every file you'd write, in order, to build signup and
 ---
 
 ### Step 1 — DB table: `users`
+
 **File:** `packages/database/models/user.ts`
 
 This is where a user row lives. Every auth flow creates or reads from this table.
@@ -33,6 +34,7 @@ export type InsertUser = typeof usersTable.$inferInsert;
 ---
 
 ### Step 2 — DB table: `user_credentials`
+
 **File:** `packages/database/models/user-credentials.ts`
 
 Passwords are stored separately from the user row — cleaner, and lets you add OAuth later without a nullable password column on `users`.
@@ -43,7 +45,9 @@ import { usersTable } from "./user";
 
 export const userCredentialsTable = pgTable("user_credentials", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   passwordHash: text("password_hash").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
@@ -53,6 +57,7 @@ export const userCredentialsTable = pgTable("user_credentials", {
 ---
 
 ### Step 3 — DB table: `email_verification_tokens`
+
 **File:** `packages/database/models/email-verification-tokens.ts`
 
 After signup, user gets a one-time link. This table stores that token.
@@ -64,7 +69,9 @@ import { usersTable } from "./user";
 
 export const emailVerificationTokensTable = pgTable("email_verification_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   token: text("token").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -75,6 +82,7 @@ export const emailVerificationTokensTable = pgTable("email_verification_tokens",
 ---
 
 ### Step 4 — DB table: `refresh_tokens`
+
 **File:** `packages/database/models/refresh-tokens.ts`
 
 Stores active sessions. We never store the raw token — only a SHA-256 hash of it.
@@ -86,7 +94,9 @@ import { usersTable } from "./user";
 
 export const refreshTokensTable = pgTable("refresh_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
   tokenHash: text("token_hash").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -97,6 +107,7 @@ export const refreshTokensTable = pgTable("refresh_tokens", {
 ---
 
 ### Step 5 — Export all tables from schema
+
 **File:** `packages/database/schema.ts`
 
 ```ts
@@ -107,6 +118,7 @@ export * from "./models/email-verification-tokens";
 ```
 
 Then run the migration:
+
 ```bash
 pnpm run db:generate
 pnpm run db:migrate
@@ -115,6 +127,7 @@ pnpm run db:migrate
 ---
 
 ### Step 6 — Env vars
+
 **File:** `packages/services/env.ts`
 
 Validate that all required secrets exist at startup. If any are missing, the app crashes immediately with a clear error instead of silently failing later.
@@ -133,6 +146,7 @@ export const env = envSchema.parse(process.env);
 ```
 
 Add to your `.env`:
+
 ```
 JWT_ACCESS_SECRET=<run: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
 JWT_REFRESH_SECRET=<same command, different value>
@@ -143,6 +157,7 @@ FRONTEND_URL=http://localhost:3000
 ---
 
 ### Step 7 — Token service
+
 **File:** `packages/services/token/index.ts`
 
 Two jobs: create/verify short-lived JWTs (access tokens), and manage long-lived refresh tokens in the DB.
@@ -211,7 +226,9 @@ class TokenService {
     await db
       .update(refreshTokensTable)
       .set({ revokedAt: new Date() })
-      .where(and(eq(refreshTokensTable.tokenHash, tokenHash), isNull(refreshTokensTable.revokedAt)));
+      .where(
+        and(eq(refreshTokensTable.tokenHash, tokenHash), isNull(refreshTokensTable.revokedAt)),
+      );
   }
 
   async revokeAllRefreshTokens(userId: string): Promise<void> {
@@ -228,6 +245,7 @@ export const tokenService = new TokenService();
 ---
 
 ### Step 8 — Email service
+
 **File:** `packages/services/email/index.ts`
 
 Sends the verification email. Uses Resend. The link contains the raw token as a query param — the user clicks it and that token gets verified.
@@ -256,6 +274,7 @@ export const emailService = new EmailService();
 ---
 
 ### Step 9 — Auth service
+
 **File:** `packages/services/auth/index.ts`
 
 The core logic. Three methods you need for signup+login:
@@ -348,11 +367,7 @@ class AuthService {
 
   async login(email: string, password: string): Promise<AuthTokens> {
     // 1. Find user
-    const [user] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, email))
-      .limit(1);
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
 
     if (!user) throw new Error("INVALID_CREDENTIALS"); // don't say "user not found"
     if (!user.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
@@ -381,6 +396,7 @@ export const authService = new AuthService();
 ---
 
 ### Step 10 — tRPC context
+
 **File:** `packages/trpc/server/context.ts`
 
 On every incoming request, read the `access_token` cookie and decode it. This attaches `userId` to the context so any route can check "who is this?"
@@ -404,6 +420,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
 ---
 
 ### Step 11 — Protected procedure
+
 **File:** `packages/trpc/server/trpc.ts` (add to existing file)
 
 `protectedProcedure` is just `publicProcedure` with a guard. Any route using it will automatically 401 if no valid `access_token` cookie exists.
@@ -418,6 +435,7 @@ export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
 ---
 
 ### Step 12 — tRPC auth router
+
 **File:** `packages/trpc/server/routes/auth/route.ts`
 
 Three procedures for signup+login. The key thing here: **cookies are set/cleared here on `ctx.res`**, not inside the service. The service just returns tokens; the router decides where they go.
@@ -451,18 +469,21 @@ function setAuthCookies(res: any, accessToken: string, refreshToken: string) {
 
 export const authRouter = router({
   signup: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      password: z.string().min(8),
-      fullName: z.string().min(1).max(80),
-    }))
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string().min(8),
+        fullName: z.string().min(1).max(80),
+      }),
+    )
     .output(z.object({ message: z.string() }))
     .mutation(async ({ input }) => {
       try {
         return await authService.signup(input.email, input.password, input.fullName);
       } catch (e) {
         const msg = e instanceof Error ? e.message : "";
-        if (msg === "EMAIL_TAKEN") throw new TRPCError({ code: "CONFLICT", message: "Email already in use." });
+        if (msg === "EMAIL_TAKEN")
+          throw new TRPCError({ code: "CONFLICT", message: "Email already in use." });
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Something went wrong." });
       }
     }),
@@ -477,17 +498,21 @@ export const authRouter = router({
         return { success: true };
       } catch (e) {
         const msg = e instanceof Error ? e.message : "";
-        if (msg === "INVALID_VERIFICATION_TOKEN") throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or used link." });
-        if (msg === "VERIFICATION_TOKEN_EXPIRED") throw new TRPCError({ code: "BAD_REQUEST", message: "Link expired." });
+        if (msg === "INVALID_VERIFICATION_TOKEN")
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or used link." });
+        if (msg === "VERIFICATION_TOKEN_EXPIRED")
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Link expired." });
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Something went wrong." });
       }
     }),
 
   login: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      password: z.string(),
-    }))
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }),
+    )
     .output(z.object({ success: z.boolean() }))
     .mutation(async ({ input, ctx }) => {
       try {
@@ -496,8 +521,10 @@ export const authRouter = router({
         return { success: true };
       } catch (e) {
         const msg = e instanceof Error ? e.message : "";
-        if (msg === "INVALID_CREDENTIALS") throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password." });
-        if (msg === "EMAIL_NOT_VERIFIED") throw new TRPCError({ code: "FORBIDDEN", message: "Please verify your email first." });
+        if (msg === "INVALID_CREDENTIALS")
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password." });
+        if (msg === "EMAIL_NOT_VERIFIED")
+          throw new TRPCError({ code: "FORBIDDEN", message: "Please verify your email first." });
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Something went wrong." });
       }
     }),
@@ -507,6 +534,7 @@ export const authRouter = router({
 ---
 
 ### Step 13 — Express server setup
+
 **File:** `apps/api/src/server.ts`
 
 Two things must happen here: `cookieParser()` so Express can read cookies, and CORS with `credentials: true` so the browser sends cookies cross-origin.
@@ -520,10 +548,12 @@ import { serverRouter, createContext } from "@repo/trpc/server";
 
 export const app = express();
 
-app.use(cors({
-  origin: "http://localhost:3000", // your frontend URL
-  credentials: true, // REQUIRED — without this, browser won't send cookies
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000", // your frontend URL
+    credentials: true, // REQUIRED — without this, browser won't send cookies
+  }),
+);
 
 app.use(cookieParser()); // REQUIRED — without this, req.cookies is undefined
 app.use(express.json());
@@ -534,6 +564,7 @@ app.use("/trpc", trpcExpress.createExpressMiddleware({ router: serverRouter, cre
 ---
 
 ### Step 14 — Frontend: Signup page
+
 **File:** `apps/web/app/(auth)/signup/page.tsx`
 
 Form with validation via `react-hook-form` + `zod`. On success, shows a "check your email" message instead of redirecting (user must verify first).
@@ -570,16 +601,22 @@ export default function SignupPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   if (done) return <p>Check your email to verify your account.</p>;
 
   return (
-    <form onSubmit={handleSubmit(({ fullName, email, password }) =>
-      signupMutation.mutate({ fullName, email, password })
-    )}>
+    <form
+      onSubmit={handleSubmit(({ fullName, email, password }) =>
+        signupMutation.mutate({ fullName, email, password }),
+      )}
+    >
       <input placeholder="Full name" {...register("fullName")} />
       {errors.fullName && <p>{errors.fullName.message}</p>}
 
@@ -603,6 +640,7 @@ export default function SignupPage() {
 ---
 
 ### Step 15 — Frontend: Verify email page
+
 **File:** `apps/web/app/(auth)/verify-email/page.tsx`
 
 Reads `?token=` from the URL, auto-fires the mutation on mount. No button to press — just land on the page and it works.
@@ -643,6 +681,7 @@ export default function VerifyEmailPage() {
 ---
 
 ### Step 16 — Frontend: Login page
+
 **File:** `apps/web/app/(auth)/login/page.tsx`
 
 On success, `router.push("/dashboard")` — the cookies are already set by the server response before this callback fires.
@@ -670,7 +709,11 @@ export default function LoginPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
@@ -693,6 +736,7 @@ export default function LoginPage() {
 ---
 
 ### Step 17 — Frontend: Auth state
+
 **File:** `apps/web/providers/auth.tsx`
 
 Wrap your app in this. On mount it calls `trpc.auth.me` — if that 401s (expired access token), it tries a silent refresh. This runs once on page load so every component can access the current user.
@@ -722,7 +766,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Access token expired — try silent refresh
     refreshMutation.mutate(undefined, {
       onSuccess: () => meQuery.refetch(),
-      onError: () => { _setUser(null); _setLoading(false); },
+      onError: () => {
+        _setUser(null);
+        _setLoading(false);
+      },
     });
   }, [meQuery.error]);
 
@@ -781,6 +828,7 @@ On every page load
 ## What the auth does
 
 Users can sign up with email/password or Google. After login, two cookies are set in the browser:
+
 - `access_token` — short-lived JWT (15 min), proves who you are on each request
 - `refresh_token` — long-lived (7 days), used to silently get a new access token when it expires
 
@@ -790,14 +838,14 @@ Neither token is readable by JavaScript — they're `httpOnly` cookies, browser 
 
 ## The 5 database tables involved
 
-| Table | Purpose |
-|---|---|
-| `users` | Core user record (email, name, emailVerified) |
-| `user_credentials` | Stores hashed password (separate from user) |
-| `oauth_accounts` | Links Google account to a user |
-| `refresh_tokens` | All active sessions; revoked on logout |
+| Table                       | Purpose                                          |
+| --------------------------- | ------------------------------------------------ |
+| `users`                     | Core user record (email, name, emailVerified)    |
+| `user_credentials`          | Stores hashed password (separate from user)      |
+| `oauth_accounts`            | Links Google account to a user                   |
+| `refresh_tokens`            | All active sessions; revoked on logout           |
 | `email_verification_tokens` | One-time tokens sent via email to verify address |
-| `password_reset_tokens` | One-time tokens for password reset |
+| `password_reset_tokens`     | One-time tokens for password reset               |
 
 ---
 
@@ -875,16 +923,16 @@ User submits new password → POST resetPassword
 
 ## Key files to know
 
-| File | What it does |
-|---|---|
-| `packages/services/auth/index.ts` | All business logic (signup, login, etc.) |
-| `packages/services/token/index.ts` | Create/verify/rotate JWTs and refresh tokens |
-| `packages/services/email/index.ts` | Send emails via Resend |
-| `packages/trpc/server/routes/auth/route.ts` | API endpoints, sets/clears cookies |
-| `packages/trpc/server/context.ts` | Reads access_token cookie, attaches userId to every request |
-| `apps/web/providers/auth.tsx` | Frontend: loads user on mount, handles silent refresh |
-| `apps/web/stores/auth.ts` | Frontend state: current user, logout functions |
-| `apps/web/proxy.ts` | Next.js middleware: redirects unauthenticated users to /login |
+| File                                        | What it does                                                  |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `packages/services/auth/index.ts`           | All business logic (signup, login, etc.)                      |
+| `packages/services/token/index.ts`          | Create/verify/rotate JWTs and refresh tokens                  |
+| `packages/services/email/index.ts`          | Send emails via Resend                                        |
+| `packages/trpc/server/routes/auth/route.ts` | API endpoints, sets/clears cookies                            |
+| `packages/trpc/server/context.ts`           | Reads access_token cookie, attaches userId to every request   |
+| `apps/web/providers/auth.tsx`               | Frontend: loads user on mount, handles silent refresh         |
+| `apps/web/stores/auth.ts`                   | Frontend state: current user, logout functions                |
+| `apps/web/proxy.ts`                         | Next.js middleware: redirects unauthenticated users to /login |
 
 ---
 

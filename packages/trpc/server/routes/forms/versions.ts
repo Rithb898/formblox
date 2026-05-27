@@ -8,8 +8,30 @@ import { z } from "../../schema";
 import { formProcedure, router } from "../../trpc";
 import { fieldInputSchema, versionWithFieldsSchema } from "./model";
 
-function mapField(f: { id: string; order: number; type: string; label: string; required: boolean; config: unknown }) {
-  return { id: f.id, order: f.order, type: f.type as "number" | "date" | "email" | "short_text" | "long_text" | "single_choice" | "multiple_choice" | "rating", label: f.label, required: f.required, config: (f.config ?? {}) as Record<string, unknown> };
+function mapField(f: {
+  id: string;
+  order: number;
+  type: string;
+  label: string;
+  required: boolean;
+  config: unknown;
+}) {
+  return {
+    id: f.id,
+    order: f.order,
+    type: f.type as
+      | "number"
+      | "date"
+      | "email"
+      | "short_text"
+      | "long_text"
+      | "single_choice"
+      | "multiple_choice"
+      | "rating",
+    label: f.label,
+    required: f.required,
+    config: (f.config ?? {}) as Record<string, unknown>,
+  };
 }
 
 async function getDraftWithFields(formId: string) {
@@ -40,27 +62,34 @@ export const formsVersionsRouter = router({
 
   updateDraft: formProcedure
     .meta({ openapi: { method: "PUT", path: "/forms/{formId}/draft", tags: TAGS } })
-    .input(z.object({
-      formId: z.string(),
-      title: z.string().optional(),
-      description: z.string().optional(),
-      fields: z.array(fieldInputSchema),
-    }))
+    .input(
+      z.object({
+        formId: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        fields: z.array(fieldInputSchema),
+      }),
+    )
     .output(versionWithFieldsSchema)
     .mutation(async ({ ctx, input }) => {
       return await db.transaction(async (tx) => {
         const [draft] = await tx
           .select()
           .from(formVersionsTable)
-          .where(and(eq(formVersionsTable.formId, ctx.form.id), eq(formVersionsTable.status, "draft")))
+          .where(
+            and(eq(formVersionsTable.formId, ctx.form.id), eq(formVersionsTable.status, "draft")),
+          )
           .limit(1);
         if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "No draft version" });
 
         if (input.title !== undefined || input.description !== undefined) {
-          await tx.update(formVersionsTable).set({
-            ...(input.title !== undefined ? { title: input.title } : {}),
-            ...(input.description !== undefined ? { description: input.description } : {}),
-          }).where(eq(formVersionsTable.id, draft.id));
+          await tx
+            .update(formVersionsTable)
+            .set({
+              ...(input.title !== undefined ? { title: input.title } : {}),
+              ...(input.description !== undefined ? { description: input.description } : {}),
+            })
+            .where(eq(formVersionsTable.id, draft.id));
         }
 
         await tx.delete(formFieldsTable).where(eq(formFieldsTable.formVersionId, draft.id));
@@ -75,16 +104,21 @@ export const formsVersionsRouter = router({
               label: field.label,
               required: field.required,
               config: field.config,
-            }))
+            })),
           );
         }
 
-        const updatedFields = await tx.select().from(formFieldsTable)
+        const updatedFields = await tx
+          .select()
+          .from(formFieldsTable)
           .where(eq(formFieldsTable.formVersionId, draft.id))
           .orderBy(asc(formFieldsTable.order));
 
-        const [updatedVersion] = await tx.select().from(formVersionsTable)
-          .where(eq(formVersionsTable.id, draft.id)).limit(1);
+        const [updatedVersion] = await tx
+          .select()
+          .from(formVersionsTable)
+          .where(eq(formVersionsTable.id, draft.id))
+          .limit(1);
 
         return { ...updatedVersion!, fields: updatedFields.map(mapField) };
       });
@@ -99,12 +133,16 @@ export const formsVersionsRouter = router({
         const [draft] = await tx
           .select()
           .from(formVersionsTable)
-          .where(and(eq(formVersionsTable.formId, ctx.form.id), eq(formVersionsTable.status, "draft")))
+          .where(
+            and(eq(formVersionsTable.formId, ctx.form.id), eq(formVersionsTable.status, "draft")),
+          )
           .limit(1);
         if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "No draft version" });
 
         // Fetch fields once — used for validation and new draft copy.
-        const fields = await tx.select().from(formFieldsTable)
+        const fields = await tx
+          .select()
+          .from(formFieldsTable)
           .where(eq(formFieldsTable.formVersionId, draft.id))
           .orderBy(asc(formFieldsTable.order));
 
@@ -127,7 +165,9 @@ export const formsVersionsRouter = router({
 
         // Guard: reject publish if any field has an invalid config (e.g. choice with < 2 options).
         const invalidFieldIds = fields
-          .filter((f) => !fieldConfigUnion.safeParse({ type: f.type, config: f.config ?? {} }).success)
+          .filter(
+            (f) => !fieldConfigUnion.safeParse({ type: f.type, config: f.config ?? {} }).success,
+          )
           .map((f) => f.id);
         if (invalidFieldIds.length > 0) {
           throw new TRPCError({
@@ -136,22 +176,33 @@ export const formsVersionsRouter = router({
           });
         }
 
-        await tx.update(formVersionsTable).set({ status: "archived" })
-          .where(and(eq(formVersionsTable.formId, ctx.form.id), eq(formVersionsTable.status, "published")));
+        await tx
+          .update(formVersionsTable)
+          .set({ status: "archived" })
+          .where(
+            and(
+              eq(formVersionsTable.formId, ctx.form.id),
+              eq(formVersionsTable.status, "published"),
+            ),
+          );
 
-        const [published] = await tx.update(formVersionsTable)
+        const [published] = await tx
+          .update(formVersionsTable)
           .set({ status: "published", publishedAt: new Date() })
           .where(eq(formVersionsTable.id, draft.id))
           .returning();
 
-        const [newDraft] = await tx.insert(formVersionsTable).values({
-          formId: ctx.form.id,
-          versionNumber: draft.versionNumber + 1,
-          status: "draft",
-          title: draft.title,
-          description: draft.description,
-          settings: draft.settings,
-        }).returning();
+        const [newDraft] = await tx
+          .insert(formVersionsTable)
+          .values({
+            formId: ctx.form.id,
+            versionNumber: draft.versionNumber + 1,
+            status: "draft",
+            title: draft.title,
+            description: draft.description,
+            settings: draft.settings,
+          })
+          .returning();
 
         if (fields.length > 0) {
           await tx.insert(formFieldsTable).values(
@@ -174,25 +225,31 @@ export const formsVersionsRouter = router({
   list: formProcedure
     .meta({ openapi: { method: "GET", path: "/forms/{formId}/versions", tags: TAGS } })
     .input(z.object({ formId: z.string() }))
-    .output(z.array(z.object({
-      id: z.string(),
-      versionNumber: z.number(),
-      status: z.string(),
-      title: z.string(),
-      description: z.string().nullable(),
-      publishedAt: z.date().nullable(),
-      createdAt: z.date(),
-    })))
+    .output(
+      z.array(
+        z.object({
+          id: z.string(),
+          versionNumber: z.number(),
+          status: z.string(),
+          title: z.string(),
+          description: z.string().nullable(),
+          publishedAt: z.date().nullable(),
+          createdAt: z.date(),
+        }),
+      ),
+    )
     .query(async ({ ctx }) => {
-      return await db.select({
-        id: formVersionsTable.id,
-        versionNumber: formVersionsTable.versionNumber,
-        status: formVersionsTable.status,
-        title: formVersionsTable.title,
-        description: formVersionsTable.description,
-        publishedAt: formVersionsTable.publishedAt,
-        createdAt: formVersionsTable.createdAt,
-      }).from(formVersionsTable)
+      return await db
+        .select({
+          id: formVersionsTable.id,
+          versionNumber: formVersionsTable.versionNumber,
+          status: formVersionsTable.status,
+          title: formVersionsTable.title,
+          description: formVersionsTable.description,
+          publishedAt: formVersionsTable.publishedAt,
+          createdAt: formVersionsTable.createdAt,
+        })
+        .from(formVersionsTable)
         .where(eq(formVersionsTable.formId, ctx.form.id))
         .orderBy(asc(formVersionsTable.versionNumber));
     }),

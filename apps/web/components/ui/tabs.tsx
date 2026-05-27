@@ -6,16 +6,10 @@ import { cn } from "~/lib/utils";
 
 export type TabsVariant = "default" | "underline";
 
-export function Tabs({
-  className,
-  ...props
-}: TabsPrimitive.Root.Props): React.ReactElement {
+export function Tabs({ className, ...props }: TabsPrimitive.Root.Props): React.ReactElement {
   return (
     <TabsPrimitive.Root
-      className={cn(
-        "flex flex-col gap-2 data-[orientation=vertical]:flex-row",
-        className,
-      )}
+      className={cn("flex flex-col gap-2 data-[orientation=vertical]:flex-row", className)}
       data-slot="tabs"
       {...props}
     />
@@ -57,10 +51,7 @@ export function TabsList({
   );
 }
 
-export function TabsTab({
-  className,
-  ...props
-}: TabsPrimitive.Tab.Props): React.ReactElement {
+export function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props): React.ReactElement {
   return (
     <TabsPrimitive.Tab
       className={cn(
@@ -73,10 +64,7 @@ export function TabsTab({
   );
 }
 
-export function TabsPanel({
-  className,
-  ...props
-}: TabsPrimitive.Panel.Props): React.ReactElement {
+export function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props): React.ReactElement {
   return (
     <TabsPrimitive.Panel
       className={cn("flex-1 outline-none", className)}

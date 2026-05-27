@@ -89,9 +89,12 @@ function DemoBubble({ item }: { item: (typeof sequence)[number] }) {
       <div
         className={cn(
           "max-w-[82%] rounded-2xl px-4 py-3 text-left text-[14px] leading-relaxed",
-          item.side === "form" && "rounded-bl-sm border border-white/[0.07] bg-[#141414] text-[#F2F2F2]",
-          item.side === "ai" && "rounded-bl-sm border-l-2 border-[#E8854A] bg-[#1a1a1a] text-[#F2F2F2]",
-          item.side === "done" && "rounded-bl-sm border border-white/[0.07] bg-[#141414] text-[#F2F2F2]",
+          item.side === "form" &&
+            "rounded-bl-sm border border-white/[0.07] bg-[#141414] text-[#F2F2F2]",
+          item.side === "ai" &&
+            "rounded-bl-sm border-l-2 border-[#E8854A] bg-[#1a1a1a] text-[#F2F2F2]",
+          item.side === "done" &&
+            "rounded-bl-sm border border-white/[0.07] bg-[#141414] text-[#F2F2F2]",
           isUser && "rounded-br-sm bg-[#E8854A] text-[#0a0a0a]",
         )}
       >

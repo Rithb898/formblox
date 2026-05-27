@@ -28,11 +28,7 @@ const testimonials = [
   },
 ];
 
-function TestimonialCard({
-  testimonial,
-}: {
-  testimonial: (typeof testimonials)[number];
-}) {
+function TestimonialCard({ testimonial }: { testimonial: (typeof testimonials)[number] }) {
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
@@ -61,10 +57,7 @@ function TestimonialCard({
           <div className="mb-4 flex items-center justify-between">
             <div className="flex gap-0.5">
               {[...Array(testimonial.stars)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="size-3.5 fill-[#E8854A] text-[#E8854A]"
-                />
+                <Star key={i} className="size-3.5 fill-[#E8854A] text-[#E8854A]" />
               ))}
             </div>
             {/* Quote indicator */}

@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, Save, Globe, Loader2, Check, Inbox, ChevronLeft, Lock, Eye } from "lucide-react";
+import {
+  ExternalLink,
+  Save,
+  Globe,
+  Loader2,
+  Check,
+  Inbox,
+  ChevronLeft,
+  Lock,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
@@ -37,8 +47,17 @@ export function EditorTopbar({
   visibility: "public" | "unlisted";
 }) {
   const [visibility, setVisibilityState] = useState<"public" | "unlisted">(initialVisibility);
-  const { formVersion, fields, dirty, lastSavedAt, isSaving, setIsSaving, markSaved, updateField, selectField } =
-    useFormEditorStore();
+  const {
+    formVersion,
+    fields,
+    dirty,
+    lastSavedAt,
+    isSaving,
+    setIsSaving,
+    markSaved,
+    updateField,
+    selectField,
+  } = useFormEditorStore();
 
   const titleRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
@@ -69,7 +88,15 @@ export function EditorTopbar({
         fields: fields.map((f) => ({
           id: f.id,
           order: f.order,
-          type: f.type as "number" | "date" | "email" | "short_text" | "long_text" | "single_choice" | "multiple_choice" | "rating",
+          type: f.type as
+            | "number"
+            | "date"
+            | "email"
+            | "short_text"
+            | "long_text"
+            | "single_choice"
+            | "multiple_choice"
+            | "rating",
           label: f.label,
           required: f.required,
           config: f.config,
@@ -114,7 +141,11 @@ export function EditorTopbar({
       let handled = false;
       if (err instanceof Error) {
         try {
-          const parsed = JSON.parse(err.message) as { code?: string; fieldIds?: string[]; reason?: string };
+          const parsed = JSON.parse(err.message) as {
+            code?: string;
+            fieldIds?: string[];
+            reason?: string;
+          };
           if (parsed.code === "invalid_form" && parsed.reason === "title_empty") {
             titleRef.current?.focus();
             toast.error("Form title is required before publishing.");
@@ -207,7 +238,12 @@ export function EditorTopbar({
             asChild
             className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
           >
-            <a href={`/f/${publicSlug}`} target="_blank" rel="noreferrer" aria-label="Open public form">
+            <a
+              href={`/f/${publicSlug}`}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open public form"
+            >
               <ExternalLink className="size-4" />
             </a>
           </Button>
@@ -216,7 +252,11 @@ export function EditorTopbar({
           type="button"
           onClick={handleToggleVisibility}
           disabled={setVisibilityMutation.isPending}
-          title={visibility === "public" ? "Public — visible on explore page" : "Unlisted — only via direct link"}
+          title={
+            visibility === "public"
+              ? "Public — visible on explore page"
+              : "Unlisted — only via direct link"
+          }
           className={cn(
             "flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em]",
             "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
@@ -246,7 +286,11 @@ export function EditorTopbar({
           disabled={publish.isPending || isSaving}
           className="gap-1.5 rounded-full bg-[#E8854A] text-[#0a0a0a] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#E8854A]/90 disabled:opacity-40 active:scale-[0.98]"
         >
-          {publish.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Globe className="size-3.5" />}
+          {publish.isPending ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Globe className="size-3.5" />
+          )}
           Publish
         </Button>
       </div>

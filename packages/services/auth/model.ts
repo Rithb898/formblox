@@ -11,7 +11,10 @@ export const meOutputSchema = z.object({
   fullName: z.string().describe("User's display name"),
   email: z.string().describe("User's email address"),
   emailVerified: z.boolean().describe("Whether the user has verified their email"),
-  profileImageUrl: z.string().nullable().describe("URL to the user's profile picture, null if not set"),
+  profileImageUrl: z
+    .string()
+    .nullable()
+    .describe("URL to the user's profile picture, null if not set"),
   createdAt: z.date().describe("Timestamp when the user account was created"),
 });
 export type MeOutput = z.infer<typeof meOutputSchema>;

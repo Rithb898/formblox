@@ -25,11 +25,7 @@ npm install @base-ui/react
 ## Canonical imports
 
 ```tsx
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@/components/ui/progress"
+import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
 ```
 
 ## Minimal pattern

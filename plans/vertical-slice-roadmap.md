@@ -7,9 +7,11 @@
 ---
 
 ## Slice 0 — Foundation ✅
+
 Turborepo + auth. Done.
 
 ## Slice 1 — Create & view a form ✅
+
 > Architecture: [slice-1-architecture.md](./slice-1-architecture.md) · Implementation: [slice-1-plan.md](./slice-1-plan.md)
 
 - **BE:** `workspaces` + `forms` + `form_versions` + `form_fields` tables, versioned CRUD, publish flow, `public_slug` (nanoid 10)
@@ -17,6 +19,7 @@ Turborepo + auth. Done.
 - ✅ Submittable
 
 ## Slice 2 — Collect responses ✅
+
 > Implementation: [slice-2-plan.md](./slice-2-plan.md)
 
 - **BE:** `responses` + `response_answers` tables, public submit with honeypot + Redis rate limiting, Zod field validation
@@ -24,31 +27,37 @@ Turborepo + auth. Done.
 - ✅ Submittable — already a usable product
 
 ## Slice 3 — All 8 field types + form runner polish ✅
+
 - **BE:** `form_fields.type` enum covers all 8 types: `short_text`, `long_text`, `email`, `number`, `single_choice`, `multiple_choice`, `rating`, `date`; strict Zod config validation per type on publish
 - **FE:** Full type picker in editor, matching renderer in form runner; property panel shows correct config per type
 - ✅ Submittable
 
 ## Slice 4 — One-question-per-screen UX (chat runner) ✅
+
 - **BE:** no change
 - **FE:** Typeform-style conversational runner — animated transitions, progress indicator, keyboard navigation (Enter to advance)
 - ✅ Submittable — polished, looks differentiated
 
 ## Slice 5 — AI follow-up ✅ ← **the wedge**
+
 - **BE:** `ai_followups` table; streaming Route Handler via Vercel AI SDK; per-field `enableAiFollowup` toggle stored in field config
 - **FE:** After open-text answer, AI follow-up streams inline before advancing; skippable; stored on submit
 - ✅ Submittable — differentiated
 
 ## Slice 6 — AI response summary ✅
+
 - **BE:** `GET forms.responses.summaryData` — aggregates all answers and passes to Claude for synthesis
 - **FE:** "Summary" tab in responses dashboard; streaming markdown render
 - ✅ Submittable — complete story
 
 ## Slice 7 — AI form generation from prompt ✅
+
 - **BE:** Route Handler `POST /api/ai/generate-form` → Claude returns full form JSON → saved as draft
 - **FE:** "Generate with AI" button → prompt textarea → preview → edit → publish
 - ✅ Submittable — second AI wow
 
 ## Slice 8 — Demo data + visibility modes + explore page ✅
+
 > Hackathon requirement: 3+ themed forms, seeded responses, demo credentials, public explore page
 
 - **BE:**
@@ -65,6 +74,7 @@ Turborepo + auth. Done.
 - ✅ Submittable — judge-ready
 
 ## Slice 9 — Validation fixes + responsive polish ← **NOW**
+
 > QA found critical gaps (see [playwright-qa-report.md](./playwright-qa-report.md))
 
 - **FE:**
@@ -75,6 +85,7 @@ Turborepo + auth. Done.
   - Editor: degrade gracefully on tablet (collapse to 2-pane or single-pane)
 
 ## Slice 10 — README + Scalar API docs + CSV export
+
 > Final submission requirements
 
 - **README:** setup instructions, demo credentials, API docs link, deployed URL, stack overview
@@ -82,11 +93,13 @@ Turborepo + auth. Done.
 - **CSV export:** `GET /forms/:id/responses/export` → CSV download button in responses tab (bonus, high signal)
 
 ## Slice 11 — Themes & branding (stretch)
+
 - **BE:** `theme` JSON already on `form_versions` — wire up presets
 - **FE:** Theme panel in editor (5 presets + color picker), runner respects theme colors
 - ✅ Looks professional — good for judges
 
 ## Slice 12+ — Bonus stretch
+
 - Conditional logic / branching (logic JSON per field)
 - Analytics dashboard (completion rate, drop-off, time-series chart)
 - QR code sharing (per-form QR on share modal)
@@ -101,6 +114,7 @@ Turborepo + auth. Done.
 ---
 
 ## Rules
+
 - End of every slice: `git commit`, deploy, **could submit right now**
 - No slice >1 day; if it grows, cut smaller
 - Never start slice N+1 before N is fully working FE+BE

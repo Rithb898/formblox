@@ -21,7 +21,9 @@ class AuthService {
       .insert(workspacesTable)
       .values({ name: `${fullName}'s Workspace`, createdBy: userId })
       .returning({ id: workspacesTable.id });
-    await db.insert(workspaceMembersTable).values({ workspaceId: workspace!.id, userId, role: "owner" });
+    await db
+      .insert(workspaceMembersTable)
+      .values({ workspaceId: workspace!.id, userId, role: "owner" });
   }
 
   private async issueTokens(userId: string): Promise<AuthTokens> {

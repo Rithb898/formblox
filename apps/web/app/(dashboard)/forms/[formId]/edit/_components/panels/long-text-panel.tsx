@@ -8,7 +8,12 @@ import { Label } from "~/components/ui/label";
 
 export function LongTextPanel({ field }: { field: EditorField }) {
   const updateField = useFormEditorStore((s) => s.updateField);
-  const config = field.config as { placeholder?: string; minLength?: number; maxLength?: number; aiFollowupEnabled?: boolean };
+  const config = field.config as {
+    placeholder?: string;
+    minLength?: number;
+    maxLength?: number;
+    aiFollowupEnabled?: boolean;
+  };
 
   function update(patch: Partial<EditorField>) {
     updateField(field.id, patch);
@@ -50,10 +55,7 @@ export function LongTextPanel({ field }: { field: EditorField }) {
             <p className="text-sm font-medium text-[#F2F2F2]">Required</p>
             <p className="text-xs text-[#6B6B6B]">Respondent must answer</p>
           </div>
-          <Switch
-            checked={field.required}
-            onCheckedChange={(v) => update({ required: v })}
-          />
+          <Switch checked={field.required} onCheckedChange={(v) => update({ required: v })} />
         </div>
         <div className="flex items-center justify-between">
           <div>
@@ -78,7 +80,9 @@ export function LongTextPanel({ field }: { field: EditorField }) {
               type="number"
               min={0}
               value={config.minLength ?? ""}
-              onChange={(e) => updateConfig({ minLength: e.target.value ? Number(e.target.value) : undefined })}
+              onChange={(e) =>
+                updateConfig({ minLength: e.target.value ? Number(e.target.value) : undefined })
+              }
               placeholder="—"
               className="border-white/[0.07] bg-white/[0.02] text-sm text-[#F2F2F2] focus-visible:ring-[#E8854A]/40"
             />
@@ -89,7 +93,9 @@ export function LongTextPanel({ field }: { field: EditorField }) {
               type="number"
               min={1}
               value={config.maxLength ?? ""}
-              onChange={(e) => updateConfig({ maxLength: e.target.value ? Number(e.target.value) : undefined })}
+              onChange={(e) =>
+                updateConfig({ maxLength: e.target.value ? Number(e.target.value) : undefined })
+              }
               placeholder="—"
               className="border-white/[0.07] bg-white/[0.02] text-sm text-[#F2F2F2] focus-visible:ring-[#E8854A]/40"
             />

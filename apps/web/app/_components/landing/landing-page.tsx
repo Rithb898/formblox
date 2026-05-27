@@ -29,7 +29,7 @@ export function LandingPage() {
           backgroundSize: "18px 18px",
         }}
       />
-      
+
       {/* Page Content */}
       <div className="relative z-10">
         <LandingNav />

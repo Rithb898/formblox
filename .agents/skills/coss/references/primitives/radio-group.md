@@ -26,8 +26,8 @@ npm install @base-ui/react
 ## Canonical imports
 
 ```tsx
-import { Label } from "@/components/ui/label"
-import { Radio, RadioGroup } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label";
+import { Radio, RadioGroup } from "@/components/ui/radio-group";
 ```
 
 ## Minimal pattern

@@ -1,6 +1,17 @@
 "use client";
 
-import { BarChart3, ListChecks, MousePointer2, Sparkles, RefreshCw, Type, Star, ToggleLeft, CheckCircle2, TrendingUp } from "lucide-react";
+import {
+  BarChart3,
+  ListChecks,
+  MousePointer2,
+  Sparkles,
+  RefreshCw,
+  Type,
+  Star,
+  ToggleLeft,
+  CheckCircle2,
+  TrendingUp,
+} from "lucide-react";
 import { ScrollReveal } from "./scroll-reveal";
 import { motion } from "motion/react";
 
@@ -9,15 +20,20 @@ function BuildCardPlaceholder() {
     <div className="mt-6 border border-white/[0.04] bg-[#0c0c0c]/80 rounded-xl p-3 flex flex-col md:flex-row gap-3 min-h-[140px] text-left">
       {/* Pane 1: Palette */}
       <div className="w-full md:w-1/3 flex flex-col gap-1 border-b md:border-b-0 md:border-r border-white/[0.04] pb-2 md:pb-0 md:pr-2.5">
-        <span className="font-mono text-[7px] text-zinc-500 uppercase tracking-wider mb-1 block">Palette</span>
+        <span className="font-mono text-[7px] text-zinc-500 uppercase tracking-wider mb-1 block">
+          Palette
+        </span>
         {[
           { label: "Short text", icon: Type },
           { label: "Rating Scale", icon: Star },
-          { label: "Toggle Switch", icon: ToggleLeft }
+          { label: "Toggle Switch", icon: ToggleLeft },
         ].map((item, idx) => {
           const Icon = item.icon;
           return (
-            <div key={idx} className="flex items-center gap-1.5 rounded-lg border border-white/[0.04] bg-white/[0.01] px-2 py-1 text-[8px] text-[#6B6B6B]">
+            <div
+              key={idx}
+              className="flex items-center gap-1.5 rounded-lg border border-white/[0.04] bg-white/[0.01] px-2 py-1 text-[8px] text-[#6B6B6B]"
+            >
               <Icon className="size-2.5 text-[#E8854A]/80" />
               <span className="truncate">{item.label}</span>
             </div>
@@ -26,10 +42,14 @@ function BuildCardPlaceholder() {
       </div>
       {/* Pane 2: Canvas */}
       <div className="flex-1 flex flex-col gap-1.5 justify-center">
-        <span className="font-mono text-[7px] text-zinc-500 uppercase tracking-wider mb-0.5">Canvas Workspace</span>
+        <span className="font-mono text-[7px] text-zinc-500 uppercase tracking-wider mb-0.5">
+          Canvas Workspace
+        </span>
         <div className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/4 px-2.5 py-1.5 text-[8px] flex items-center justify-between shadow-md">
           <div className="flex items-center gap-1.5">
-            <span className="size-3.5 rounded bg-[#E8854A]/10 text-[#E8854A] flex items-center justify-center font-mono text-[7px] font-semibold border border-[#E8854A]/25">1</span>
+            <span className="size-3.5 rounded bg-[#E8854A]/10 text-[#E8854A] flex items-center justify-center font-mono text-[7px] font-semibold border border-[#E8854A]/25">
+              1
+            </span>
             <span className="text-white font-medium truncate">Onboarding Survey</span>
           </div>
           <span className="size-1.5 bg-[#E8854A] rounded-full animate-pulse" />
@@ -45,11 +65,15 @@ function RunnerCardPlaceholder() {
     <div className="mt-6 border border-white/[0.04] bg-[#0c0c0c]/90 rounded-xl p-3.5 flex flex-col justify-between min-h-[140px] text-left">
       <div className="flex justify-between items-center text-[7px] text-zinc-500 font-mono border-b border-white/[0.04] pb-1.5">
         <span>formblox.app/f/onboarding</span>
-        <span className="text-[#E8854A] font-semibold bg-[#E8854A]/10 px-1.5 py-0.5 rounded-full">92% Done</span>
+        <span className="text-[#E8854A] font-semibold bg-[#E8854A]/10 px-1.5 py-0.5 rounded-full">
+          92% Done
+        </span>
       </div>
       <div className="py-2.5 space-y-1">
         <p className="text-[8px] text-zinc-500 font-mono">Question 2 of 3</p>
-        <p className="text-[11px] font-semibold text-white leading-tight">What is your primary onboarding goal?</p>
+        <p className="text-[11px] font-semibold text-white leading-tight">
+          What is your primary onboarding goal?
+        </p>
       </div>
       <div className="flex items-center gap-1.5">
         <span className="rounded-lg border border-[#E8854A]/40 bg-[#E8854A]/8 px-2.5 py-1.5 text-[8px] font-semibold text-[#E8854A]">
@@ -68,7 +92,9 @@ function FollowUpCardPlaceholder() {
     <div className="mt-6 space-y-3.5 text-left min-h-[140px] flex flex-col justify-center">
       {/* User Answer */}
       <div className="rounded-xl border border-white/[0.05] bg-white/[0.01] p-2.5 relative">
-        <p className="text-[7px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1.5">Open-Text Answer</p>
+        <p className="text-[7px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1.5">
+          Open-Text Answer
+        </p>
         <p className="text-[9.5px] text-white">"We need to collect leads on our landing page."</p>
       </div>
       {/* AI Follow-Up node */}
@@ -90,13 +116,20 @@ function GeneratorCardPlaceholder() {
     <div className="mt-6 space-y-3 text-left min-h-[140px] flex flex-col justify-center">
       {/* User Prompt */}
       <div className="rounded-xl border border-dashed border-white/[0.08] p-2.5 bg-white/[0.01]">
-        <p className="text-[7px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1.5">AI Prompt</p>
-        <p className="text-[9.5px] text-[#E8854A] font-semibold">"Create a customer checkout survey"</p>
+        <p className="text-[7px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1.5">
+          AI Prompt
+        </p>
+        <p className="text-[9.5px] text-[#E8854A] font-semibold">
+          "Create a customer checkout survey"
+        </p>
       </div>
       {/* Compiling schemas */}
       <div className="flex gap-2">
         {["1. Rating", "2. Choice"].map((step, idx) => (
-          <div key={idx} className="flex-1 rounded-lg border border-white/[0.04] bg-[#0c0c0c] px-2 py-1.5 text-[8px] font-mono text-zinc-400 flex items-center justify-between">
+          <div
+            key={idx}
+            className="flex-1 rounded-lg border border-white/[0.04] bg-[#0c0c0c] px-2 py-1.5 text-[8px] font-mono text-zinc-400 flex items-center justify-between"
+          >
             <span>{step}</span>
             <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
@@ -143,13 +176,7 @@ type BentoCard = {
   renderPlaceholder: () => React.ReactNode;
 };
 
-function MockBentoCard({
-  card,
-  index,
-}: {
-  card: BentoCard;
-  index: number;
-}) {
+function MockBentoCard({ card, index }: { card: BentoCard; index: number }) {
   const Icon = card.icon;
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -177,9 +204,7 @@ function MockBentoCard({
       <div className="relative min-h-56 overflow-hidden rounded-[1.4rem] bg-[#111] p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/[0.02] flex flex-col justify-between">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[15px] font-semibold tracking-tight text-[#F2F2F2]">
-              {card.title}
-            </p>
+            <p className="text-[15px] font-semibold tracking-tight text-[#F2F2F2]">{card.title}</p>
             <p className="mt-0.5 font-mono text-[9px] text-[#6B6B6B] leading-none uppercase tracking-wide">
               {card.meta}
             </p>

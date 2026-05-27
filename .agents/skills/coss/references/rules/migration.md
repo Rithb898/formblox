@@ -81,7 +81,7 @@ const items = [
       </SelectItem>
     ))}
   </SelectPopup>
-</Select>
+</Select>;
 ```
 
 ### Toggle Group: `type` -> `multiple`

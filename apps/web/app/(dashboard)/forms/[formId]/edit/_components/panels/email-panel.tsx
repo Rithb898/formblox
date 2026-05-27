@@ -31,7 +31,9 @@ export function EmailPanel({ field }: { field: EditorField }) {
         <Input
           value={config.placeholder ?? ""}
           onChange={(e) =>
-            updateField(field.id, { config: { ...config, placeholder: e.target.value || undefined } })
+            updateField(field.id, {
+              config: { ...config, placeholder: e.target.value || undefined },
+            })
           }
           placeholder="your@email.com"
           className="border-white/[0.07] bg-white/[0.02] text-sm text-[#F2F2F2] focus-visible:ring-[#E8854A]/40"

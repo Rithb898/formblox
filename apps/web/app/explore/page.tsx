@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, Inbox, Layers, Loader2 } from "lucide-react";
 import { trpc } from "~/trpc/client";
@@ -42,9 +43,9 @@ function ExploreCard({ form, index }: { form: ExploreForm; index: number }) {
       className={cn(
         SPANS[index % SPANS.length],
         "animate-fade-up col-span-1",
-        "group relative rounded-[1.75rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06]",
+        "group relative rounded-[1.75rem] bg-white/2 p-1.5 ring-1 ring-white/6",
         `transition-all duration-500 ${EASE}`,
-        "hover:ring-white/[0.12]",
+        "hover:ring-white/12",
       )}
       onMouseMove={handleMouseMove}
     >
@@ -59,7 +60,7 @@ function ExploreCard({ form, index }: { form: ExploreForm; index: number }) {
       />
 
       {/* Inner core */}
-      <div className="relative flex h-full min-h-[10rem] flex-col gap-3 overflow-hidden rounded-[1.4rem] bg-[#111] p-5">
+      <div className="relative flex h-full min-h-40 flex-col gap-3 overflow-hidden rounded-[1.4rem] bg-[#111] p-5">
         {/* Title */}
         <h3 className="line-clamp-2 text-base font-semibold tracking-tight text-white">
           {form.title}
@@ -67,9 +68,7 @@ function ExploreCard({ form, index }: { form: ExploreForm; index: number }) {
 
         {/* Description */}
         {form.description && (
-          <p className="line-clamp-2 text-xs text-[#6B6B6B] leading-relaxed">
-            {form.description}
-          </p>
+          <p className="line-clamp-2 text-xs text-[#6B6B6B] leading-relaxed">{form.description}</p>
         )}
 
         {/* Meta row */}
@@ -96,7 +95,7 @@ function ExploreCard({ form, index }: { form: ExploreForm; index: number }) {
         <div
           className={cn(
             "pointer-events-none absolute inset-x-0 bottom-0 flex justify-end p-4",
-            "bg-gradient-to-t from-[#111] via-[#111]/90 to-transparent pt-10",
+            "bg-linear-to-t from-[#111] via-[#111]/90 to-transparent pt-10",
             "translate-y-2 opacity-0",
             `transition-all duration-500 ${EASE}`,
             "group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100",
@@ -127,10 +126,10 @@ function CardSkeleton({ index }: { index: number }) {
     <div
       className={cn(
         SPANS[index % SPANS.length],
-        "col-span-1 rounded-[1.75rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06]",
+        "col-span-1 rounded-[1.75rem] bg-white/2 p-1.5 ring-1 ring-white/6",
       )}
     >
-      <div className="min-h-[10rem] animate-pulse overflow-hidden rounded-[1.4rem] bg-[#111]">
+      <div className="min-h-40 animate-pulse overflow-hidden rounded-[1.4rem] bg-[#111]">
         <div
           className="size-full animate-shimmer"
           style={{
@@ -153,11 +152,16 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-[#080808] text-[#F2F2F2]">
       {/* Minimal top nav */}
       <nav className="fixed inset-x-0 top-4 z-40 px-4">
-        <div className="mx-auto max-w-4xl rounded-full bg-white/[0.01] p-1 ring-1 ring-white/[0.06]">
-          <div className="flex h-12 items-center justify-between rounded-full bg-[#111] px-4 border border-white/[0.01]">
-            <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight text-[#F2F2F2]">
-              <span className="size-2 rounded-full bg-[#E8854A] animate-pulse" />
-              FormBlox
+        <div className="mx-auto max-w-4xl rounded-full bg-white/1 p-1 ring-1 ring-white/6">
+          <div className="flex h-12 items-center justify-between rounded-full bg-[#111] px-4 border border-white/1">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="FormBlox"
+                width={100}
+                height={25}
+                className="object-contain"
+              />
             </Link>
             <div className="flex items-center gap-2">
               <Link
@@ -209,7 +213,7 @@ export default function ExplorePage() {
           </div>
         ) : forms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
-            <p className="select-none text-6xl font-semibold tracking-tighter text-white/[0.04]">
+            <p className="select-none text-6xl font-semibold tracking-tighter text-white/4">
               No public forms yet
             </p>
             <p className="mt-4 text-sm text-[#6B6B6B]">

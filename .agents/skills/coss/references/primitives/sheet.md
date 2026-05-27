@@ -36,7 +36,7 @@ import {
   SheetPopup,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 ```
 
 ## Minimal pattern
@@ -48,8 +48,8 @@ import {
     <SheetHeader>
       <SheetTitle>Are you absolutely sure?</SheetTitle>
       <SheetDescription>
-        This action cannot be undone. This will permanently delete your account
-        and remove your data from our servers.
+        This action cannot be undone. This will permanently delete your account and remove your data
+        from our servers.
       </SheetDescription>
     </SheetHeader>
     <SheetPanel>Content</SheetPanel>

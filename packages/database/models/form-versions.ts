@@ -1,8 +1,23 @@
-import { pgTable, uuid, varchar, integer, timestamp, text, jsonb, pgEnum, uniqueIndex, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  varchar,
+  integer,
+  timestamp,
+  text,
+  jsonb,
+  pgEnum,
+  uniqueIndex,
+  index,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { formsTable } from "./forms";
 
-export const formVersionStatusEnum = pgEnum("form_version_status", ["draft", "published", "archived"]);
+export const formVersionStatusEnum = pgEnum("form_version_status", [
+  "draft",
+  "published",
+  "archived",
+]);
 
 export const formVersionsTable = pgTable(
   "form_versions",

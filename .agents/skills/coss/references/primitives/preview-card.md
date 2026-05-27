@@ -20,12 +20,8 @@ npm install @base-ui/react
 ## Canonical imports
 
 ```tsx
-import { Button } from "@/components/ui/button"
-import {
-  PreviewCard,
-  PreviewCardPopup,
-  PreviewCardTrigger,
-} from "@/components/ui/preview-card"
+import { Button } from "@/components/ui/button";
+import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "@/components/ui/preview-card";
 ```
 
 ## Minimal pattern
@@ -47,9 +43,7 @@ Preview card with rich content:
 
 ```tsx
 <PreviewCard>
-  <PreviewCardTrigger render={<a href="/user/johndoe" />}>
-    @johndoe
-  </PreviewCardTrigger>
+  <PreviewCardTrigger render={<a href="/user/johndoe" />}>@johndoe</PreviewCardTrigger>
   <PreviewCardPopup className="w-80">
     <div className="flex items-center gap-3">
       <Avatar>

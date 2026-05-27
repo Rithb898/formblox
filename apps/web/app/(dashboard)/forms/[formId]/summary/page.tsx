@@ -78,7 +78,10 @@ export default function SummaryPage({ params }: { params: Promise<{ formId: stri
         <div className="flex items-center gap-3">
           <Link
             href={`/forms/${formId}/edit`}
-            className={cn("flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-[#F2F2F2]", EASE)}
+            className={cn(
+              "flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-[#F2F2F2]",
+              EASE,
+            )}
           >
             <ArrowLeft className="size-3.5" />
             Back to editor
@@ -122,8 +125,12 @@ export default function SummaryPage({ params }: { params: Promise<{ formId: stri
               <Inbox className="size-6 text-[#3A3A3A]" />
             </div>
             <div className="space-y-1.5">
-              <p className="text-2xl font-semibold tracking-tight text-[#3A3A3A]">No responses yet</p>
-              <p className="text-xs text-[#6B6B6B]">Share your form to start collecting responses, then come back for an AI summary.</p>
+              <p className="text-2xl font-semibold tracking-tight text-[#3A3A3A]">
+                No responses yet
+              </p>
+              <p className="text-xs text-[#6B6B6B]">
+                Share your form to start collecting responses, then come back for an AI summary.
+              </p>
             </div>
           </div>
         ) : error && !summary ? (

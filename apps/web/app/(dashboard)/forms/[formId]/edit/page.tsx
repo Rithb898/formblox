@@ -94,10 +94,7 @@ export default function EditorPage({ params }: { params: Promise<{ formId: strin
             The form editor isn&apos;t supported on small screens.
           </p>
         </div>
-        <a
-          href="/forms"
-          className="text-sm text-[#E8854A] underline-offset-4 hover:underline"
-        >
+        <a href="/forms" className="text-sm text-[#E8854A] underline-offset-4 hover:underline">
           Back to forms
         </a>
       </div>

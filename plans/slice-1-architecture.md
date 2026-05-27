@@ -9,18 +9,20 @@ All decisions reached via grilling session on 2026-05-23. Implemented in Slice 1
 ## Data Model
 
 ### Tables
-| Table | Purpose |
-|---|---|
-| `workspaces` | Ownership unit; personal workspace auto-created on signup |
-| `forms` | Metadata, slug, soft-delete, workspace FK |
-| `form_versions` | Respondent-facing snapshot per publish |
-| `form_fields` | Fields belonging to a version |
-| `responses` | One row per form-fill session (created on first interaction) |
-| `response_answers` | One row per field answer |
-| `ai_follow_ups` | AI-generated follow-up Q&A (Slice 5) |
-| `form_summaries` | Cached AI summaries (Slice 6) |
+
+| Table              | Purpose                                                      |
+| ------------------ | ------------------------------------------------------------ |
+| `workspaces`       | Ownership unit; personal workspace auto-created on signup    |
+| `forms`            | Metadata, slug, soft-delete, workspace FK                    |
+| `form_versions`    | Respondent-facing snapshot per publish                       |
+| `form_fields`      | Fields belonging to a version                                |
+| `responses`        | One row per form-fill session (created on first interaction) |
+| `response_answers` | One row per field answer                                     |
+| `ai_follow_ups`    | AI-generated follow-up Q&A (Slice 5)                         |
+| `form_summaries`   | Cached AI summaries (Slice 6)                                |
 
 ### `forms`
+
 ```
 id uuid pk
 workspace_id uuid fk → workspaces
@@ -31,6 +33,7 @@ created_at, updated_at
 ```
 
 ### `form_versions`
+
 ```
 id uuid pk
 form_id uuid fk → forms
@@ -47,6 +50,7 @@ created_at, updated_at
 ```
 
 ### `form_fields`
+
 ```
 id uuid pk
 form_version_id uuid fk → form_versions
@@ -59,6 +63,7 @@ created_at, updated_at
 ```
 
 ### `responses`
+
 ```
 id uuid pk
 form_version_id uuid fk → form_versions
@@ -72,6 +77,7 @@ metadata jsonb                         -- UA, IP hash, UTM, locale
 ```
 
 ### `response_answers`
+
 ```
 id uuid pk
 response_id uuid fk → responses
@@ -81,6 +87,7 @@ answered_at timestamp
 ```
 
 ### `ai_follow_ups` (Slice 5)
+
 ```
 id uuid pk
 response_id uuid fk → responses
@@ -95,6 +102,7 @@ answered_at timestamp nullable
 ```
 
 ### `form_summaries` (Slice 6)
+
 ```
 id uuid pk
 form_id uuid fk → forms
@@ -116,6 +124,7 @@ generated_by uuid fk → users
 **Slice 3 adds:** editor + runner UI for remaining 6
 
 ### Config shapes (jsonb, validated by Zod discriminated union in `packages/forms/`)
+
 ```ts
 short_text:      { placeholder?, maxLength?, minLength? }
 long_text:       { placeholder?, maxLength?, minLength? }
@@ -136,6 +145,7 @@ date:            { min?, max?, format? }
 - Previous `published` → `archived` on new publish
 
 ### Publish flow (single DB transaction, row-locked)
+
 1. Validate draft: ≥1 field, all configs valid, non-empty title → reject with `{field_id, error}[]`
 2. Flip draft → `published`, set `published_at = now()`
 3. Archive previous `published` version
@@ -175,6 +185,7 @@ date:            { min?, max?, format? }
 ## Auth & Authorization
 
 Layered tRPC procedure ladder:
+
 ```
 publicProcedure
   authedProcedure          -- requires session, ctx.user
@@ -216,6 +227,7 @@ packages/trpc/server/routes/
 ## Code Organization
 
 ### New `packages/forms/` (domain package)
+
 ```
 packages/forms/
   field-types.ts           -- FieldType enum, union

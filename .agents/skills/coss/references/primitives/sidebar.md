@@ -38,7 +38,7 @@ import {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 ```
 
 ## Minimal pattern
@@ -82,14 +82,10 @@ Sidebar with grouped navigation and footer:
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton render={<a href="/dashboard" />}>
-                Dashboard
-              </SidebarMenuButton>
+              <SidebarMenuButton render={<a href="/dashboard" />}>Dashboard</SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton render={<a href="/projects" />}>
-                Projects
-              </SidebarMenuButton>
+              <SidebarMenuButton render={<a href="/projects" />}>Projects</SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroupContent>
@@ -109,6 +105,7 @@ Sidebar with grouped navigation and footer:
 ```
 
 Key composition rules:
+
 - Wrap app with `SidebarProvider` at the layout level.
 - Use `SidebarContent` (not "SidebarPanel") as the scrollable body between header/footer.
 - Navigation items use `SidebarMenu` > `SidebarMenuItem` > `SidebarMenuButton`.

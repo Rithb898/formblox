@@ -9,12 +9,21 @@ const bodySchema = z.object({
 
 const generatedFormSchema = z.object({
   title: z.string().describe("A concise, descriptive title for this form"),
-  fields: z.array(z.object({
-    type: z.enum(FIELD_TYPES).describe("The field type"),
-    label: z.string().describe("The question or prompt shown to respondents"),
-    required: z.boolean().describe("Whether this field must be answered"),
-    config: z.record(z.string(), z.unknown()).describe("Type-specific config: options[] for choices, min/max for rating, aiFollowupEnabled for text"),
-  })).min(1).max(10),
+  fields: z
+    .array(
+      z.object({
+        type: z.enum(FIELD_TYPES).describe("The field type"),
+        label: z.string().describe("The question or prompt shown to respondents"),
+        required: z.boolean().describe("Whether this field must be answered"),
+        config: z
+          .record(z.string(), z.unknown())
+          .describe(
+            "Type-specific config: options[] for choices, min/max for rating, aiFollowupEnabled for text",
+          ),
+      }),
+    )
+    .min(1)
+    .max(10),
 });
 
 export async function POST(req: Request) {

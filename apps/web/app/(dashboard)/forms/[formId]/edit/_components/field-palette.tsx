@@ -9,10 +9,34 @@ const FIELD_GROUPS = [
   {
     label: "Text",
     types: [
-      { type: "short_text", label: "Short text", description: "Single line answer", icon: Type, defaultConfig: {} },
-      { type: "long_text", label: "Long text", description: "Multi-line answer", icon: AlignLeft, defaultConfig: {} },
-      { type: "email", label: "Email", description: "Email address", icon: Mail, defaultConfig: {} },
-      { type: "number", label: "Number", description: "Numeric answer", icon: Hash, defaultConfig: {} },
+      {
+        type: "short_text",
+        label: "Short text",
+        description: "Single line answer",
+        icon: Type,
+        defaultConfig: {},
+      },
+      {
+        type: "long_text",
+        label: "Long text",
+        description: "Multi-line answer",
+        icon: AlignLeft,
+        defaultConfig: {},
+      },
+      {
+        type: "email",
+        label: "Email",
+        description: "Email address",
+        icon: Mail,
+        defaultConfig: {},
+      },
+      {
+        type: "number",
+        label: "Number",
+        description: "Numeric answer",
+        icon: Hash,
+        defaultConfig: {},
+      },
     ],
   },
   {
@@ -54,7 +78,13 @@ const FIELD_GROUPS = [
         icon: Star,
         defaultConfig: { scale: 5, style: "star" },
       },
-      { type: "date", label: "Date", description: "Date picker", icon: Calendar, defaultConfig: {} },
+      {
+        type: "date",
+        label: "Date",
+        description: "Date picker",
+        icon: Calendar,
+        defaultConfig: {},
+      },
     ],
   },
 ] as const;
@@ -104,7 +134,9 @@ export function FieldPalette() {
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.03] text-[#6B6B6B] ring-1 ring-white/[0.06] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:bg-[#E8854A]/10 group-hover:text-[#E8854A] group-hover:ring-[#E8854A]/30">
                     <Icon className="size-3.5" />
                   </span>
-                  <span className="min-w-0 truncate font-mono text-[12px] text-[#F2F2F2]">{label}</span>
+                  <span className="min-w-0 truncate font-mono text-[12px] text-[#F2F2F2]">
+                    {label}
+                  </span>
                 </button>
               ))}
             </div>

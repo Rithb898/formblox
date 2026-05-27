@@ -48,7 +48,9 @@ export function zodForField(field: FieldForValidation): z.ZodTypeAny {
     case "single_choice": {
       const cfg = fieldConfigSchemas.single_choice.parse(config ?? { options: [] });
       const ids = cfg.options.map((o) => o.id);
-      schema = z.string(required ? REQUIRED : undefined).refine((v) => ids.includes(v), { message: "Invalid option" });
+      schema = z
+        .string(required ? REQUIRED : undefined)
+        .refine((v) => ids.includes(v), { message: "Invalid option" });
       break;
     }
     case "multiple_choice": {
@@ -62,7 +64,11 @@ export function zodForField(field: FieldForValidation): z.ZodTypeAny {
     }
     case "rating": {
       const cfg = fieldConfigSchemas.rating.parse(config ?? { scale: 5, style: "star" });
-      schema = z.number(required ? REQUIRED : undefined).int().min(1).max(cfg.scale);
+      schema = z
+        .number(required ? REQUIRED : undefined)
+        .int()
+        .min(1)
+        .max(cfg.scale);
       break;
     }
     case "date": {

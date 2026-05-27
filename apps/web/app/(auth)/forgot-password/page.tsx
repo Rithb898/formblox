@@ -73,7 +73,10 @@ export default function ForgotPasswordPage() {
             </Field>
 
             {formError && (
-              <p role="alert" className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]">
+              <p
+                role="alert"
+                className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]"
+              >
                 {formError}
               </p>
             )}

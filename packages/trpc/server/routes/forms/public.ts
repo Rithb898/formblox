@@ -1,5 +1,12 @@
 import { eq, and, asc, count, sql } from "@repo/database";
-import { formsTable, formVersionsTable, formFieldsTable, responsesTable, responseAnswersTable, aiFollowupsTable } from "@repo/database/schema";
+import {
+  formsTable,
+  formVersionsTable,
+  formFieldsTable,
+  responsesTable,
+  responseAnswersTable,
+  aiFollowupsTable,
+} from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
@@ -30,10 +37,19 @@ export const formsPublicRouter = router({
         .from(formsTable)
         .innerJoin(
           formVersionsTable,
-          and(eq(formVersionsTable.formId, formsTable.id), eq(formVersionsTable.status, "published")),
+          and(
+            eq(formVersionsTable.formId, formsTable.id),
+            eq(formVersionsTable.status, "published"),
+          ),
         )
         .leftJoin(formFieldsTable, eq(formFieldsTable.formVersionId, formVersionsTable.id))
-        .leftJoin(responsesTable, and(eq(responsesTable.formVersionId, formVersionsTable.id), sql`${responsesTable.completedAt} is not null`))
+        .leftJoin(
+          responsesTable,
+          and(
+            eq(responsesTable.formVersionId, formVersionsTable.id),
+            sql`${responsesTable.completedAt} is not null`,
+          ),
+        )
         .where(and(eq(formsTable.visibility, "public"), sql`${formsTable.deletedAt} is null`))
         .groupBy(formsTable.id, formVersionsTable.id);
 
@@ -45,25 +61,38 @@ export const formsPublicRouter = router({
     .input(z.object({ slug: z.string() }))
     .output(publicFormSchema)
     .query(async ({ input }) => {
-      const [form] = await db.select().from(formsTable)
+      const [form] = await db
+        .select()
+        .from(formsTable)
         .where(eq(formsTable.publicSlug, input.slug))
         .limit(1);
 
       if (!form || form.deletedAt) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const [published] = await db.select().from(formVersionsTable)
-        .where(and(eq(formVersionsTable.formId, form.id), eq(formVersionsTable.status, "published")))
+      const [published] = await db
+        .select()
+        .from(formVersionsTable)
+        .where(
+          and(eq(formVersionsTable.formId, form.id), eq(formVersionsTable.status, "published")),
+        )
         .limit(1);
 
       if (!published) throw new TRPCError({ code: "NOT_FOUND", message: "not_published" });
-      if (!form.isAcceptingResponses) throw new TRPCError({ code: "FORBIDDEN", message: "not_accepting_responses" });
+      if (!form.isAcceptingResponses)
+        throw new TRPCError({ code: "FORBIDDEN", message: "not_accepting_responses" });
 
-      const fields = await db.select().from(formFieldsTable)
+      const fields = await db
+        .select()
+        .from(formFieldsTable)
         .where(eq(formFieldsTable.formVersionId, published.id))
         .orderBy(asc(formFieldsTable.order));
 
       return {
-        form: { id: form.id, publicSlug: form.publicSlug, isAcceptingResponses: form.isAcceptingResponses },
+        form: {
+          id: form.id,
+          publicSlug: form.publicSlug,
+          isAcceptingResponses: form.isAcceptingResponses,
+        },
         version: { id: published.id, title: published.title, description: published.description },
         fields: fields.map((f) => ({ ...f, config: (f.config ?? {}) as Record<string, unknown> })),
       };
@@ -91,18 +120,27 @@ export const formsPublicRouter = router({
       if (!allowed) throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "rate_limited" });
 
       // Re-resolve the published version from the slug — never trust a client-sent version.
-      const [form] = await db.select().from(formsTable)
+      const [form] = await db
+        .select()
+        .from(formsTable)
         .where(eq(formsTable.publicSlug, input.slug))
         .limit(1);
       if (!form || form.deletedAt) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const [published] = await db.select().from(formVersionsTable)
-        .where(and(eq(formVersionsTable.formId, form.id), eq(formVersionsTable.status, "published")))
+      const [published] = await db
+        .select()
+        .from(formVersionsTable)
+        .where(
+          and(eq(formVersionsTable.formId, form.id), eq(formVersionsTable.status, "published")),
+        )
         .limit(1);
       if (!published) throw new TRPCError({ code: "NOT_FOUND", message: "not_published" });
-      if (!form.isAcceptingResponses) throw new TRPCError({ code: "FORBIDDEN", message: "not_accepting_responses" });
+      if (!form.isAcceptingResponses)
+        throw new TRPCError({ code: "FORBIDDEN", message: "not_accepting_responses" });
 
-      const fields = await db.select().from(formFieldsTable)
+      const fields = await db
+        .select()
+        .from(formFieldsTable)
         .where(eq(formFieldsTable.formVersionId, published.id))
         .orderBy(asc(formFieldsTable.order));
 
@@ -120,9 +158,11 @@ export const formsPublicRouter = router({
 
         const entries = Object.entries(parsed.data);
         if (entries.length > 0) {
-          await tx.insert(responseAnswersTable).values(
-            entries.map(([fieldId, value]) => ({ responseId: response!.id, fieldId, value })),
-          );
+          await tx
+            .insert(responseAnswersTable)
+            .values(
+              entries.map(([fieldId, value]) => ({ responseId: response!.id, fieldId, value })),
+            );
         }
 
         if (input.followups && input.followups.length > 0) {
@@ -143,17 +183,22 @@ export const formsPublicRouter = router({
     }),
 
   saveFollowups: publicProcedure
-    .meta({ openapi: { method: "POST", path: "/public/responses/{responseId}/followups", tags: TAGS } })
-    .input(z.object({
-      responseId: z.string().uuid(),
-      followups: z.array(followupInputSchema),
-    }))
+    .meta({
+      openapi: { method: "POST", path: "/public/responses/{responseId}/followups", tags: TAGS },
+    })
+    .input(
+      z.object({
+        responseId: z.string().uuid(),
+        followups: z.array(followupInputSchema),
+      }),
+    )
     .output(z.void())
     .mutation(async ({ input }) => {
       if (input.followups.length === 0) return;
 
       // Verify the response exists before writing
-      const [response] = await db.select({ id: responsesTable.id })
+      const [response] = await db
+        .select({ id: responsesTable.id })
         .from(responsesTable)
         .where(eq(responsesTable.id, input.responseId))
         .limit(1);

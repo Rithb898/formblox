@@ -20,7 +20,9 @@ export const formsTable = pgTable(
   },
   (table) => [
     index("forms_workspace_id_idx").on(table.workspaceId),
-    index("forms_deleted_at_idx").on(table.deletedAt).where(sql`${table.deletedAt} IS NULL`),
+    index("forms_deleted_at_idx")
+      .on(table.deletedAt)
+      .where(sql`${table.deletedAt} IS NULL`),
     index("forms_visibility_idx").on(table.visibility),
   ],
 );

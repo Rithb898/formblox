@@ -77,7 +77,10 @@ function LoginForm() {
             </Field>
 
             {formError && (
-              <p role="alert" className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]">
+              <p
+                role="alert"
+                className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]"
+              >
                 {formError}
               </p>
             )}
@@ -95,12 +98,7 @@ function LoginForm() {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            type="button"
-            className={`w-full ${googleBtnClass}`}
-            asChild
-          >
+          <Button variant="outline" type="button" className={`w-full ${googleBtnClass}`} asChild>
             <a href={googleOAuthUrl}>
               <IconBrandGoogle aria-hidden="true" />
               Continue with Google

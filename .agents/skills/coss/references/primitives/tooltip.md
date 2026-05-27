@@ -32,16 +32,14 @@ import {
   TooltipPopup,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 ```
 
 ## Minimal pattern
 
 ```tsx
 <Tooltip>
-  <TooltipTrigger render={<Button variant="outline" />}>
-    Hover me
-  </TooltipTrigger>
+  <TooltipTrigger render={<Button variant="outline" />}>Hover me</TooltipTrigger>
   <TooltipPopup>Helpful hint</TooltipPopup>
 </Tooltip>
 ```

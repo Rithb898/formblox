@@ -4,7 +4,15 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Plus, Pencil, Trash2, Loader2, Globe, FileText, Inbox, Link2, Sparkles,
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Globe,
+  FileText,
+  Inbox,
+  Link2,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { nanoid } from "nanoid";
@@ -13,8 +21,12 @@ import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import {
-  Dialog, DialogContent, DialogDescription,
-  DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "~/components/ui/dialog";
 
 const ACCENT = "#E8854A";
@@ -45,16 +57,10 @@ function StatusPill({ status }: { status: string }) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em]",
-        published
-          ? "bg-[#E8854A]/12 text-[#E8854A]"
-          : "bg-white/[0.06] text-[#6B6B6B]",
+        published ? "bg-[#E8854A]/12 text-[#E8854A]" : "bg-white/[0.06] text-[#6B6B6B]",
       )}
     >
-      {published ? (
-        <Globe className="size-2.5" />
-      ) : (
-        <FileText className="size-2.5" />
-      )}
+      {published ? <Globe className="size-2.5" /> : <FileText className="size-2.5" />}
       {status}
     </span>
   );
@@ -79,8 +85,8 @@ function DeleteDialog({
         <DialogHeader>
           <DialogTitle>Delete form?</DialogTitle>
           <DialogDescription>
-            <span className="font-medium text-foreground">{form?.title || "Untitled form"}</span> will
-            be soft-deleted. You can restore it later.
+            <span className="font-medium text-foreground">{form?.title || "Untitled form"}</span>{" "}
+            will be soft-deleted. You can restore it later.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -192,9 +198,7 @@ function FormCard({
 
         {/* Meta */}
         <div className="mt-auto flex flex-col gap-1.5">
-          <p className="font-mono text-[11px] text-[#6B6B6B]">
-            /f/{form.publicSlug}
-          </p>
+          <p className="font-mono text-[11px] text-[#6B6B6B]">/f/{form.publicSlug}</p>
           <p className="font-mono text-[11px] text-[#5A5A5A]">
             created {formatDistanceToNow(new Date(form.createdAt), { addSuffix: true })}
           </p>
@@ -260,7 +264,15 @@ function GenerateModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!isPending) { onOpenChange(v); if (!v) setPrompt(""); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!isPending) {
+          onOpenChange(v);
+          if (!v) setPrompt("");
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -276,7 +288,9 @@ function GenerateModal({
             ref={textareaRef}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+            }}
             placeholder="e.g. a customer feedback form for a coffee shop, a job application form, a weekly team standup survey…"
             disabled={isPending}
             rows={4}
@@ -307,7 +321,11 @@ function GenerateModal({
               "hover:bg-[#7C3AED]/25 disabled:pointer-events-none disabled:opacity-50",
             )}
           >
-            {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+            {isPending ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="size-3.5" />
+            )}
             {isPending ? "Generating…" : "Generate"}
           </button>
         </DialogFooter>
@@ -420,13 +438,21 @@ export default function FormsPage() {
         body: JSON.stringify({ prompt }),
       });
       if (!res.ok) throw new Error("generation_failed");
-      const { title, fields: generatedFields } = await res.json() as {
+      const { title, fields: generatedFields } = (await res.json()) as {
         title: string;
-        fields: { type: string; label: string; required: boolean; config: Record<string, unknown> }[];
+        fields: {
+          type: string;
+          label: string;
+          required: boolean;
+          config: Record<string, unknown>;
+        }[];
       };
 
       // 2. Create form
-      const form = await createMutation.mutateAsync({ workspaceId, title: title || "Untitled form" });
+      const form = await createMutation.mutateAsync({
+        workspaceId,
+        title: title || "Untitled form",
+      });
 
       // 3. Populate draft with generated fields
       await updateDraftMutation.mutateAsync({
@@ -533,7 +559,15 @@ export default function FormsPage() {
 
       <GenerateModal
         open={generateOpen}
-        onOpenChange={(v) => { if (!generating) { setGenerateOpen(v); if (!v) { setGenerating(false); setGenerateError(false); } } }}
+        onOpenChange={(v) => {
+          if (!generating) {
+            setGenerateOpen(v);
+            if (!v) {
+              setGenerating(false);
+              setGenerateError(false);
+            }
+          }
+        }}
         onGenerate={handleGenerate}
         isPending={generating}
         hasError={generateError}

@@ -129,9 +129,7 @@ function PlanCard({
       {/* Card body — flex-1 so all cards in a row stretch to the same height */}
       <div
         className={`relative flex flex-1 flex-col rounded-[1.4rem] border px-6 py-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] ${
-          plan.highlight
-            ? "bg-[#0f0e0d] border-[#E8854A]/10"
-            : "bg-[#111] border-white/[0.02]"
+          plan.highlight ? "bg-[#0f0e0d] border-[#E8854A]/10" : "bg-[#111] border-white/[0.02]"
         }`}
       >
         {/* Plan name */}
@@ -139,9 +137,7 @@ function PlanCard({
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#6B6B6B]">
             {plan.name}
           </span>
-          {plan.highlight && (
-            <Zap className="size-3.5 text-[#E8854A]" />
-          )}
+          {plan.highlight && <Zap className="size-3.5 text-[#E8854A]" />}
         </div>
 
         {/* Price — fixed height so all cards align below this point */}
@@ -158,9 +154,7 @@ function PlanCard({
               {price === 0 ? "Free" : `$${price}`}
             </motion.span>
           </AnimatePresence>
-          {price > 0 && (
-            <span className="mb-0.5 text-xs text-[#6B6B6B]">/ mo</span>
-          )}
+          {price > 0 && <span className="mb-0.5 text-xs text-[#6B6B6B]">/ mo</span>}
           {annual && annualSaving > 0 && (
             <motion.span
               initial={{ opacity: 0, scale: 0.8 }}
@@ -181,9 +175,7 @@ function PlanCard({
           )}
         </div>
 
-        <p className="mt-3 text-[13px] leading-relaxed text-[#6B6B6B]">
-          {plan.description}
-        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-[#6B6B6B]">{plan.description}</p>
 
         {/* CTA */}
         <div className="mt-6">
@@ -204,10 +196,11 @@ function PlanCard({
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2.5 text-[13px] text-[#8E8E93]">
               <span
-                className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${plan.highlight
+                className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${
+                  plan.highlight
                     ? "bg-[#E8854A]/12 text-[#E8854A]"
                     : "bg-white/[0.04] text-zinc-500"
-                  }`}
+                }`}
               >
                 <Check className="size-2.5" />
               </span>
@@ -247,19 +240,21 @@ export function Pricing() {
             <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.02] p-1 pr-3">
               <button
                 onClick={() => setAnnual(false)}
-                className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-300 ${!annual
+                className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-300 ${
+                  !annual
                     ? "bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20"
                     : "text-[#6B6B6B] hover:text-zinc-300"
-                  }`}
+                }`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setAnnual(true)}
-                className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-300 ${annual
+                className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-300 ${
+                  annual
                     ? "bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20"
                     : "text-[#6B6B6B] hover:text-zinc-300"
-                  }`}
+                }`}
               >
                 Annually
               </button>

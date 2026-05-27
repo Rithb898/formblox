@@ -28,7 +28,8 @@ const socialBtnClass =
   "h-10 rounded-full border-0 bg-white/[0.04] text-[#F2F2F2] shadow-none ring-1 ring-white/[0.08] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.07] hover:text-[#F2F2F2] active:scale-[0.98] disabled:opacity-40 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]";
 
 export default function SignupPage() {
-  const { register, errors, onSubmit, isPending, done, formError, googleOAuthUrl } = useSignupForm();
+  const { register, errors, onSubmit, isPending, done, formError, googleOAuthUrl } =
+    useSignupForm();
 
   if (done) {
     return (
@@ -120,7 +121,10 @@ export default function SignupPage() {
             <p className="text-xs text-[#6B6B6B]">Must be at least 8 characters long.</p>
 
             {formError && (
-              <p role="alert" className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]">
+              <p
+                role="alert"
+                className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]"
+              >
                 {formError}
               </p>
             )}
@@ -138,12 +142,7 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            type="button"
-            asChild
-            className={`w-full ${socialBtnClass}`}
-          >
+          <Button variant="outline" type="button" asChild className={`w-full ${socialBtnClass}`}>
             <a href={googleOAuthUrl}>
               <IconBrandGoogle aria-hidden="true" />
               Continue with Google

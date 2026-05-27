@@ -6,29 +6,29 @@ A production-style Typeform-alternative built with Turborepo, tRPC, Zod, Drizzle
 
 ## Demo
 
-| Item | Value |
-|------|-------|
-| **Live URL** | *(add deployed URL here)* |
-| **Demo email** | `rithb8981@gmail.com` |
-| **Demo password** | `Rithb@8981` |
-| **Explore page** | `/explore` — 3 themed public forms with seeded responses |
-| **API docs** | `/docs` (Scalar) |
+| Item              | Value                                                    |
+| ----------------- | -------------------------------------------------------- |
+| **Live URL**      | _(add deployed URL here)_                                |
+| **Demo email**    | `rithb8981@gmail.com`                                    |
+| **Demo password** | `Rithb@8981`                                             |
+| **Explore page**  | `/explore` — 3 themed public forms with seeded responses |
+| **API docs**      | `/docs` (Scalar)                                         |
 
 ---
 
 ## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Monorepo | Turborepo |
-| Frontend | Next.js 16, React 19, Tailwind CSS v4 |
-| Backend | Express.js, tRPC v11 |
-| Database | PostgreSQL + Drizzle ORM |
-| Validation | Zod |
-| Auth | JWT (access + refresh), bcryptjs, Google OAuth |
-| AI | Vercel AI SDK + Claude |
-| Rate limiting | Redis (ioredis) |
-| API docs | Scalar |
+| Layer         | Technology                                     |
+| ------------- | ---------------------------------------------- |
+| Monorepo      | Turborepo                                      |
+| Frontend      | Next.js 16, React 19, Tailwind CSS v4          |
+| Backend       | Express.js, tRPC v11                           |
+| Database      | PostgreSQL + Drizzle ORM                       |
+| Validation    | Zod                                            |
+| Auth          | JWT (access + refresh), bcryptjs, Google OAuth |
+| AI            | Vercel AI SDK + Claude                         |
+| Rate limiting | Redis (ioredis)                                |
+| API docs      | Scalar                                         |
 
 ---
 
@@ -52,6 +52,7 @@ formblox/
 ## Local Setup
 
 ### Prerequisites
+
 - Node.js 18+
 - pnpm 9+
 - PostgreSQL database
@@ -110,6 +111,7 @@ pnpm dev
 ## Features
 
 ### Core
+
 - Email/password auth + Google OAuth
 - JWT access tokens (15min) + refresh tokens (7 days)
 - Email verification + password reset flow
@@ -118,6 +120,7 @@ pnpm dev
 - Soft delete + restore
 
 ### Forms
+
 - 8 field types: short text, long text, email, number, single choice, multiple choice, rating, date
 - Per-field required/optional toggle
 - Type-specific config validation (Zod)
@@ -128,15 +131,18 @@ pnpm dev
 - Honeypot spam protection
 
 ### AI
+
 - AI follow-up questions on open-text answers (streaming, skippable)
 - AI response summary tab (streaming markdown)
 - AI form generation from natural language prompt
 
 ### Public
+
 - `/f/[slug]` — conversational form runner, no login required
 - `/explore` — public forms gallery with bento grid layout
 
 ### API
+
 - Full tRPC API + REST OpenAPI spec
 - Scalar API docs at `/docs`
 
@@ -146,11 +152,11 @@ pnpm dev
 
 After running `pnpm db:seed`:
 
-| Form | Visibility | Responses |
-|------|-----------|-----------|
-| Anime Fan Survey 2025 | Public | 20 |
-| Startup Product Feedback | Public | 15 |
-| Gamer Preferences Poll | Public | 20 |
+| Form                     | Visibility | Responses |
+| ------------------------ | ---------- | --------- |
+| Anime Fan Survey 2025    | Public     | 20        |
+| Startup Product Feedback | Public     | 15        |
+| Gamer Preferences Poll   | Public     | 20        |
 
 All responses include realistic answers and AI follow-up conversations.
 
@@ -162,6 +168,7 @@ Scalar docs: `{BASE_URL}/docs`
 OpenAPI spec: `{BASE_URL}/openapi.json`
 
 Key public endpoints:
+
 - `GET /trpc/forms.public.listPublic` — list all public forms
 - `GET /trpc/forms.public.getBySlug` — get form by slug
 - `POST /trpc/forms.public.submit` — submit a response (rate limited)

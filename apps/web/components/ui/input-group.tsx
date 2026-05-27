@@ -48,8 +48,7 @@ export function InputGroupAddon({
   className,
   align = "inline-start",
   ...props
-}: React.ComponentProps<"div"> &
-  VariantProps<typeof inputGroupAddonVariants>): React.ReactElement {
+}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>): React.ReactElement {
   return (
     <div
       className={cn(inputGroupAddonVariants({ align }), className)}
@@ -63,9 +62,9 @@ export function InputGroupAddon({
         if (isInteractive) return;
         e.preventDefault();
         const parent = e.currentTarget.parentElement;
-        const input = parent?.querySelector<
-          HTMLInputElement | HTMLTextAreaElement
-        >("input, textarea");
+        const input = parent?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+          "input, textarea",
+        );
         if (input && !parent?.querySelector("input:focus, textarea:focus")) {
           input.focus();
         }
@@ -90,10 +89,7 @@ export function InputGroupText({
   );
 }
 
-export function InputGroupInput({
-  className,
-  ...props
-}: InputProps): React.ReactElement {
+export function InputGroupInput({ className, ...props }: InputProps): React.ReactElement {
   return (
     <Input
       className={cn(
@@ -106,9 +102,6 @@ export function InputGroupInput({
   );
 }
 
-export function InputGroupTextarea({
-  className,
-  ...props
-}: TextareaProps): React.ReactElement {
+export function InputGroupTextarea({ className, ...props }: TextareaProps): React.ReactElement {
   return <Textarea className={className} unstyled {...props} />;
 }

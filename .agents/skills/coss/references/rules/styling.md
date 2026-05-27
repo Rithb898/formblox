@@ -36,11 +36,11 @@ Apply this section only when the task touches global theme/layout setup (not nor
 
 coss components use three CSS custom properties for typography:
 
-| Variable | Used by | Default fallback |
-|---|---|---|
-| `--font-sans` | Body text, buttons, labels, most UI | `ui-sans-serif, system-ui, sans-serif` |
-| `--font-mono` | `<code>`, `<kbd>`, `<pre>`, code blocks | `ui-monospace, monospace` |
-| `--font-heading` | Dialog/AlertDialog titles, headings | Defaults to Inter (same as `--font-sans`) |
+| Variable         | Used by                                 | Default fallback                          |
+| ---------------- | --------------------------------------- | ----------------------------------------- |
+| `--font-sans`    | Body text, buttons, labels, most UI     | `ui-sans-serif, system-ui, sans-serif`    |
+| `--font-mono`    | `<code>`, `<kbd>`, `<pre>`, code blocks | `ui-monospace, monospace`                 |
+| `--font-heading` | Dialog/AlertDialog titles, headings     | Defaults to Inter (same as `--font-sans`) |
 
 **CLI setup (recommended):** `npx shadcn@latest init @coss/style` automatically installs `@coss/fonts` — Inter for `--font-sans` and `--font-heading`, Geist Mono for `--font-mono` — via `registry:font` items and configures them in `layout.tsx`.
 
