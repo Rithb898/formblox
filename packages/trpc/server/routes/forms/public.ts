@@ -1,5 +1,5 @@
 import { eq, and, asc } from "@repo/database";
-import { formsTable, formVersionsTable, formFieldsTable, responsesTable, responseAnswersTable } from "@repo/database/schema";
+import { formsTable, formVersionsTable, formFieldsTable, responsesTable, responseAnswersTable, aiFollowupsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
@@ -7,7 +7,7 @@ import { buildResponseSchema } from "@repo/forms";
 import { rateLimit } from "@repo/services/redis";
 import { z } from "../../schema";
 import { publicProcedure, router } from "../../trpc";
-import { publicFormSchema } from "./model";
+import { publicFormSchema, followupInputSchema } from "./model";
 
 export const formsPublicRouter = router({
   getBySlug: publicProcedure
@@ -43,6 +43,7 @@ export const formsPublicRouter = router({
       z.object({
         slug: z.string(),
         answers: z.record(z.string(), z.unknown()),
+        followups: z.array(followupInputSchema).optional(),
         _gotcha: z.string().optional(),
       }),
     )
@@ -91,9 +92,47 @@ export const formsPublicRouter = router({
             entries.map(([fieldId, value]) => ({ responseId: response!.id, fieldId, value })),
           );
         }
+
+        if (input.followups && input.followups.length > 0) {
+          await tx.insert(aiFollowupsTable).values(
+            input.followups.map((f) => ({
+              responseId: response!.id,
+              fieldId: f.fieldId,
+              aiQuestion: f.aiQuestion,
+              userAnswer: f.userAnswer ?? null,
+            })),
+          );
+        }
+
         return response!.id;
       });
 
       return { id };
+    }),
+
+  saveFollowups: publicProcedure
+    .input(z.object({
+      responseId: z.string().uuid(),
+      followups: z.array(followupInputSchema),
+    }))
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      if (input.followups.length === 0) return;
+
+      // Verify the response exists before writing
+      const [response] = await db.select({ id: responsesTable.id })
+        .from(responsesTable)
+        .where(eq(responsesTable.id, input.responseId))
+        .limit(1);
+      if (!response) throw new TRPCError({ code: "NOT_FOUND" });
+
+      await db.insert(aiFollowupsTable).values(
+        input.followups.map((f) => ({
+          responseId: input.responseId,
+          fieldId: f.fieldId,
+          aiQuestion: f.aiQuestion,
+          userAnswer: f.userAnswer ?? null,
+        })),
+      );
     }),
 });

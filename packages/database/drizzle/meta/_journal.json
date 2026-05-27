@@ -36,6 +36,13 @@
       "when": 1779564903931,
       "tag": "0004_parched_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779832055136,
+      "tag": "0005_dear_smasher",
+      "breakpoints": true
     }
   ]
 }

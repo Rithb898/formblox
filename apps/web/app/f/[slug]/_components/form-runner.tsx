@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowUp, Check, Loader2, Star } from "lucide-react";
+import { ArrowUp, Check, Loader2, Star, Sparkles } from "lucide-react";
 import { buildResponseSchema, zodForField, type FieldType } from "@repo/forms";
 import { trpc } from "~/trpc/client";
 import { cn } from "~/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 type Field = {
   id: string;
@@ -17,12 +21,30 @@ type Field = {
   config: Record<string, unknown>;
 };
 
+type AiFollowup = {
+  fieldId: string;
+  fieldLabel: string;
+  userAnswer: string;
+  aiQuestion: string;
+  streaming: boolean;
+};
+
+type DebriefState =
+  | { tag: "idle" }
+  | { tag: "active"; index: number }
+  | { tag: "saving" }
+  | { tag: "done" };
+
 type Props = {
   slug: string;
   title: string;
   description: string | null;
   fields: Field[];
 };
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 const FRIENDLY_ERRORS: Record<string, string> = {
   rate_limited: "Too many submissions. Please wait a moment and try again.",
@@ -33,84 +55,70 @@ const FRIENDLY_ERRORS: Record<string, string> = {
 const TYPING_MS = 600;
 
 type ChoiceOption = { id: string; label: string };
-
-function optionsOf(field: Field): ChoiceOption[] {
-  return (field.config.options as ChoiceOption[] | undefined) ?? [];
+function optionsOf(f: Field): ChoiceOption[] {
+  return (f.config.options as ChoiceOption[] | undefined) ?? [];
 }
 
-// Render a human-readable summary of an answer for the history bubble.
 function formatAnswer(field: Field, value: unknown): string {
-  if (field.type === "single_choice") {
+  if (field.type === "single_choice")
     return optionsOf(field).find((o) => o.id === value)?.label ?? "";
-  }
   if (field.type === "multiple_choice") {
     const ids = (value as string[] | undefined) ?? [];
-    const labels = optionsOf(field);
-    return ids
-      .map((id) => labels.find((o) => o.id === id)?.label ?? id)
-      .join(", ");
+    return ids.map((id) => optionsOf(field).find((o) => o.id === id)?.label ?? id).join(", ");
   }
   if (field.type === "rating") {
     const n = Number(value) || 0;
-    const style = (field.config.style as "star" | "number") ?? "star";
-    if (style === "star") return "★".repeat(n);
-    return `${n}`;
+    return (field.config.style as string) === "number" ? `${n}` : "★".repeat(n);
   }
   return value == null ? "" : String(value);
 }
 
+function isFollowupEligible(f: Field): boolean {
+  return (f.type === "short_text" || f.type === "long_text") &&
+    f.config.aiFollowupEnabled !== false;
+}
+
+// ---------------------------------------------------------------------------
+// UI atoms
+// ---------------------------------------------------------------------------
+
 function Avatar({ initial }: { initial: string }) {
   return (
-    <div
-      aria-hidden="true"
-      className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full bg-[#E8854A] text-[13px] font-semibold text-[#0a0a0a]"
-    >
+    <div className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full bg-[#E8854A] text-[13px] font-semibold text-[#0a0a0a]">
       {initial}
     </div>
   );
 }
 
-function TypingIndicator({ initial }: { initial: string }) {
+function AiAvatar() {
   return (
-    <div className="flex items-end gap-2.5">
-      <Avatar initial={initial} />
-      <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3.5">
-        {[0, 150, 300].map((delay) => (
-          <span
-            key={delay}
-            className="size-1.5 rounded-full bg-[#6B6B6B] animate-typing-bounce"
-            style={{ animationDelay: `${delay}ms` }}
-          />
-        ))}
-      </div>
+    <div className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-[#7C3AED] to-[#a855f7]">
+      <Sparkles className="size-3.5 text-white" />
     </div>
   );
 }
 
-function QuestionBubble({
-  field,
-  initial,
-  faded,
-}: {
-  field: Field;
-  initial: string;
-  faded: boolean;
-}) {
+function TypingDots({ color = "#6B6B6B" }: { color?: string }) {
   return (
-    <div
-      className={cn(
-        "flex items-end gap-2.5 animate-bubble-in-left",
-        faded && "opacity-60",
-      )}
-    >
+    <div className="flex items-center gap-1.5">
+      {[0, 150, 300].map((d) => (
+        <span
+          key={d}
+          className="size-1.5 rounded-full animate-typing-bounce"
+          style={{ background: color, animationDelay: `${d}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function QuestionBubble({ field, initial, faded }: { field: Field; initial: string; faded: boolean }) {
+  return (
+    <div className={cn("flex items-end gap-2.5 animate-bubble-in-left", faded && "opacity-60")}>
       <Avatar initial={initial} />
       <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
         {field.label}
-        {field.required && (
-          <span className="ml-1 text-[#E8854A]" aria-hidden="true">
-            *
-          </span>
-        )}
+        {field.required && <span className="ml-1 text-[#E8854A]">*</span>}
       </div>
     </div>
   );
@@ -118,12 +126,7 @@ function QuestionBubble({
 
 function AnswerBubble({ text, faded }: { text: string; faded: boolean }) {
   return (
-    <div
-      className={cn(
-        "flex justify-end animate-bubble-in-right",
-        faded && "opacity-60",
-      )}
-    >
+    <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
       <div className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-br-sm bg-[#E8854A] px-4 py-3 text-[15px] leading-relaxed text-[#0a0a0a]">
         {text || "—"}
       </div>
@@ -131,15 +134,40 @@ function AnswerBubble({ text, faded }: { text: string; faded: boolean }) {
   );
 }
 
-// AI follow-up bubble — future feature, component built per spec.
-export function AiFollowUpBubble({ text }: { text: string }) {
+function AiFollowUpBubble({ text, streaming = false }: { text: string; streaming?: boolean }) {
   return (
-    <div className="flex animate-bubble-in-left">
-      <div className="max-w-[80%] rounded-2xl border-l-2 border-[#E8854A] bg-[#1a1a1a] px-4 py-3">
-        <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-[#E8854A]">
-          AI
+    <div className="flex animate-bubble-in-left items-end gap-2.5">
+      <AiAvatar />
+      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-[#7C3AED]/25 bg-[#1a1a2e] px-4 py-3">
+        <span className="mb-1.5 flex items-center gap-1.5">
+          <Sparkles className="size-3 text-[#7C3AED]" />
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#7C3AED]">AI</span>
         </span>
-        <p className="text-[15px] leading-relaxed text-[#F2F2F2]">{text}</p>
+        <p className="text-[15px] leading-relaxed text-[#F2F2F2]">
+          {text}
+          {streaming && (
+            <span className="ml-0.5 inline-block size-[3px] animate-pulse rounded-full bg-[#7C3AED] align-middle" />
+          )}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AiFollowUpAnswer({ text, skipped, faded }: { text: string | null; skipped?: boolean; faded?: boolean }) {
+  if (skipped) {
+    return (
+      <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
+        <span className="rounded-full border border-white/[0.07] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[#3A3A3A]">
+          Skipped
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
+      <div className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-br-sm border border-[#7C3AED]/20 bg-[#7C3AED]/[0.08] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
+        {text}
       </div>
     </div>
   );
@@ -149,7 +177,7 @@ function SuccessState() {
   return (
     <div className="flex animate-bubble-in-left items-end gap-2.5">
       <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#E8854A]">
-        <Check className="size-4 text-[#0a0a0a]" aria-hidden="true" />
+        <Check className="size-4 text-[#0a0a0a]" />
       </div>
       <div className="rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
         Thanks — we got it.
@@ -158,55 +186,62 @@ function SuccessState() {
   );
 }
 
-export function FormRunner({ slug, title, description, fields }: Props) {
-  const ordered = useMemo(
-    () => [...fields].sort((a, b) => a.order - b.order),
-    [fields],
+function AllDoneState() {
+  return (
+    <div className="flex animate-bubble-in-left items-end gap-2.5">
+      <AiAvatar />
+      <div className="rounded-2xl rounded-bl-sm border border-[#7C3AED]/25 bg-[#1a1a2e] px-4 py-3 text-[15px] leading-relaxed text-[#F2F2F2]">
+        That's all — thank you for sharing!
+      </div>
+    </div>
   );
+}
 
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
+export function FormRunner({ slug, title, description, fields }: Props) {
+  const ordered = useMemo(() => [...fields].sort((a, b) => a.order - b.order), [fields]);
   const initial = (title.trim()[0] ?? "F").toUpperCase();
 
-  const [submitted, setSubmitted] = useState(false);
-  const [bannerError, setBannerError] = useState<string | null>(null);
-  // index of the question currently being asked (answered count == step)
+  // Form state
   const [step, setStep] = useState(0);
   const [typing, setTyping] = useState(true);
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [bannerError, setBannerError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [responseId, setResponseId] = useState<string | null>(null);
   const honeypotRef = useRef<HTMLInputElement>(null);
+
+  // Background-prefetched AI follow-ups (keyed by fieldId)
+  const [aiFollowups, setAiFollowups] = useState<Map<string, AiFollowup>>(new Map());
+  const abortControllers = useRef<Map<string, AbortController>>(new Map());
+
+  // Debrief state (shown after form submit)
+  const [debrief, setDebrief] = useState<DebriefState>({ tag: "idle" });
+  // Answers collected during debrief: fieldId → answer | null
+  const [debriefAnswers, setDebriefAnswers] = useState<Map<string, string | null>>(new Map());
+
   const threadEndRef = useRef<HTMLDivElement>(null);
 
   const schema = useMemo(
-    () =>
-      buildResponseSchema(
-        ordered.map((f) => ({
-          id: f.id,
-          type: f.type as FieldType,
-          required: f.required,
-          config: f.config,
-        })),
-      ),
+    () => buildResponseSchema(ordered.map((f) => ({ id: f.id, type: f.type as FieldType, required: f.required, config: f.config }))),
     [ordered],
   );
-
   const defaultValues = useMemo(
-    () =>
-      Object.fromEntries(
-        ordered.map((f) => [f.id, f.type === "multiple_choice" ? [] : ""]),
-      ),
+    () => Object.fromEntries(ordered.map((f) => [f.id, f.type === "multiple_choice" ? [] : ""])),
     [ordered],
   );
+  const form = useForm<Record<string, unknown>>({ resolver: zodResolver(schema), defaultValues });
 
-  const form = useForm<Record<string, unknown>>({
-    resolver: zodResolver(schema),
-    defaultValues,
-  });
-
-  const submit = trpc.forms.public.submit.useMutation();
+  const submitMutation = trpc.forms.public.submit.useMutation();
+  const saveFollowupsMutation = trpc.forms.public.saveFollowups.useMutation();
 
   const total = ordered.length;
   const current = ordered[step];
 
-  // Show typing indicator briefly before each new question enters.
+  // Typing indicator on each new question
   useEffect(() => {
     if (step >= total) return;
     setTyping(true);
@@ -214,25 +249,93 @@ export function FormRunner({ slug, title, description, fields }: Props) {
     return () => clearTimeout(t);
   }, [step, total]);
 
-  // Auto-scroll to newest bubble.
+  // Auto-scroll
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [step, typing, submitted]);
+  }, [step, typing, submitted, debrief, aiFollowups]);
 
-  // Validate just the current field's value using its own zod schema, then advance.
+  // ---------------------------------------------------------------------------
+  // Background AI prefetch — fires as soon as user answers a text field
+  // ---------------------------------------------------------------------------
+  const prefetchFollowup = useCallback((field: Field, answer: string) => {
+    if (!isFollowupEligible(field)) return;
+
+    // Cancel any previous fetch for this field
+    abortControllers.current.get(field.id)?.abort();
+    const ctrl = new AbortController();
+    abortControllers.current.set(field.id, ctrl);
+
+    // Optimistically mark as streaming
+    setAiFollowups((prev) => new Map(prev).set(field.id, {
+      fieldId: field.id,
+      fieldLabel: field.label,
+      userAnswer: answer,
+      aiQuestion: "",
+      streaming: true,
+    }));
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/ai/followup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: field.label, answer }),
+          signal: ctrl.signal,
+        });
+
+        if (!res.ok || !res.body) {
+          setAiFollowups((prev) => { const m = new Map(prev); m.delete(field.id); return m; });
+          return;
+        }
+
+        let fullText = "";
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          if (ctrl.signal.aborted) return;
+          const { done, value } = await reader.read();
+          if (done) break;
+          fullText += decoder.decode(value, { stream: true });
+          const trimmed = fullText.trim();
+          setAiFollowups((prev) => new Map(prev).set(field.id, {
+            fieldId: field.id,
+            fieldLabel: field.label,
+            userAnswer: answer,
+            aiQuestion: trimmed,
+            streaming: true,
+          }));
+        }
+
+        const finalText = fullText.trim();
+        if (finalText) {
+          setAiFollowups((prev) => new Map(prev).set(field.id, {
+            fieldId: field.id,
+            fieldLabel: field.label,
+            userAnswer: answer,
+            aiQuestion: finalText,
+            streaming: false,
+          }));
+        } else {
+          setAiFollowups((prev) => { const m = new Map(prev); m.delete(field.id); return m; });
+        }
+      } catch {
+        if (!ctrl.signal.aborted) {
+          setAiFollowups((prev) => { const m = new Map(prev); m.delete(field.id); return m; });
+        }
+      }
+    })();
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Form answer validation + advance
+  // ---------------------------------------------------------------------------
   function validateAndAdvance(rawValue: unknown) {
-    if (typing) return;
-    if (!current) return;
+    if (typing || !current) return;
     setFieldError(null);
 
-    const validator = zodForField({
-      id: current.id,
-      type: current.type as FieldType,
-      required: current.required,
-      config: current.config,
-    });
+    const validator = zodForField({ id: current.id, type: current.type as FieldType, required: current.required, config: current.config });
 
-    // Coerce empty values so required fields fail; numbers come in as numbers.
     let value = rawValue;
     if (typeof value === "string" && value.trim() === "") value = undefined;
     if (current.type === "number" && typeof value === "string") {
@@ -247,56 +350,119 @@ export function FormRunner({ slug, title, description, fields }: Props) {
 
     form.setValue(current.id, value === undefined ? "" : value);
 
+    // Kick off background AI fetch immediately (non-blocking)
+    if (typeof rawValue === "string" && rawValue.trim()) {
+      prefetchFollowup(current, rawValue.trim());
+    }
+
     if (step + 1 >= total) {
       void finalize();
-      return;
+    } else {
+      setStep((s) => s + 1);
     }
-    setStep((s) => s + 1);
   }
 
+  // ---------------------------------------------------------------------------
+  // Submit form
+  // ---------------------------------------------------------------------------
   async function finalize() {
     setBannerError(null);
     const values = form.getValues();
     try {
-      await submit.mutateAsync({
+      const { id } = await submitMutation.mutateAsync({
         slug,
         answers: values,
         _gotcha: honeypotRef.current?.value ?? "",
       });
-      setStep(total);
+      setResponseId(id);
       setSubmitted(true);
+
+      // Determine if there are eligible follow-ups to show
+      const eligible = ordered.filter((f) => isFollowupEligible(f) && aiFollowups.has(f.id));
+      if (eligible.length > 0) {
+        setDebrief({ tag: "active", index: 0 });
+      } else {
+        // No AI follow-ups — go straight to done so SuccessState renders
+        setDebrief({ tag: "done" });
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setBannerError(
-        FRIENDLY_ERRORS[msg] ?? "Something went wrong. Please try again.",
-      );
+      setBannerError(FRIENDLY_ERRORS[msg] ?? "Something went wrong. Please try again.");
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Debrief: user answers (or skips) each AI follow-up
+  // ---------------------------------------------------------------------------
+  const eligibleFollowupFields = useMemo(
+    () => ordered.filter((f) => isFollowupEligible(f) && aiFollowups.has(f.id)),
+    [ordered, aiFollowups],
+  );
+
+  async function handleDebriefAnswer(fieldId: string, answer: string | null) {
+    const newAnswers = new Map(debriefAnswers).set(fieldId, answer);
+    setDebriefAnswers(newAnswers);
+
+    const currentIdx = debrief.tag === "active" ? debrief.index : 0;
+    const nextIdx = currentIdx + 1;
+
+    if (nextIdx >= eligibleFollowupFields.length) {
+      // All done — persist to DB
+      setDebrief({ tag: "saving" });
+      const followupsToSave = eligibleFollowupFields
+        .map((f) => {
+          const fu = aiFollowups.get(f.id);
+          if (!fu || !fu.aiQuestion) return null;
+          const ua = newAnswers.get(f.id) ?? null;
+          return { fieldId: f.id, aiQuestion: fu.aiQuestion, userAnswer: ua };
+        })
+        .filter(Boolean) as { fieldId: string; aiQuestion: string; userAnswer: string | null }[];
+
+      if (responseId && followupsToSave.length > 0) {
+        try {
+          await saveFollowupsMutation.mutateAsync({ responseId, followups: followupsToSave });
+        } catch {
+          // Non-fatal — data is collected, persist failure shouldn't block UX
+        }
+      }
+      setDebrief({ tag: "done" });
+    } else {
+      setDebrief({ tag: "active", index: nextIdx });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Computed UI flags
+  // ---------------------------------------------------------------------------
   const progressPct = total === 0 ? 100 : (step / total) * 100;
   const counter = `${String(Math.min(step + (submitted ? 0 : 1), total)).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
 
+  const currentDebriefField =
+    debrief.tag === "active" ? eligibleFollowupFields[debrief.index] ?? null : null;
+  const currentDebriefFollowup = currentDebriefField ? aiFollowups.get(currentDebriefField.id) : null;
+  const waitingOnAi = currentDebriefFollowup?.streaming ?? false;
+
+  const showFormFooter = !submitted && !!current;
+  const showDebriefFooter =
+    debrief.tag === "active" && !!currentDebriefField && !waitingOnAi;
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-[#080808] text-[#F2F2F2]">
-      {/* radial amber glow */}
+      {/* Radial glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-x-0 top-0 h-[60vh]"
-        style={{
-          background:
-            "radial-gradient(60% 60% at 50% 0%, rgba(232,133,74,0.10), transparent 70%)",
-        }}
+        style={{ background: "radial-gradient(60% 60% at 50% 0%, rgba(232,133,74,0.10), transparent 70%)" }}
       />
 
-      {/* Sticky glass header */}
+      {/* Header */}
       <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#080808]/70 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-5 py-3.5">
-          <h1 className="truncate text-sm font-semibold tracking-tight text-[#F2F2F2]">
-            {title}
-          </h1>
-          <span className="shrink-0 font-mono text-xs text-[#6B6B6B]">
-            {counter}
-          </span>
+          <h1 className="truncate text-sm font-semibold tracking-tight text-[#F2F2F2]">{title}</h1>
+          <span className="shrink-0 font-mono text-xs text-[#6B6B6B]">{counter}</span>
         </div>
         <div className="h-[2px] w-full bg-white/[0.04]">
           <div
@@ -306,91 +472,145 @@ export function FormRunner({ slug, title, description, fields }: Props) {
         </div>
       </header>
 
-      {/* Chat thread */}
+      {/* Thread */}
       <main className="relative z-10 flex-1">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-8">
-          {description && (
-            <p className="text-sm leading-relaxed text-[#6B6B6B]">
-              {description}
-            </p>
-          )}
+          {description && <p className="text-sm leading-relaxed text-[#6B6B6B]">{description}</p>}
 
           {bannerError && (
-            <div
-              role="alert"
-              aria-live="assertive"
-              className="rounded-xl border border-[#E8854A]/40 bg-[#E8854A]/10 px-4 py-3 text-sm text-[#E8854A]"
-            >
+            <div role="alert" aria-live="assertive" className="rounded-xl border border-[#E8854A]/40 bg-[#E8854A]/10 px-4 py-3 text-sm text-[#E8854A]">
               {bannerError}
             </div>
           )}
 
+          {/* Form Q&A bubbles */}
           {ordered.map((field, i) => {
             if (i > step) return null;
-            const answered = i < step;
+            const answered = i < step || submitted;
             return (
               <div key={field.id} className="flex flex-col gap-5">
-                <QuestionBubble
-                  field={field}
-                  initial={initial}
-                  faded={answered}
-                />
+                <QuestionBubble field={field} initial={initial} faded={answered} />
                 {answered && (
-                  <AnswerBubble
-                    text={formatAnswer(field, form.getValues(field.id))}
-                    faded
+                  <AnswerBubble text={formatAnswer(field, form.getValues(field.id))} faded={answered} />
+                )}
+              </div>
+            );
+          })}
+
+          {/* Typing indicator for next form question */}
+          {!submitted && typing && step < total && (
+            <div className="flex items-end gap-2.5">
+              <Avatar initial={initial} />
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm border border-white/[0.07] bg-[#141414] px-4 py-3.5">
+                <TypingDots />
+              </div>
+            </div>
+          )}
+
+          {/* Debrief: past follow-up Q&As */}
+          {submitted && eligibleFollowupFields.map((field, i) => {
+            const fu = aiFollowups.get(field.id);
+            if (!fu) return null;
+
+            const isCurrentDebrief = debrief.tag === "active" && debrief.index === i;
+            const isPastDebrief = debriefAnswers.has(field.id);
+            if (!isCurrentDebrief && !isPastDebrief) return null;
+
+            const userAnswer = debriefAnswers.get(field.id);
+            const faded = isPastDebrief && !isCurrentDebrief;
+
+            return (
+              <div key={`fu-${field.id}`} className="flex flex-col gap-5">
+                {/* AI question bubble */}
+                {fu.aiQuestion ? (
+                  <AiFollowUpBubble text={fu.aiQuestion} streaming={isCurrentDebrief && fu.streaming} />
+                ) : (
+                  // Still streaming when this debrief item is first shown
+                  <div className="flex items-end gap-2.5 animate-bubble-in-left">
+                    <AiAvatar />
+                    <div className="rounded-2xl rounded-bl-sm border border-[#7C3AED]/25 bg-[#1a1a2e] px-4 py-3.5">
+                      <TypingDots color="#7C3AED" />
+                    </div>
+                  </div>
+                )}
+
+                {/* User's answer (only if already answered) */}
+                {isPastDebrief && (
+                  <AiFollowUpAnswer
+                    text={userAnswer ?? null}
+                    skipped={userAnswer === null}
+                    faded={faded}
                   />
                 )}
               </div>
             );
           })}
 
-          {!submitted && typing && step < total && (
-            <TypingIndicator initial={initial} />
+          {/* Saving indicator */}
+          {debrief.tag === "saving" && (
+            <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
+              <Loader2 className="size-3.5 animate-spin" />
+              Saving…
+            </div>
           )}
 
-          {submitted && <SuccessState />}
+          {debrief.tag === "done" && <SuccessState />}
 
           <div ref={threadEndRef} />
         </div>
       </main>
 
-      {/* Sticky reply area */}
-      {!submitted && current && (
+      {/* Form reply footer */}
+      {showFormFooter && (
         <footer className="sticky bottom-0 z-20 border-t border-white/[0.06] bg-[#080808]/80 backdrop-blur-xl">
           <div className="mx-auto w-full max-w-2xl px-5 py-4">
-            {fieldError && (
-              <p
-                role="alert"
-                className="mb-2 text-xs font-medium text-[#E8854A]"
-              >
-                {fieldError}
-              </p>
-            )}
+            {fieldError && <p role="alert" className="mb-2 text-xs font-medium text-[#E8854A]">{fieldError}</p>}
             <ReplyArea
               key={current.id}
               field={current}
-              disabled={typing || submit.isPending}
-              pending={submit.isPending}
+              disabled={typing || submitMutation.isPending}
+              pending={submitMutation.isPending}
               onSubmit={validateAndAdvance}
             />
           </div>
         </footer>
       )}
 
-      {/* Honeypot */}
-      <input
-        ref={honeypotRef}
-        type="text"
-        name="_gotcha"
-        className="hidden"
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-      />
+      {/* Debrief reply footer */}
+      {showDebriefFooter && currentDebriefField && (
+        <footer className="sticky bottom-0 z-20 border-t border-[#7C3AED]/20 bg-[#080808]/80 backdrop-blur-xl">
+          <div className="mx-auto w-full max-w-2xl px-5 py-4">
+            <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[#7C3AED]">
+              <Sparkles className="size-3" />
+              AI follow-up
+            </p>
+            <FollowupReplyArea
+              onSubmit={(a) => void handleDebriefAnswer(currentDebriefField.id, a)}
+              onSkip={() => void handleDebriefAnswer(currentDebriefField.id, null)}
+              pending={saveFollowupsMutation.isPending}
+            />
+          </div>
+        </footer>
+      )}
+
+      {/* Waiting on AI to finish streaming before showing debrief input */}
+      {debrief.tag === "active" && waitingOnAi && (
+        <footer className="sticky bottom-0 z-20 border-t border-[#7C3AED]/20 bg-[#080808]/80 backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-2xl items-center gap-2 px-5 py-4 text-xs text-[#6B6B6B]">
+            <Loader2 className="size-3.5 animate-spin text-[#7C3AED]" />
+            AI is thinking…
+          </div>
+        </footer>
+      )}
+
+      <input ref={honeypotRef} type="text" name="_gotcha" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Reply areas (form fields)
+// ---------------------------------------------------------------------------
 
 type ReplyAreaProps = {
   field: Field;
@@ -401,221 +621,92 @@ type ReplyAreaProps = {
 
 function ReplyArea({ field, disabled, pending, onSubmit }: ReplyAreaProps) {
   switch (field.type) {
-    case "long_text":
-      return (
-        <LongTextReply field={field} disabled={disabled} onSubmit={onSubmit} />
-      );
-    case "single_choice":
-      return (
-        <SingleChoiceReply
-          field={field}
-          disabled={disabled}
-          onSubmit={onSubmit}
-        />
-      );
-    case "multiple_choice":
-      return (
-        <MultipleChoiceReply
-          field={field}
-          disabled={disabled}
-          pending={pending}
-          onSubmit={onSubmit}
-        />
-      );
-    case "rating":
-      return (
-        <RatingReply field={field} disabled={disabled} onSubmit={onSubmit} />
-      );
-    case "date":
-      return (
-        <TextReply
-          field={field}
-          inputType="date"
-          disabled={disabled}
-          onSubmit={onSubmit}
-        />
-      );
-    case "email":
-      return (
-        <TextReply
-          field={field}
-          inputType="email"
-          disabled={disabled}
-          onSubmit={onSubmit}
-        />
-      );
-    case "number":
-      return (
-        <TextReply
-          field={field}
-          inputType="number"
-          disabled={disabled}
-          onSubmit={onSubmit}
-        />
-      );
-    default:
-      return (
-        <TextReply
-          field={field}
-          inputType="text"
-          disabled={disabled}
-          onSubmit={onSubmit}
-        />
-      );
+    case "long_text": return <LongTextReply field={field} disabled={disabled} onSubmit={onSubmit} />;
+    case "single_choice": return <SingleChoiceReply field={field} disabled={disabled} onSubmit={onSubmit} />;
+    case "multiple_choice": return <MultipleChoiceReply field={field} disabled={disabled} pending={pending} onSubmit={onSubmit} />;
+    case "rating": return <RatingReply field={field} disabled={disabled} onSubmit={onSubmit} />;
+    case "date": return <TextReply field={field} inputType="date" disabled={disabled} onSubmit={onSubmit} />;
+    case "email": return <TextReply field={field} inputType="email" disabled={disabled} onSubmit={onSubmit} />;
+    case "number": return <TextReply field={field} inputType="number" disabled={disabled} onSubmit={onSubmit} />;
+    default: return <TextReply field={field} inputType="text" disabled={disabled} onSubmit={onSubmit} />;
   }
 }
 
-function SendButton({
-  disabled,
-  pending,
-  label = "Send",
-}: {
-  disabled: boolean;
-  pending?: boolean;
-  label?: string;
-}) {
+function FollowupReplyArea({ onSubmit, onSkip, pending }: { onSubmit: (a: string) => void; onSkip: () => void; pending: boolean }) {
+  const [value, setValue] = useState("");
   return (
-    <button
-      type="submit"
-      disabled={disabled}
-      aria-label={label}
-      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#E8854A] text-[#0a0a0a] transition-all hover:bg-[#E8854A]/90 disabled:cursor-not-allowed disabled:opacity-40"
+    <form
+      className="flex items-end gap-2"
+      onSubmit={(e) => { e.preventDefault(); if (value.trim()) onSubmit(value.trim()); }}
     >
-      {pending ? (
-        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-      ) : (
-        <ArrowUp className="size-4" aria-hidden="true" />
-      )}
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (value.trim()) onSubmit(value.trim()); } }}
+        placeholder="Reply to AI…"
+        rows={1}
+        autoFocus
+        disabled={pending}
+        className="max-h-32 min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-[#7C3AED]/30 bg-[#1a1a2e] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#7C3AED]/60 disabled:opacity-50"
+      />
+      <button type="button" onClick={onSkip} disabled={pending} className="shrink-0 rounded-full border border-white/[0.08] px-3 py-2 text-xs text-[#6B6B6B] transition-all hover:border-white/20 hover:text-[#F2F2F2] disabled:opacity-40">
+        Skip
+      </button>
+      <button type="submit" disabled={pending || !value.trim()} aria-label="Send reply" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#7C3AED] text-white transition-all hover:bg-[#7C3AED]/90 disabled:cursor-not-allowed disabled:opacity-40">
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
+      </button>
+    </form>
+  );
+}
+
+function SendButton({ disabled, pending, label = "Send" }: { disabled: boolean; pending?: boolean; label?: string }) {
+  return (
+    <button type="submit" disabled={disabled} aria-label={label} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#E8854A] text-[#0a0a0a] transition-all hover:bg-[#E8854A]/90 disabled:cursor-not-allowed disabled:opacity-40">
+      {pending ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
     </button>
   );
 }
 
-const TEXT_INPUT_CLASS =
-  "min-w-0 flex-1 rounded-full border border-white/[0.08] bg-[#141414] px-4 py-2.5 text-[15px] text-[#F2F2F2] outline-none transition-colors placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50";
+const TEXT_INPUT_CLASS = "min-w-0 flex-1 rounded-full border border-white/[0.08] bg-[#141414] px-4 py-2.5 text-[15px] text-[#F2F2F2] outline-none transition-colors placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50";
 
-function TextReply({
-  field,
-  inputType,
-  disabled,
-  onSubmit,
-}: {
-  field: Field;
-  inputType: string;
-  disabled: boolean;
-  onSubmit: (value: unknown) => void;
-}) {
+function TextReply({ field, inputType, disabled, onSubmit }: { field: Field; inputType: string; disabled: boolean; onSubmit: (v: unknown) => void }) {
   const [value, setValue] = useState("");
-  const placeholder = (field.config.placeholder as string | undefined) ?? "";
-  const maxLength = field.config.maxLength as number | undefined;
-  const min = field.config.min as number | undefined;
-  const max = field.config.max as number | undefined;
-
+  const ph = (field.config.placeholder as string | undefined) ?? "";
   return (
-    <form
-      className="flex items-center gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(value);
-      }}
-    >
-      <label htmlFor={field.id} className="sr-only">
-        {field.label}
-      </label>
-      <input
-        id={field.id}
-        type={inputType}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder={placeholder || "Type your answer…"}
-        maxLength={maxLength}
-        min={min}
-        max={max}
-        disabled={disabled}
-        autoComplete="off"
-        autoFocus
-        aria-required={field.required}
-        className={cn(
-          TEXT_INPUT_CLASS,
-          "[color-scheme:dark]",
-        )}
-      />
+    <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); onSubmit(value); }}>
+      <label htmlFor={field.id} className="sr-only">{field.label}</label>
+      <input id={field.id} type={inputType} value={value} onChange={(e) => setValue(e.target.value)}
+        placeholder={ph || "Type your answer…"} maxLength={field.config.maxLength as number | undefined}
+        min={field.config.min as number | undefined} max={field.config.max as number | undefined}
+        disabled={disabled} autoComplete="off" autoFocus aria-required={field.required}
+        className={cn(TEXT_INPUT_CLASS, "[color-scheme:dark]")} />
       <SendButton disabled={disabled} />
     </form>
   );
 }
 
-function LongTextReply({
-  field,
-  disabled,
-  onSubmit,
-}: {
-  field: Field;
-  disabled: boolean;
-  onSubmit: (value: unknown) => void;
-}) {
+function LongTextReply({ field, disabled, onSubmit }: { field: Field; disabled: boolean; onSubmit: (v: unknown) => void }) {
   const [value, setValue] = useState("");
-  const placeholder = (field.config.placeholder as string | undefined) ?? "";
-  const maxLength = field.config.maxLength as number | undefined;
-
+  const ph = (field.config.placeholder as string | undefined) ?? "";
   return (
-    <form
-      className="flex items-end gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(value);
-      }}
-    >
-      <label htmlFor={field.id} className="sr-only">
-        {field.label}
-      </label>
-      <textarea
-        id={field.id}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            onSubmit(value);
-          }
-        }}
-        placeholder={placeholder || "Type your answer…"}
-        maxLength={maxLength}
-        rows={1}
-        disabled={disabled}
-        autoFocus
-        aria-required={field.required}
-        className="max-h-32 min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#141414] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50"
-      />
+    <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); onSubmit(value); }}>
+      <label htmlFor={field.id} className="sr-only">{field.label}</label>
+      <textarea id={field.id} value={value} onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(value); } }}
+        placeholder={ph || "Type your answer…"} maxLength={field.config.maxLength as number | undefined}
+        rows={1} disabled={disabled} autoFocus aria-required={field.required}
+        className="max-h-32 min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#141414] px-4 py-2.5 text-[15px] leading-relaxed text-[#F2F2F2] outline-none transition-colors field-sizing-content placeholder:text-[#6B6B6B] focus:border-[#E8854A]/50 disabled:opacity-50" />
       <SendButton disabled={disabled} />
     </form>
   );
 }
 
-function SingleChoiceReply({
-  field,
-  disabled,
-  onSubmit,
-}: {
-  field: Field;
-  disabled: boolean;
-  onSubmit: (value: unknown) => void;
-}) {
-  const options = optionsOf(field);
+function SingleChoiceReply({ field, disabled, onSubmit }: { field: Field; disabled: boolean; onSubmit: (v: unknown) => void }) {
   return (
-    <div
-      role="group"
-      aria-label={field.label}
-      className="flex flex-wrap gap-2"
-    >
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          type="button"
-          disabled={disabled}
-          aria-label={opt.label}
-          onClick={() => onSubmit(opt.id)}
-          className="rounded-full border border-[#E8854A]/40 bg-[#E8854A]/[0.06] px-4 py-2 text-sm text-[#F2F2F2] transition-all hover:border-[#E8854A] hover:bg-[#E8854A]/15 disabled:cursor-not-allowed disabled:opacity-40"
-        >
+    <div role="group" aria-label={field.label} className="flex flex-wrap gap-2">
+      {optionsOf(field).map((opt) => (
+        <button key={opt.id} type="button" disabled={disabled} onClick={() => onSubmit(opt.id)}
+          className="rounded-full border border-[#E8854A]/40 bg-[#E8854A]/[0.06] px-4 py-2 text-sm text-[#F2F2F2] transition-all hover:border-[#E8854A] hover:bg-[#E8854A]/15 disabled:cursor-not-allowed disabled:opacity-40">
           {opt.label}
         </button>
       ))}
@@ -623,112 +714,52 @@ function SingleChoiceReply({
   );
 }
 
-function MultipleChoiceReply({
-  field,
-  disabled,
-  pending,
-  onSubmit,
-}: {
-  field: Field;
-  disabled: boolean;
-  pending: boolean;
-  onSubmit: (value: unknown) => void;
-}) {
-  const options = optionsOf(field);
+function MultipleChoiceReply({ field, disabled, pending, onSubmit }: { field: Field; disabled: boolean; pending: boolean; onSubmit: (v: unknown) => void }) {
   const [selected, setSelected] = useState<string[]>([]);
-
-  function toggle(id: string) {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  }
-
+  function toggle(id: string) { setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]); }
   return (
-    <form
-      className="flex flex-col gap-3"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(selected);
-      }}
-    >
+    <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); onSubmit(selected); }}>
       <div role="group" aria-label={field.label} className="flex flex-wrap gap-2">
-        {options.map((opt) => {
+        {optionsOf(field).map((opt) => {
           const on = selected.includes(opt.id);
           return (
-            <button
-              key={opt.id}
-              type="button"
-              disabled={disabled}
-              aria-pressed={on}
-              aria-label={opt.label}
-              onClick={() => toggle(opt.id)}
-              className={cn(
-                "rounded-full border px-4 py-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40",
-                on
-                  ? "border-[#E8854A] bg-[#E8854A] text-[#0a0a0a]"
-                  : "border-[#E8854A]/40 bg-[#E8854A]/[0.06] text-[#F2F2F2] hover:border-[#E8854A] hover:bg-[#E8854A]/15",
-              )}
-            >
+            <button key={opt.id} type="button" disabled={disabled} aria-pressed={on} onClick={() => toggle(opt.id)}
+              className={cn("rounded-full border px-4 py-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40",
+                on ? "border-[#E8854A] bg-[#E8854A] text-[#0a0a0a]"
+                   : "border-[#E8854A]/40 bg-[#E8854A]/[0.06] text-[#F2F2F2] hover:border-[#E8854A] hover:bg-[#E8854A]/15")}>
               {opt.label}
             </button>
           );
         })}
       </div>
-      <div className="flex justify-end">
-        <SendButton disabled={disabled} pending={pending} />
-      </div>
+      <div className="flex justify-end"><SendButton disabled={disabled} pending={pending} /></div>
     </form>
   );
 }
 
-function RatingReply({
-  field,
-  disabled,
-  onSubmit,
-}: {
-  field: Field;
-  disabled: boolean;
-  onSubmit: (value: unknown) => void;
-}) {
+function RatingReply({ field, disabled, onSubmit }: { field: Field; disabled: boolean; onSubmit: (v: unknown) => void }) {
   const scale = (field.config.scale as number) ?? 5;
   const style = (field.config.style as "star" | "number") ?? "star";
   const [hover, setHover] = useState(0);
-
   return (
-    <div
-      role="group"
-      aria-label={`Rating out of ${scale}`}
-      className="flex flex-wrap gap-2"
-    >
+    <div role="group" aria-label={`Rating out of ${scale}`} className="flex flex-wrap gap-2">
       {Array.from({ length: scale }, (_, i) => i + 1).map((n) => {
         const active = n <= hover;
         return (
-          <button
-            key={n}
-            type="button"
-            disabled={disabled}
-            aria-label={`${n} out of ${scale}`}
-            onMouseEnter={() => setHover(n)}
-            onMouseLeave={() => setHover(0)}
-            onClick={() => onSubmit(n)}
-            className={cn(
-              "flex size-11 items-center justify-center rounded-xl border transition-all disabled:cursor-not-allowed disabled:opacity-40",
-              active
-                ? "border-[#E8854A] bg-[#E8854A]/15 text-[#E8854A]"
-                : "border-white/[0.08] bg-[#141414] text-[#6B6B6B] hover:border-[#E8854A]/50",
-            )}
-          >
-            {style === "star" ? (
-              <Star
-                className={cn("size-5", active && "fill-[#E8854A]")}
-                aria-hidden="true"
-              />
-            ) : (
-              <span className="text-sm font-medium">{n}</span>
-            )}
+          <button key={n} type="button" disabled={disabled} aria-label={`${n} out of ${scale}`}
+            onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)} onClick={() => onSubmit(n)}
+            className={cn("flex size-11 items-center justify-center rounded-xl border transition-all disabled:cursor-not-allowed disabled:opacity-40",
+              active ? "border-[#E8854A] bg-[#E8854A]/15 text-[#E8854A]"
+                     : "border-white/[0.08] bg-[#141414] text-[#6B6B6B] hover:border-[#E8854A]/50")}>
+            {style === "star"
+              ? <Star className={cn("size-5", active && "fill-[#E8854A]")} />
+              : <span className="text-sm font-medium">{n}</span>}
           </button>
         );
       })}
     </div>
   );
 }
+
+// Re-export for page-level use if needed
+export { AiFollowUpBubble };

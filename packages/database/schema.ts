@@ -11,3 +11,4 @@ export * from "./models/form-versions";
 export * from "./models/form-fields";
 export * from "./models/responses";
 export * from "./models/response-answers";
+export * from "./models/ai-followups";

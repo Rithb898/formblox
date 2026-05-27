@@ -8,7 +8,7 @@ import { Label } from "~/components/ui/label";
 
 export function ShortTextPanel({ field }: { field: EditorField }) {
   const updateField = useFormEditorStore((s) => s.updateField);
-  const config = field.config as { placeholder?: string; minLength?: number; maxLength?: number };
+  const config = field.config as { placeholder?: string; minLength?: number; maxLength?: number; aiFollowupEnabled?: boolean };
 
   function update(patch: Partial<EditorField>) {
     updateField(field.id, patch);
@@ -53,6 +53,16 @@ export function ShortTextPanel({ field }: { field: EditorField }) {
           <Switch
             checked={field.required}
             onCheckedChange={(v) => update({ required: v })}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-[#F2F2F2]">AI Follow-up</p>
+            <p className="text-xs text-[#6B6B6B]">Ask a smart follow-up question</p>
+          </div>
+          <Switch
+            checked={config.aiFollowupEnabled !== false}
+            onCheckedChange={(v) => updateConfig({ aiFollowupEnabled: v })}
           />
         </div>
       </div>

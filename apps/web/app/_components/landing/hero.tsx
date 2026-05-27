@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, MessagesSquare, ChevronDown, Check, Sparkles, RefreshCw, Info, Plus, Pencil, Trash2, Globe, FileText, Inbox, Link2, Settings, HelpCircle } from "lucide-react";
+import { MessagesSquare, ChevronDown, Check, Globe, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { LandingButton } from "./landing-button";
 
 const spring = { type: "spring" as const, stiffness: 100, damping: 22 };
 
@@ -179,26 +179,9 @@ export function Hero() {
           transition={{ ...spring, delay: 0.25 }}
           className="mt-8 flex flex-col items-center gap-3 sm:flex-row"
         >
-          <motion.div
-            whileHover={{ scale: 1.025, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-          >
-            <Button
-              size="lg"
-              asChild
-              className="h-11 rounded-full bg-[#E8854A] px-5 font-semibold text-[#0a0a0a] shadow-none relative overflow-hidden group cursor-pointer"
-            >
-              <Link href="/signup">
-                <span className="relative z-10 flex items-center gap-1.5">
-                  Create this form
-                  <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
-                {/* Subtle light shimmer overlay */}
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:animate-shimmer" style={{ animationDuration: "1.5s" }} />
-              </Link>
-            </Button>
-          </motion.div>
+          <LandingButton href="/signup" size="lg">
+            Create this form
+          </LandingButton>
         </motion.div>
 
         {/* Helper Mock Form Card Component & Infographics */}

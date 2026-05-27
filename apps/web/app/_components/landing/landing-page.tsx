@@ -5,6 +5,7 @@ import { LandingFaq } from "./faq";
 import { Hero } from "./hero";
 import { LandingFooter } from "./landing-footer";
 import { LandingNav } from "./landing-nav";
+import { Pricing } from "./pricing";
 import { ProductBento } from "./product-bento";
 import { StatsBar } from "./stats-bar";
 import { Testimonials } from "./testimonials";
@@ -36,6 +37,7 @@ export function LandingPage() {
         <StatsBar />
         <ProductBento />
         <WedgeShowcase />
+        <Pricing />
         <Testimonials />
         <LandingFaq />
         <FinalCta />

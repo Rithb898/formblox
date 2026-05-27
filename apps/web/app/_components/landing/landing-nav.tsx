@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
-import { ArrowRight, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Sheet,
@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
+import { LandingButton } from "./landing-button";
 
 const navLinks = [
   { href: "#preview", label: "Overview" },
@@ -71,16 +72,9 @@ export function LandingNav() {
             >
               <Link href="/login">Login</Link>
             </Button>
-            <Button
-              size="sm"
-              asChild
-              className="h-8 rounded-full bg-[#E8854A] text-[11px] font-semibold text-[#0a0a0a] hover:bg-[#E8854A]/90 active:scale-[0.98] px-4"
-            >
-              <Link href="/signup">
-                Start free
-                <ArrowRight className="size-3" />
-              </Link>
-            </Button>
+            <LandingButton href="/signup" size="sm">
+              Start free
+            </LandingButton>
           </div>
 
           <div className="md:hidden flex items-center pr-1.5">
@@ -114,9 +108,9 @@ export function LandingNav() {
                     <Button variant="outline" asChild className="rounded-full border-white/[0.08] bg-white/[0.03] text-[#F2F2F2]">
                       <Link href="/login">Login</Link>
                     </Button>
-                    <Button asChild className="rounded-full bg-[#E8854A] text-[#0a0a0a] hover:bg-[#E8854A]/90">
-                      <Link href="/signup">Start building</Link>
-                    </Button>
+                    <LandingButton href="/signup" fullWidth>
+                      Start building
+                    </LandingButton>
                   </div>
                 </div>
               </SheetContent>

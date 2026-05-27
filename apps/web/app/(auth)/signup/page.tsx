@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { IconBrandApple, IconBrandGoogle, IconBrandMeta } from "@tabler/icons-react";
+import { IconBrandGoogle } from "@tabler/icons-react";
 
 const bezelClass =
   "animate-fade-up rounded-[1.75rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06]";
@@ -138,37 +138,17 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant="outline"
-              type="button"
-              disabled
-              aria-label="Continue with Apple"
-              className={socialBtnClass}
-            >
-              <IconBrandApple aria-hidden="true" />
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              asChild
-              aria-label="Continue with Google"
-              className={socialBtnClass}
-            >
-              <a href={googleOAuthUrl}>
-                <IconBrandGoogle aria-hidden="true" />
-              </a>
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              disabled
-              aria-label="Continue with Meta"
-              className={socialBtnClass}
-            >
-              <IconBrandMeta aria-hidden="true" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            type="button"
+            asChild
+            className={`w-full ${socialBtnClass}`}
+          >
+            <a href={googleOAuthUrl}>
+              <IconBrandGoogle aria-hidden="true" />
+              Continue with Google
+            </a>
+          </Button>
         </CardContent>
         <CardFooter className="justify-center">
           <p className="text-sm text-[#6B6B6B]">

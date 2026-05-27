@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import React from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
-import { motion } from "motion/react";
+import { Sparkles } from "lucide-react";
 import { ScrollReveal } from "./scroll-reveal";
+import { LandingButton } from "./landing-button";
 
 export function FinalCta() {
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -18,7 +17,7 @@ export function FinalCta() {
       <ScrollReveal>
         <div
           onMouseMove={handleMouseMove}
-          className="group relative mx-auto max-w-4xl rounded-[2rem] bg-white/[0.02] p-1.5 ring-1 ring-white/[0.06] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/[0.12]"
+          className="group relative mx-auto max-w-4xl rounded-[2rem] bg-white/2 p-1.5 ring-1 ring-white/6 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/12"
         >
           {/* Spotlight border overlay — radial gradient follows cursor */}
           <div
@@ -31,7 +30,7 @@ export function FinalCta() {
           />
 
           {/* Inner card core */}
-          <div className="relative rounded-[calc(2rem-6px)] bg-[#111] overflow-hidden px-6 py-16 text-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/[0.02]">
+          <div className="relative rounded-[calc(2rem-6px)] bg-[#111] overflow-hidden px-6 py-16 text-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/2">
             {/* Background elements */}
             <div
               className="pointer-events-none absolute inset-0 -z-10 select-none opacity-[0.03]"
@@ -60,25 +59,9 @@ export function FinalCta() {
             </p>
 
             <div className="mt-8 flex justify-center">
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative inline-flex items-center justify-center rounded-full p-px font-medium"
-              >
-                {/* Outward glow */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#E8854A] via-[#ffaa75] to-[#E8854A] opacity-70 blur-[3px]" />
-                
-                <Link
-                  href="/signup"
-                  className="relative flex items-center gap-2 rounded-full bg-[#E8854A] px-8 py-3 text-sm font-semibold text-[#0a0a0a] transition-all duration-300 hover:bg-[#E8854A]/95 overflow-hidden group/btn"
-                >
-                  {/* Shimmer sweep reflection on hover */}
-                  <div className="absolute -inset-y-0 -left-[100%] w-[50%] bg-gradient-to-r from-transparent via-white/35 to-transparent skew-x-[30deg] transition-all duration-1000 ease-out group-hover/btn:left-[150%]" />
-                  
-                  <span>Start building free</span>
-                  <ArrowRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                </Link>
-              </motion.div>
+              <LandingButton href="/signup" size="lg">
+                Start building free
+              </LandingButton>
             </div>
           </div>
         </div>

@@ -50,7 +50,7 @@ function FaqItem({
   return (
     <div
       onMouseMove={handleMouseMove}
-      className="group relative cursor-pointer rounded-2xl bg-white/[0.02] p-1 ring-1 ring-white/[0.06] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/[0.12] mb-3.5 select-none"
+      className="group relative cursor-pointer rounded-2xl bg-white/2 p-1 ring-1 ring-white/6 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:ring-white/12 mb-3.5 select-none"
       onClick={onToggle}
     >
       {/* Spotlight border overlay — radial gradient follows cursor */}
@@ -64,7 +64,7 @@ function FaqItem({
       />
 
       {/* Inner card core */}
-      <div className="relative rounded-[0.95rem] bg-[#111] px-5 py-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/[0.02]">
+      <div className="relative rounded-[0.95rem] bg-[#111] px-5 py-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-white/2">
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm font-semibold tracking-tight text-[#F2F2F2] transition-colors duration-300 group-hover:text-white">
             {item.question}
@@ -75,7 +75,7 @@ function FaqItem({
             className={`flex size-6 items-center justify-center rounded-full border transition-colors duration-300 ${
               isOpen
                 ? "border-[#E8854A]/30 bg-[#E8854A]/10 text-[#E8854A]"
-                : "border-white/[0.06] bg-white/[0.02] text-zinc-500 group-hover:text-zinc-300"
+                : "border-white/6 bg-white/2 text-zinc-500 group-hover:text-zinc-300"
             }`}
           >
             <ChevronDown className="size-3.5" />
@@ -92,7 +92,7 @@ function FaqItem({
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
               className="overflow-hidden"
             >
-              <div className="pt-3 text-[13px] leading-relaxed text-[#8E8E93] border-t border-white/[0.03] mt-3">
+              <div className="pt-3 text-[13px] leading-relaxed text-[#8E8E93] border-t border-white/3 mt-3">
                 {item.answer}
               </div>
             </motion.div>
