@@ -23,7 +23,7 @@ COPY --from=installer /app/node_modules ./node_modules
 COPY --from=installer /app/apps ./apps
 COPY --from=installer /app/packages ./packages
 COPY --from=pruner /app/out/full/ .
-RUN pnpm turbo build --filter=@repo/api --no-tui
+RUN TURBO_UI=false pnpm turbo build --filter=@repo/api
 
 # Production runner
 FROM base AS runner

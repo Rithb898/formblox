@@ -24,7 +24,7 @@ COPY --from=installer /app/apps ./apps
 COPY --from=installer /app/packages ./packages
 COPY --from=pruner /app/out/full/ .
 ENV SKIP_ENV_VALIDATION=1
-RUN pnpm turbo build --filter=web --no-tui
+RUN TURBO_UI=false pnpm turbo build --filter=web
 
 # Production runner
 FROM base AS runner
