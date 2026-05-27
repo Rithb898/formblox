@@ -24,6 +24,8 @@ COPY --from=installer /app/apps ./apps
 COPY --from=installer /app/packages ./packages
 COPY --from=pruner /app/out/full/ .
 ENV SKIP_ENV_VALIDATION=1
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN TURBO_UI=false pnpm turbo build --filter=web
 
 # Production runner

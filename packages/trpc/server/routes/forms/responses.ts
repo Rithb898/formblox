@@ -2,9 +2,14 @@ import db, { eq, and, inArray, desc, asc, isNotNull } from "@repo/database";
 import { responsesTable, responseAnswersTable, formFieldsTable, formVersionsTable, aiFollowupsTable } from "@repo/database/schema";
 import { router, formProcedure } from "../../trpc";
 import { responseListSchema, summaryDataSchema } from "./model";
+import { z } from "../../schema";
+
+const TAGS = ["Form Responses"];
 
 export const formsResponsesRouter = router({
   summaryData: formProcedure
+    .meta({ openapi: { method: "GET", path: "/forms/{formId}/responses/summary", tags: TAGS } })
+    .input(z.object({ formId: z.string() }))
     .output(summaryDataSchema)
     .query(async ({ ctx }) => {
       const versions = await db
@@ -85,6 +90,8 @@ export const formsResponsesRouter = router({
     }),
 
   list: formProcedure
+    .meta({ openapi: { method: "GET", path: "/forms/{formId}/responses", tags: TAGS } })
+    .input(z.object({ formId: z.string() }))
     .output(responseListSchema)
     .query(async ({ ctx }) => {
       const versions = await db.select({ id: formVersionsTable.id })

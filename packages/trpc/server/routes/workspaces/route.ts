@@ -11,8 +11,11 @@ const workspaceOutputSchema = z.object({
   createdAt: z.date(),
 });
 
+const TAGS = ["Workspaces"];
+
 export const workspacesRouter = router({
   listMine: authedProcedure
+    .meta({ openapi: { method: "GET", path: "/workspaces", tags: TAGS } })
     .input(zodUndefinedModel)
     .output(z.array(workspaceOutputSchema))
     .query(async ({ ctx }) => {
@@ -29,6 +32,7 @@ export const workspacesRouter = router({
     }),
 
   get: workspaceProcedure
+    .meta({ openapi: { method: "GET", path: "/workspaces/{workspaceId}", tags: TAGS } })
     .input(z.object({ workspaceId: z.string().uuid() }))
     .output(workspaceOutputSchema)
     .query(async ({ ctx }) => {

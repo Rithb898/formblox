@@ -6,7 +6,10 @@ import { z } from "../../schema";
 import { workspaceProcedure, formProcedure } from "../../trpc";
 import { formWithVersionSchema, formListItemSchema } from "./model";
 
+const TAGS = ["Forms"];
+
 export const create = workspaceProcedure
+  .meta({ openapi: { method: "POST", path: "/workspaces/{workspaceId}/forms", tags: TAGS } })
   .input(z.object({ workspaceId: z.string(), title: z.string().default("Untitled form") }))
   .output(formWithVersionSchema)
   .mutation(async ({ ctx, input }) => {
@@ -26,6 +29,7 @@ export const create = workspaceProcedure
   });
 
 export const list = workspaceProcedure
+  .meta({ openapi: { method: "GET", path: "/workspaces/{workspaceId}/forms", tags: TAGS } })
   .input(z.object({ workspaceId: z.string() }))
   .output(z.array(formListItemSchema))
   .query(async ({ ctx }) => {
@@ -52,6 +56,7 @@ export const list = workspaceProcedure
   });
 
 export const get = formProcedure
+  .meta({ openapi: { method: "GET", path: "/forms/{formId}", tags: TAGS } })
   .input(z.object({ formId: z.string() }))
   .output(formWithVersionSchema)
   .query(async ({ ctx }) => {
@@ -66,18 +71,21 @@ export const get = formProcedure
   });
 
 export const setVisibility = formProcedure
+  .meta({ openapi: { method: "PATCH", path: "/forms/{formId}/visibility", tags: TAGS } })
   .input(z.object({ formId: z.string(), visibility: z.enum(["public", "unlisted"]) }))
   .mutation(async ({ ctx, input }) => {
     await db.update(formsTable).set({ visibility: input.visibility }).where(eq(formsTable.id, ctx.form.id));
   });
 
 export const softDelete = formProcedure
+  .meta({ openapi: { method: "DELETE", path: "/forms/{formId}", tags: TAGS } })
   .input(z.object({ formId: z.string() }))
   .mutation(async ({ ctx }) => {
     await db.update(formsTable).set({ deletedAt: new Date() }).where(eq(formsTable.id, ctx.form.id));
   });
 
 export const restore = formProcedure
+  .meta({ openapi: { method: "POST", path: "/forms/{formId}/restore", tags: TAGS } })
   .input(z.object({ formId: z.string() }))
   .mutation(async ({ ctx }) => {
     await db.update(formsTable).set({ deletedAt: null }).where(eq(formsTable.id, ctx.form.id));

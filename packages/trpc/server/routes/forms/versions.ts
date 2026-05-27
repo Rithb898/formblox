@@ -29,13 +29,17 @@ async function getDraftWithFields(formId: string) {
   return { ...draft, fields: fields.map(mapField) };
 }
 
+const TAGS = ["Form Versions"];
+
 export const formsVersionsRouter = router({
   getDraft: formProcedure
+    .meta({ openapi: { method: "GET", path: "/forms/{formId}/draft", tags: TAGS } })
     .input(z.object({ formId: z.string() }))
     .output(versionWithFieldsSchema)
     .query(async ({ ctx }) => getDraftWithFields(ctx.form.id)),
 
   updateDraft: formProcedure
+    .meta({ openapi: { method: "PUT", path: "/forms/{formId}/draft", tags: TAGS } })
     .input(z.object({
       formId: z.string(),
       title: z.string().optional(),
@@ -87,6 +91,7 @@ export const formsVersionsRouter = router({
     }),
 
   publish: formProcedure
+    .meta({ openapi: { method: "POST", path: "/forms/{formId}/publish", tags: TAGS } })
     .input(z.object({ formId: z.string() }))
     .output(z.object({ publishedVersionId: z.string(), newDraftVersionId: z.string() }))
     .mutation(async ({ ctx }) => {
@@ -167,6 +172,7 @@ export const formsVersionsRouter = router({
     }),
 
   list: formProcedure
+    .meta({ openapi: { method: "GET", path: "/forms/{formId}/versions", tags: TAGS } })
     .input(z.object({ formId: z.string() }))
     .output(z.array(z.object({
       id: z.string(),

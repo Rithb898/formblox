@@ -5,12 +5,16 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { buildResponseSchema } from "@repo/forms";
 import { rateLimit } from "@repo/services/redis";
-import { z } from "../../schema";
+import { z, zodUndefinedModel } from "../../schema";
 import { publicProcedure, router } from "../../trpc";
 import { publicFormSchema, followupInputSchema, exploreFormSchema } from "./model";
 
+const TAGS = ["Public Forms"];
+
 export const formsPublicRouter = router({
   listPublic: publicProcedure
+    .meta({ openapi: { method: "GET", path: "/public/forms", tags: TAGS } })
+    .input(zodUndefinedModel)
     .output(z.array(exploreFormSchema))
     .query(async () => {
       const rows = await db
@@ -37,6 +41,7 @@ export const formsPublicRouter = router({
     }),
 
   getBySlug: publicProcedure
+    .meta({ openapi: { method: "GET", path: "/public/forms/{slug}", tags: TAGS } })
     .input(z.object({ slug: z.string() }))
     .output(publicFormSchema)
     .query(async ({ input }) => {
@@ -65,6 +70,7 @@ export const formsPublicRouter = router({
     }),
 
   submit: publicProcedure
+    .meta({ openapi: { method: "POST", path: "/public/forms/{slug}/submit", tags: TAGS } })
     .input(
       z.object({
         slug: z.string(),
@@ -137,6 +143,7 @@ export const formsPublicRouter = router({
     }),
 
   saveFollowups: publicProcedure
+    .meta({ openapi: { method: "POST", path: "/public/responses/{responseId}/followups", tags: TAGS } })
     .input(z.object({
       responseId: z.string().uuid(),
       followups: z.array(followupInputSchema),
