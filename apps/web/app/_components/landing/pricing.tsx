@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Sparkles, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { Button } from "~/components/ui/button";
 import { ScrollReveal } from "./scroll-reveal";
 import { LandingButton } from "./landing-button";
 
@@ -238,7 +239,8 @@ export function Pricing() {
 
             {/* Billing toggle */}
             <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.02] p-1 pr-3">
-              <button
+              <Button
+                type="button"
                 onClick={() => setAnnual(false)}
                 className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-300 ${
                   !annual
@@ -247,8 +249,9 @@ export function Pricing() {
                 }`}
               >
                 Monthly
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
                 onClick={() => setAnnual(true)}
                 className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-300 ${
                   annual
@@ -257,7 +260,7 @@ export function Pricing() {
                 }`}
               >
                 Annually
-              </button>
+              </Button>
               <AnimatePresence>
                 {annual && (
                   <motion.span

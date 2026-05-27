@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
 import { Button } from "~/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 
 function TimeAgo({ date }: { date: Date }) {
@@ -55,8 +56,9 @@ export function EditorTopbar({
     isSaving,
     setIsSaving,
     markSaved,
-    updateField,
     selectField,
+    setFieldErrors,
+    clearFieldErrors,
   } = useFormEditorStore();
 
   const titleRef = useRef<HTMLInputElement>(null);
@@ -122,7 +124,52 @@ export function EditorTopbar({
     return () => window.removeEventListener("keydown", handler);
   }, [save]);
 
+  function validateFieldsForPublish(): Record<string, string> | null {
+    const errors: Record<string, string> = {};
+    if (!formVersion?.title?.trim()) return null; // handled separately via titleRef
+    for (const f of fields) {
+      if (!f.label?.trim()) {
+        errors[f.id] = "Label is required";
+        continue;
+      }
+      if (f.type === "single_choice" || f.type === "multiple_choice") {
+        const options = (f.config.options as Array<{ id: string; label: string }> | undefined) ?? [];
+        const filled = options.filter((o) => o.label?.trim());
+        if (filled.length < 2) errors[f.id] = "Add at least 2 options";
+      } else if (f.type === "rating") {
+        const scale = f.config.scale;
+        const style = f.config.style;
+        if (scale !== 5 && scale !== 10) errors[f.id] = "Select a rating scale";
+        else if (style !== "star" && style !== "number") errors[f.id] = "Select a rating style";
+      }
+    }
+    return Object.keys(errors).length > 0 ? errors : null;
+  }
+
+  function scrollToField(id: string) {
+    document
+      .querySelector(`[data-field-id="${id}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   async function handlePublish() {
+    clearFieldErrors();
+
+    if (!formVersion?.title?.trim()) {
+      titleRef.current?.focus();
+      toast.error("Form title is required before publishing.");
+      return;
+    }
+
+    const errors = validateFieldsForPublish();
+    if (errors) {
+      setFieldErrors(errors);
+      const firstId = Object.keys(errors)[0]!;
+      selectField(firstId);
+      scrollToField(firstId);
+      return;
+    }
+
     await save();
     try {
       await publish.mutateAsync({ formId });
@@ -137,39 +184,8 @@ export function EditorTopbar({
         },
         duration: 8000,
       });
-    } catch (err: unknown) {
-      let handled = false;
-      if (err instanceof Error) {
-        try {
-          const parsed = JSON.parse(err.message) as {
-            code?: string;
-            fieldIds?: string[];
-            reason?: string;
-          };
-          if (parsed.code === "invalid_form" && parsed.reason === "title_empty") {
-            titleRef.current?.focus();
-            toast.error("Form title is required before publishing.");
-            handled = true;
-          } else if (parsed.code === "missing_labels" && parsed.fieldIds?.length) {
-            selectField(parsed.fieldIds[0]!);
-            const count = parsed.fieldIds.length;
-            toast.error(
-              `${count} field${count === 1 ? "" : "s"} ${count === 1 ? "has" : "have"} no label`,
-              { description: "Add labels before publishing." },
-            );
-            handled = true;
-          } else if (parsed.code === "invalid_fields" && parsed.fieldIds?.length) {
-            selectField(parsed.fieldIds[0]!);
-            const count = parsed.fieldIds.length;
-            toast.error(
-              `${count} field${count === 1 ? "" : "s"} ${count === 1 ? "has" : "have"} incomplete configuration`,
-              { description: "Fix them before publishing." },
-            );
-            handled = true;
-          }
-        } catch {}
-      }
-      if (!handled) toast.error("Publish failed");
+    } catch {
+      toast.error("Publish failed");
     }
   }
 
@@ -177,16 +193,21 @@ export function EditorTopbar({
     <header className="flex h-14 shrink-0 items-center justify-between rounded-2xl bg-white/[0.02] px-3 ring-1 ring-white/[0.06] backdrop-blur-xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
       {/* Back + Title */}
       <div className="flex min-w-0 items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          asChild
-          className="shrink-0 rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
-        >
-          <a href="/forms" aria-label="Back to forms">
-            <ChevronLeft className="size-4" />
-          </a>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              asChild
+              className="shrink-0 rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+            >
+              <a href="/forms" aria-label="Back to forms">
+                <ChevronLeft className="size-4" />
+              </a>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Back to forms</TooltipContent>
+        </Tooltip>
         <input
           ref={titleRef}
           className={cn(
@@ -221,78 +242,101 @@ export function EditorTopbar({
 
       {/* Actions */}
       <div className="flex items-center gap-1.5">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          asChild
-          className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
-        >
-          <a href={`/forms/${formId}/responses`} aria-label="View responses">
-            <Inbox className="size-4" />
-          </a>
-        </Button>
-        {publicSlug && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            asChild
-            className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
-          >
-            <a
-              href={`/f/${publicSlug}`}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Open public form"
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              asChild
+              className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
             >
-              <ExternalLink className="size-4" />
-            </a>
-          </Button>
+              <a href={`/forms/${formId}/responses`} aria-label="View responses">
+                <Inbox className="size-4" />
+              </a>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>View responses</TooltipContent>
+        </Tooltip>
+        {publicSlug && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                asChild
+                className="rounded-full text-[#6B6B6B] hover:bg-white/[0.06] hover:text-[#F2F2F2]"
+              >
+                <a
+                  href={`/f/${publicSlug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Open public form"
+                >
+                  <ExternalLink className="size-4" />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Open public form</TooltipContent>
+          </Tooltip>
         )}
-        <button
-          type="button"
-          onClick={handleToggleVisibility}
-          disabled={setVisibilityMutation.isPending}
-          title={
-            visibility === "public"
-              ? "Public — visible on explore page"
-              : "Unlisted — only via direct link"
-          }
-          className={cn(
-            "flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em]",
-            "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-            "disabled:pointer-events-none disabled:opacity-50",
-            visibility === "public"
-              ? "bg-[#E8854A]/12 text-[#E8854A] hover:bg-[#E8854A]/20"
-              : "bg-white/[0.04] text-[#6B6B6B] hover:bg-white/[0.08] hover:text-[#F2F2F2]",
-          )}
-        >
-          {visibility === "public" ? <Eye className="size-3" /> : <Lock className="size-3" />}
-          {visibility}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleToggleVisibility}
+              disabled={setVisibilityMutation.isPending}
+              className={cn(
+                "gap-1.5 rounded-full px-2.5 font-mono text-[10px] uppercase tracking-[0.08em]",
+                "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                visibility === "public"
+                  ? "bg-[#E8854A]/12 text-[#E8854A] hover:bg-[#E8854A]/20"
+                  : "bg-white/4 text-[#6B6B6B] hover:bg-white/8 hover:text-[#F2F2F2]",
+              )}
+            >
+              {visibility === "public" ? <Eye className="size-3" /> : <Lock className="size-3" />}
+              {visibility}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {visibility === "public" ? "Public — visible on explore page" : "Unlisted — only via direct link"}
+          </TooltipContent>
+        </Tooltip>
         <div className="mx-1 h-5 w-px bg-white/[0.07]" />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={save}
-          disabled={!dirty || isSaving}
-          className="gap-1.5 rounded-full bg-white/[0.04] text-[#F2F2F2] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.08] disabled:opacity-40 active:scale-[0.98]"
-        >
-          <Save className="size-3.5" />
-          Save
-        </Button>
-        <Button
-          size="sm"
-          onClick={handlePublish}
-          disabled={publish.isPending || isSaving}
-          className="gap-1.5 rounded-full bg-[#E8854A] text-[#0a0a0a] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#E8854A]/90 disabled:opacity-40 active:scale-[0.98]"
-        >
-          {publish.isPending ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Globe className="size-3.5" />
-          )}
-          Publish
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={save}
+              disabled={!dirty || isSaving}
+              className="gap-1.5 rounded-full bg-white/[0.04] text-[#F2F2F2] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.08] disabled:opacity-40 active:scale-[0.98]"
+            >
+              <Save className="size-3.5" />
+              Save
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Save draft (⌘S)</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              onClick={handlePublish}
+              disabled={publish.isPending || isSaving}
+              className="gap-1.5 rounded-full bg-[#E8854A] text-[#0a0a0a] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#E8854A]/90 disabled:opacity-40 active:scale-[0.98]"
+            >
+              {publish.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Globe className="size-3.5" />
+              )}
+              Publish
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Make live for respondents</TooltipContent>
+        </Tooltip>
       </div>
     </header>
   );

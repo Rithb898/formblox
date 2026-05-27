@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, Check, Star } from "lucide-react";
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 const sequence = [
@@ -174,13 +175,13 @@ export function ChatDemo() {
             <span className="min-w-0 flex-1 text-left text-sm text-[#6B6B6B]">
               Type your answer...
             </span>
-            <button
+            <Button
               type="button"
               aria-label="Send demo answer"
               className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#E8854A] text-[#0a0a0a]"
             >
               <ArrowUp className="size-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </motion.div>

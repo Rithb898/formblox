@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Sparkles, RefreshCw, Inbox } from "lucide-react";
 import { trpc } from "~/trpc/client";
 import { cn } from "~/lib/utils";
+import { Button } from "~/components/ui/button";
 import { FormTabs } from "../_components/form-tabs";
 
 const EASE = "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]";
@@ -91,7 +92,8 @@ export default function SummaryPage({ params }: { params: Promise<{ formId: stri
         </div>
 
         {q.data && q.data.responseCount > 0 && !q.isPending && (
-          <button
+          <Button
+            type="button"
             onClick={() => void generate()}
             disabled={streaming}
             className={cn(
@@ -103,7 +105,7 @@ export default function SummaryPage({ params }: { params: Promise<{ formId: stri
           >
             <RefreshCw className={cn("size-3", streaming && "animate-spin")} />
             Regenerate
-          </button>
+          </Button>
         )}
       </div>
 
@@ -136,7 +138,8 @@ export default function SummaryPage({ params }: { params: Promise<{ formId: stri
         ) : error && !summary ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-24 text-center">
             <p className="text-sm text-[#6B6B6B]">Couldn't generate summary. Try again.</p>
-            <button
+            <Button
+              type="button"
               onClick={() => void generate()}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium",
@@ -146,7 +149,7 @@ export default function SummaryPage({ params }: { params: Promise<{ formId: stri
             >
               <RefreshCw className="size-3" />
               Retry
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="max-w-2xl">

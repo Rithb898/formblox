@@ -4,6 +4,7 @@ import { formVersionsTable, formFieldsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { TRPCError } from "@trpc/server";
 import { fieldConfigUnion } from "@repo/forms";
+import { invalidateKeys, CacheKeys } from "@repo/services/redis";
 import { z } from "../../schema";
 import { formProcedure, router } from "../../trpc";
 import { fieldInputSchema, versionWithFieldsSchema } from "./model";
@@ -129,7 +130,7 @@ export const formsVersionsRouter = router({
     .input(z.object({ formId: z.string() }))
     .output(z.object({ publishedVersionId: z.string(), newDraftVersionId: z.string() }))
     .mutation(async ({ ctx }) => {
-      return await db.transaction(async (tx) => {
+      const result = await db.transaction(async (tx) => {
         const [draft] = await tx
           .select()
           .from(formVersionsTable)
@@ -220,6 +221,14 @@ export const formsVersionsRouter = router({
 
         return { publishedVersionId: published!.id, newDraftVersionId: newDraft!.id };
       });
+
+      await invalidateKeys(
+        CacheKeys.formSlug(ctx.form.publicSlug),
+        CacheKeys.formsPublicList(),
+        CacheKeys.workspaceForms(ctx.form.workspaceId),
+      );
+
+      return result;
     }),
 
   list: formProcedure

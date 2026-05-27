@@ -49,15 +49,17 @@ export function SingleChoicePanel({ field }: { field: EditorField }) {
                 placeholder={`Option ${i + 1}`}
                 className="border-white/[0.07] bg-white/[0.02] text-sm text-[#F2F2F2] focus-visible:ring-[#E8854A]/40"
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setOptions(options.filter((_, j) => j !== i))}
                 disabled={options.length <= 1}
                 aria-label="Remove option"
                 className="shrink-0 rounded-full p-1 text-[#6B6B6B] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.06] hover:text-[#E8854A] disabled:opacity-30"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>

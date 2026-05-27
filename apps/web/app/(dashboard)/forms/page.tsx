@@ -19,9 +19,11 @@ import { nanoid } from "nanoid";
 import type { FieldType } from "@repo/forms";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -117,25 +119,31 @@ function QuickAction({
   danger?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      style={{ animationDelay: `${delay}ms` }}
-      className={cn(
-        "flex size-8 items-center justify-center rounded-full",
-        "bg-white/[0.04] text-[#8A8A8A] ring-1 ring-white/[0.06]",
-        "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-        "hover:scale-105 hover:bg-white/[0.08] hover:text-white",
-        danger && "hover:bg-red-500/15 hover:text-red-400",
-        "group-hover:animate-fade-up",
-      )}
-    >
-      <Icon className="size-3.5" />
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={label}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+          style={{ animationDelay: `${delay}ms` }}
+          className={cn(
+            "size-8 rounded-full bg-white/4 text-[#8A8A8A] ring-1 ring-white/6",
+            "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            "hover:scale-105 hover:bg-white/8 hover:text-white",
+            danger && "hover:bg-red-500/15 hover:text-red-400",
+            "group-hover:animate-fade-up",
+          )}
+        >
+          <Icon className="size-3.5" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -242,6 +250,13 @@ function FormCard({
   );
 }
 
+const EXAMPLE_PROMPTS = [
+  "Customer feedback for a coffee shop",
+  "Job application form",
+  "Weekly team standup survey",
+  "Event RSVP form",
+];
+
 function GenerateModal({
   open,
   onOpenChange,
@@ -273,17 +288,25 @@ function GenerateModal({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="size-4 text-[#A78BFA]" />
-            Generate form with AI
-          </DialogTitle>
-          <DialogDescription>
-            Describe the form you want and AI will build it for you.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
+      <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800/60 text-zinc-100 p-0 overflow-hidden gap-0">
+        {/* Header band */}
+        <div className="relative flex items-center gap-4 px-6 pt-6 pb-5 border-b border-zinc-800/60">
+          <div className="absolute inset-0 bg-linear-to-br from-[#E8854A]/6 to-transparent pointer-events-none" />
+          <div className="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#E8854A]/15 ring-1 ring-[#E8854A]/30">
+            <Sparkles className="size-5 text-[#E8854A]" />
+          </div>
+          <div className="relative min-w-0 flex-1">
+            <DialogTitle className="text-base font-semibold tracking-tight text-zinc-100">
+              Generate with AI
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-500 mt-0.5">
+              Describe your form and AI builds it instantly.
+            </DialogDescription>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="space-y-4 px-6 py-5">
           <textarea
             ref={textareaRef}
             value={prompt}
@@ -291,35 +314,73 @@ function GenerateModal({
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
             }}
-            placeholder="e.g. a customer feedback form for a coffee shop, a job application form, a weekly team standup survey…"
+            placeholder="e.g. a customer feedback form for a coffee shop…"
             disabled={isPending}
-            rows={4}
+            rows={3}
             className={cn(
-              "w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3",
-              "text-sm text-[#F2F2F2] placeholder:text-[#4A4A4A]",
-              "outline-none focus:border-[#7C3AED]/40 focus:ring-1 focus:ring-[#7C3AED]/20",
+              "w-full resize-none rounded-xl border border-zinc-700/60 bg-zinc-900 px-4 py-3",
+              "text-sm text-zinc-100 placeholder:text-zinc-600",
+              "outline-none focus:border-[#E8854A]/50 focus:ring-1 focus:ring-[#E8854A]/20",
               "transition-all duration-200 disabled:opacity-50",
             )}
           />
+
+          {/* Example chips */}
+          {!isPending && (
+            <div className="flex flex-wrap gap-1.5">
+              {EXAMPLE_PROMPTS.map((ex) => (
+                <button
+                  key={ex}
+                  type="button"
+                  onClick={() => setPrompt(ex)}
+                  className={cn(
+                    "rounded-full border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-[11px] text-zinc-500",
+                    "transition-all duration-200 hover:border-[#E8854A]/40 hover:bg-[#E8854A]/8 hover:text-[#E8854A]",
+                    prompt === ex && "border-[#E8854A]/40 bg-[#E8854A]/8 text-[#E8854A]",
+                  )}
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Generating state */}
+          {isPending && (
+            <div className="flex items-center gap-3 rounded-xl border border-[#E8854A]/20 bg-[#E8854A]/5 px-4 py-3">
+              <Loader2 className="size-4 shrink-0 animate-spin text-[#E8854A]" />
+              <div>
+                <p className="text-sm font-medium text-[#E8854A]">Building your form…</p>
+                <p className="text-xs text-zinc-500 mt-0.5">This usually takes a few seconds.</p>
+              </div>
+            </div>
+          )}
+
           {hasError && (
-            <p className="text-xs text-red-400">
+            <p className="rounded-lg border border-red-500/20 bg-red-500/8 px-3 py-2 text-xs text-red-400">
               Couldn&apos;t generate the form. Try rephrasing your prompt.
             </p>
           )}
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            Cancel
-          </Button>
-          <button
+
+        {/* Footer */}
+        <DialogFooter className="px-6 py-4 border-t border-zinc-800/60 bg-zinc-900/30 gap-2">
+          <p className="mr-auto text-[11px] text-zinc-600 hidden sm:block">⌘↵ to generate</p>
+          <DialogClose asChild>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isPending}
+              className="border-zinc-700/60 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200 text-xs"
+            >
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            type="button"
             onClick={handleSubmit}
             disabled={isPending || !prompt.trim()}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium",
-              "bg-[#7C3AED]/15 text-[#A78BFA] ring-1 ring-[#7C3AED]/25",
-              "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-              "hover:bg-[#7C3AED]/25 disabled:pointer-events-none disabled:opacity-50",
-            )}
+            className="gap-2 bg-[#E8854A] hover:bg-[#E8854A]/90 text-[#0a0a0a] text-xs font-semibold disabled:opacity-40 transition-all duration-300 min-w-25"
           >
             {isPending ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -327,7 +388,7 @@ function GenerateModal({
               <Sparkles className="size-3.5" />
             )}
             {isPending ? "Generating…" : "Generate"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -340,14 +401,15 @@ function EmptyState({ onNew, isPending }: { onNew: () => void; isPending: boolea
       <p className="select-none text-6xl font-semibold tracking-tighter text-white/[0.06] sm:text-7xl">
         No forms yet
       </p>
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onNew}
         disabled={isPending}
         className={cn(
-          "group mt-8 flex flex-col items-center gap-3 rounded-[1.5rem] border border-dashed border-[#E8854A]/30 px-12 py-8",
-          "bg-[#E8854A]/[0.03] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-          "hover:border-[#E8854A]/60 hover:bg-[#E8854A]/[0.06] disabled:opacity-50",
+          "group mt-8 flex h-auto flex-col items-center gap-3 rounded-[1.5rem] border border-dashed border-[#E8854A]/30 px-12 py-8",
+          "bg-[#E8854A]/3 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "hover:border-[#E8854A]/60 hover:bg-[#E8854A]/6",
         )}
       >
         <span className="flex size-11 items-center justify-center rounded-full bg-[#E8854A]/12 text-[#E8854A] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-110">
@@ -355,7 +417,7 @@ function EmptyState({ onNew, isPending }: { onNew: () => void; isPending: boolea
         </span>
         <span className="text-sm font-medium text-white">Create your first form</span>
         <span className="font-mono text-[11px] text-[#6B6B6B]">start collecting responses</span>
-      </button>
+      </Button>
     </div>
   );
 }
@@ -488,30 +550,22 @@ export default function FormsPage() {
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-6">
         <h1 className="text-lg font-semibold tracking-tight text-white">Forms</h1>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setGenerateOpen(true)}
             disabled={!workspaceId}
-            className={cn(
-              "flex items-center gap-2 rounded-full py-1.5 pl-3 pr-4 text-sm font-medium",
-              "bg-[#7C3AED]/10 text-[#A78BFA] ring-1 ring-[#7C3AED]/20",
-              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-              "hover:bg-[#7C3AED]/20 hover:ring-[#7C3AED]/40 disabled:pointer-events-none disabled:opacity-50",
-            )}
+            className="gap-2 rounded-full py-1.5 pl-3 pr-4 text-sm font-medium bg-[#E8854A]/10 text-[#E8854A] ring-1 ring-[#E8854A]/20 hover:bg-[#E8854A]/20 hover:ring-[#E8854A]/40 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
           >
             <Sparkles className="size-3.5" />
             Generate with AI
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleNew}
             disabled={createMutation.isPending || !workspaceId}
-            className={cn(
-              "group flex items-center gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-sm font-medium",
-              "bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20",
-              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-              "hover:bg-[#E8854A]/20 hover:ring-[#E8854A]/40 disabled:pointer-events-none disabled:opacity-50",
-            )}
+            className="group gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-sm font-medium bg-[#E8854A]/12 text-[#E8854A] ring-1 ring-[#E8854A]/20 hover:bg-[#E8854A]/20 hover:ring-[#E8854A]/40 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] h-auto"
           >
             New form
             <span className="flex size-7 items-center justify-center rounded-full bg-[#E8854A] text-[#111] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:rotate-90">
@@ -521,7 +575,7 @@ export default function FormsPage() {
                 <Plus className="size-3.5" />
               )}
             </span>
-          </button>
+          </Button>
         </div>
       </div>
 

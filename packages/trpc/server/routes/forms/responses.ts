@@ -6,6 +6,7 @@ import {
   formVersionsTable,
   aiFollowupsTable,
 } from "@repo/database/schema";
+import { withCache, CacheKeys } from "@repo/services/redis";
 import { router, formProcedure } from "../../trpc";
 import { responseListSchema, summaryDataSchema } from "./model";
 import { z } from "../../schema";
@@ -18,6 +19,7 @@ export const formsResponsesRouter = router({
     .input(z.object({ formId: z.string() }))
     .output(summaryDataSchema)
     .query(async ({ ctx }) => {
+      return withCache(CacheKeys.formSummary(ctx.form.id), 180, async () => {
       const versions = await db
         .select({ id: formVersionsTable.id, title: formVersionsTable.title })
         .from(formVersionsTable)
@@ -122,6 +124,7 @@ export const formsResponsesRouter = router({
         });
 
       return { formTitle, responseCount: responses.length, fields };
+      });
     }),
 
   list: formProcedure
@@ -129,6 +132,7 @@ export const formsResponsesRouter = router({
     .input(z.object({ formId: z.string() }))
     .output(responseListSchema)
     .query(async ({ ctx }) => {
+      return withCache(CacheKeys.formResponses(ctx.form.id), 120, async () => {
       const versions = await db
         .select({ id: formVersionsTable.id })
         .from(formVersionsTable)
@@ -210,5 +214,6 @@ export const formsResponsesRouter = router({
         completedAt: r.completedAt,
         answers: byResponse.get(r.id) ?? [],
       }));
+      });
     }),
 });

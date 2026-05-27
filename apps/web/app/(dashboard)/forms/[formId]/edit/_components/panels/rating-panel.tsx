@@ -6,6 +6,7 @@ import { Switch } from "~/components/ui/switch";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { cn } from "~/lib/utils";
+import { Button } from "~/components/ui/button";
 
 export function RatingPanel({ field }: { field: EditorField }) {
   const updateField = useFormEditorStore((s) => s.updateField);
@@ -35,7 +36,7 @@ export function RatingPanel({ field }: { field: EditorField }) {
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B6B6B]">Scale</p>
         <div className="flex gap-1.5 rounded-full bg-white/[0.02] p-1 ring-1 ring-white/[0.06]">
           {([5, 10] as const).map((n) => (
-            <button
+            <Button
               key={n}
               type="button"
               onClick={() => updateConfig({ scale: n })}
@@ -47,7 +48,7 @@ export function RatingPanel({ field }: { field: EditorField }) {
               )}
             >
               {n}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -56,7 +57,7 @@ export function RatingPanel({ field }: { field: EditorField }) {
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B6B6B]">Style</p>
         <div className="flex gap-1.5 rounded-full bg-white/[0.02] p-1 ring-1 ring-white/[0.06]">
           {(["star", "number"] as const).map((s) => (
-            <button
+            <Button
               key={s}
               type="button"
               onClick={() => updateConfig({ style: s })}
@@ -68,7 +69,7 @@ export function RatingPanel({ field }: { field: EditorField }) {
               )}
             >
               {s}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

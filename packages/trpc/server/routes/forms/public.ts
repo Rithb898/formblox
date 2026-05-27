@@ -6,12 +6,15 @@ import {
   responsesTable,
   responseAnswersTable,
   aiFollowupsTable,
+  usersTable,
+  workspaceMembersTable,
 } from "@repo/database/schema";
 import db from "@repo/database";
+import { emailService } from "@repo/services/email";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { buildResponseSchema } from "@repo/forms";
-import { rateLimit } from "@repo/services/redis";
+import { rateLimit, withCache, invalidateKeys, invalidatePattern, CacheKeys } from "@repo/services/redis";
 import { z, zodUndefinedModel } from "../../schema";
 import { publicProcedure, router } from "../../trpc";
 import { publicFormSchema, followupInputSchema, exploreFormSchema } from "./model";
@@ -24,6 +27,7 @@ export const formsPublicRouter = router({
     .input(zodUndefinedModel)
     .output(z.array(exploreFormSchema))
     .query(async () => {
+      return withCache(CacheKeys.formsPublicList(), 300, async () => {
       const rows = await db
         .select({
           id: formsTable.id,
@@ -54,6 +58,7 @@ export const formsPublicRouter = router({
         .groupBy(formsTable.id, formVersionsTable.id);
 
       return rows;
+      });
     }),
 
   getBySlug: publicProcedure
@@ -61,6 +66,7 @@ export const formsPublicRouter = router({
     .input(z.object({ slug: z.string() }))
     .output(publicFormSchema)
     .query(async ({ input }) => {
+      return withCache(CacheKeys.formSlug(input.slug), 1800, async () => {
       const [form] = await db
         .select()
         .from(formsTable)
@@ -96,6 +102,7 @@ export const formsPublicRouter = router({
         version: { id: published.id, title: published.title, description: published.description },
         fields: fields.map((f) => ({ ...f, config: (f.config ?? {}) as Record<string, unknown> })),
       };
+      });
     }),
 
   submit: publicProcedure
@@ -179,6 +186,50 @@ export const formsPublicRouter = router({
         return response!.id;
       });
 
+      await Promise.all([
+        invalidateKeys(CacheKeys.formResponses(form.id), CacheKeys.formSummary(form.id)),
+        invalidatePattern(`form:ai-summary:${form.id}:*`),
+      ]);
+
+      // Fire-and-forget: notify workspace owner about new submission
+      (async () => {
+        try {
+          const [owner] = await db
+            .select({ email: usersTable.email })
+            .from(workspaceMembersTable)
+            .innerJoin(usersTable, eq(usersTable.id, workspaceMembersTable.userId))
+            .where(
+              and(
+                eq(workspaceMembersTable.workspaceId, form.workspaceId),
+                eq(workspaceMembersTable.role, "owner"),
+              ),
+            )
+            .limit(1);
+
+          if (owner?.email) {
+            const countRows = await db
+              .select({ count: sql<number>`cast(count(*) as int)` })
+              .from(responsesTable)
+              .where(
+                and(
+                  eq(responsesTable.formVersionId, published.id),
+                  sql`${responsesTable.completedAt} is not null`,
+                ),
+              );
+            const responseCount = countRows[0]?.count ?? 0;
+
+            await emailService.sendNewResponseEmail({
+              ownerEmail: owner.email,
+              formTitle: published.title,
+              formId: form.id,
+              responseCount,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to send new response email:", err);
+        }
+      })();
+
       return { id };
     }),
 
@@ -196,10 +247,11 @@ export const formsPublicRouter = router({
     .mutation(async ({ input }) => {
       if (input.followups.length === 0) return;
 
-      // Verify the response exists before writing
+      // Verify the response exists before writing; fetch formId for cache invalidation
       const [response] = await db
-        .select({ id: responsesTable.id })
+        .select({ id: responsesTable.id, formId: formVersionsTable.formId })
         .from(responsesTable)
+        .innerJoin(formVersionsTable, eq(formVersionsTable.id, responsesTable.formVersionId))
         .where(eq(responsesTable.id, input.responseId))
         .limit(1);
       if (!response) throw new TRPCError({ code: "NOT_FOUND" });
@@ -212,5 +264,7 @@ export const formsPublicRouter = router({
           userAnswer: f.userAnswer ?? null,
         })),
       );
+
+      await invalidateKeys(CacheKeys.formResponses(response.formId));
     }),
 });

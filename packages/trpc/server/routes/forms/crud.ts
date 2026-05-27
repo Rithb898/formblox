@@ -2,6 +2,7 @@ import { eq, desc } from "@repo/database";
 import { formsTable, formVersionsTable } from "@repo/database/schema";
 import db from "@repo/database";
 import { nanoid } from "nanoid";
+import { withCache, invalidateKeys, CacheKeys } from "@repo/services/redis";
 import { z } from "../../schema";
 import { workspaceProcedure, formProcedure } from "../../trpc";
 import { formWithVersionSchema, formListItemSchema } from "./model";
@@ -13,7 +14,7 @@ export const create = workspaceProcedure
   .input(z.object({ workspaceId: z.string(), title: z.string().default("Untitled form") }))
   .output(formWithVersionSchema)
   .mutation(async ({ ctx, input }) => {
-    return await db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       const [form] = await tx
         .insert(formsTable)
         .values({ workspaceId: ctx.workspace.id, publicSlug: nanoid(10) })
@@ -26,6 +27,8 @@ export const create = workspaceProcedure
 
       return { ...form!, version: version! };
     });
+    await invalidateKeys(CacheKeys.workspaceForms(ctx.workspace.id));
+    return result;
   });
 
 export const list = workspaceProcedure
@@ -33,26 +36,28 @@ export const list = workspaceProcedure
   .input(z.object({ workspaceId: z.string() }))
   .output(z.array(formListItemSchema))
   .query(async ({ ctx }) => {
-    const rows = await db
-      .select({
-        id: formsTable.id,
-        publicSlug: formsTable.publicSlug,
-        isAcceptingResponses: formsTable.isAcceptingResponses,
-        createdAt: formsTable.createdAt,
-        title: formVersionsTable.title,
-        status: formVersionsTable.status,
-      })
-      .from(formsTable)
-      .innerJoin(formVersionsTable, eq(formVersionsTable.formId, formsTable.id))
-      .where(eq(formsTable.workspaceId, ctx.workspace.id))
-      .orderBy(desc(formsTable.createdAt));
+    return withCache(CacheKeys.workspaceForms(ctx.workspace.id), 180, async () => {
+      const rows = await db
+        .select({
+          id: formsTable.id,
+          publicSlug: formsTable.publicSlug,
+          isAcceptingResponses: formsTable.isAcceptingResponses,
+          createdAt: formsTable.createdAt,
+          title: formVersionsTable.title,
+          status: formVersionsTable.status,
+        })
+        .from(formsTable)
+        .innerJoin(formVersionsTable, eq(formVersionsTable.formId, formsTable.id))
+        .where(eq(formsTable.workspaceId, ctx.workspace.id))
+        .orderBy(desc(formsTable.createdAt));
 
-    const byForm = new Map<string, (typeof rows)[0]>();
-    for (const row of rows) {
-      const existing = byForm.get(row.id);
-      if (!existing || row.status === "published") byForm.set(row.id, row);
-    }
-    return [...byForm.values()];
+      const byForm = new Map<string, (typeof rows)[0]>();
+      for (const row of rows) {
+        const existing = byForm.get(row.id);
+        if (!existing || row.status === "published") byForm.set(row.id, row);
+      }
+      return [...byForm.values()];
+    });
   });
 
 export const get = formProcedure
@@ -79,6 +84,10 @@ export const setVisibility = formProcedure
       .update(formsTable)
       .set({ visibility: input.visibility })
       .where(eq(formsTable.id, ctx.form.id));
+    await invalidateKeys(
+      CacheKeys.formsPublicList(),
+      CacheKeys.workspaceForms(ctx.form.workspaceId),
+    );
   });
 
 export const softDelete = formProcedure
@@ -90,6 +99,11 @@ export const softDelete = formProcedure
       .update(formsTable)
       .set({ deletedAt: new Date() })
       .where(eq(formsTable.id, ctx.form.id));
+    await invalidateKeys(
+      CacheKeys.workspaceForms(ctx.form.workspaceId),
+      CacheKeys.formsPublicList(),
+      CacheKeys.formSlug(ctx.form.publicSlug),
+    );
   });
 
 export const restore = formProcedure
@@ -98,4 +112,8 @@ export const restore = formProcedure
   .output(z.void())
   .mutation(async ({ ctx }) => {
     await db.update(formsTable).set({ deletedAt: null }).where(eq(formsTable.id, ctx.form.id));
+    await invalidateKeys(
+      CacheKeys.workspaceForms(ctx.form.workspaceId),
+      CacheKeys.formsPublicList(),
+    );
   });

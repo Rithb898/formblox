@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MessagesSquare, ChevronDown, Check, Globe, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { LandingButton } from "./landing-button";
 
 const spring = { type: "spring" as const, stiffness: 100, damping: 22 };
@@ -66,13 +67,14 @@ export function Hero() {
         >
           I want to build a {/* Form Type Dropdown Trigger */}
           <span className="relative inline-block mx-1.5">
-            <button
+            <Button
+              type="button"
               onClick={() => setActiveDropdown(activeDropdown === "form" ? null : "form")}
               className="inline-flex items-center gap-2 border-b-[3px] border-[#E8854A] pb-1 text-[#E8854A] hover:bg-[#E8854A]/5 px-3 py-0.5 rounded-xl transition-colors cursor-pointer outline-none tracking-normal font-semibold"
             >
               {formType}
               <ChevronDown className="size-4 md:size-6 text-[#E8854A]/80 shrink-0" />
-            </button>
+            </Button>
 
             <AnimatePresence>
               {activeDropdown === "form" && (
@@ -84,7 +86,8 @@ export function Hero() {
                   className="absolute left-1/2 -translate-x-1/2 mt-3.5 z-30 w-44 rounded-2xl border border-white/[0.08] bg-[#0c0c0c]/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-[#E8854A]/30 flex flex-col gap-1"
                 >
                   {formOptions.map((o) => (
-                    <button
+                    <Button
+                      type="button"
                       key={o}
                       onClick={() => {
                         setFormType(o);
@@ -98,7 +101,7 @@ export function Hero() {
                     >
                       <span>{o} Form</span>
                       {formType === o && <Check className="size-3.5 text-[#E8854A]" />}
-                    </button>
+                    </Button>
                   ))}
                 </motion.div>
               )}
@@ -106,13 +109,14 @@ export function Hero() {
           </span>{" "}
           questionnaire that feels like {/* Feel Type Dropdown Trigger */}
           <span className="relative inline-block mx-1.5">
-            <button
+            <Button
+              type="button"
               onClick={() => setActiveDropdown(activeDropdown === "feel" ? null : "feel")}
               className="inline-flex items-center gap-2 border-b-[3px] border-[#E8854A] pb-1 text-[#E8854A] hover:bg-[#E8854A]/5 px-3 py-0.5 rounded-xl transition-colors cursor-pointer outline-none tracking-normal font-semibold"
             >
               {feelType}
               <ChevronDown className="size-4 md:size-6 text-[#E8854A]/80 shrink-0" />
-            </button>
+            </Button>
 
             <AnimatePresence>
               {activeDropdown === "feel" && (
@@ -124,7 +128,8 @@ export function Hero() {
                   className="absolute left-1/2 -translate-x-1/2 mt-3.5 z-30 w-44 rounded-2xl border border-white/[0.08] bg-[#0c0c0c]/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-[#E8854A]/30 flex flex-col gap-1"
                 >
                   {feelOptions.map((o) => (
-                    <button
+                    <Button
+                      type="button"
                       key={o}
                       onClick={() => {
                         setFeelType(o);
@@ -138,7 +143,7 @@ export function Hero() {
                     >
                       <span>{o}</span>
                       {feelType === o && <Check className="size-3.5 text-[#E8854A]" />}
-                    </button>
+                    </Button>
                   ))}
                 </motion.div>
               )}

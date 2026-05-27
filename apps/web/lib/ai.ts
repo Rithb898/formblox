@@ -4,7 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 // To use Anthropic: import { createAnthropic } from "@ai-sdk/anthropic"
 // and replace with: createAnthropic()("claude-haiku-4-5-20251001")
 const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
-export const aiModel = openai("gpt-4o-mini");
+export const aiModel = openai("gpt-5.4-mini");
 
 export const FOLLOWUP_SYSTEM_PROMPT = `You are a curious, empathetic interviewer helping a form collect richer responses.
 The respondent just answered a question. Based on their answer, ask ONE short, natural follow-up question to learn more.
@@ -27,7 +27,7 @@ Rules:
 - Vary field types: use short_text for names/brief answers, long_text for open feedback, single_choice for one-pick options, multiple_choice for multi-select, rating for satisfaction (1–5), email for contact info, number for quantities, date for scheduling.
 - Labels should be clear concise questions or prompts (not instructions like "Please enter...").
 - Only mark truly essential fields as required.
-- For single_choice and multiple_choice fields, include config.options as an array of 3–5 realistic strings.
-- For rating fields, include config.min: 1 and config.max: 5.
-- For short_text and long_text fields, include config.aiFollowupEnabled: true.
-- For all other field types, set config to {}.`;
+- For single_choice and multiple_choice fields, set config.options to an array of 3–5 realistic short label strings (e.g. ["Daily", "Weekly", "Monthly"]).
+- For rating fields, set config.scale to 5 (or 10 for finer scales) and config.style to "star" or "number".
+- For short_text and long_text fields, set config.aiFollowupEnabled to true.
+- For email, number, and date fields, set config to {}.`;

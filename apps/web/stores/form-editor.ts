@@ -27,6 +27,7 @@ interface FormEditorState {
   dirty: boolean;
   lastSavedAt: Date | null;
   isSaving: boolean;
+  fieldErrors: Record<string, string>;
 
   setForm: (formVersion: EditorFormVersion, fields: EditorField[]) => void;
   addField: (field: EditorField) => void;
@@ -36,6 +37,8 @@ interface FormEditorState {
   selectField: (id: string | null) => void;
   markSaved: () => void;
   setIsSaving: (isSaving: boolean) => void;
+  setFieldErrors: (errors: Record<string, string>) => void;
+  clearFieldErrors: () => void;
 }
 
 export const useFormEditorStore = create<FormEditorState>((set) => ({
@@ -45,6 +48,7 @@ export const useFormEditorStore = create<FormEditorState>((set) => ({
   dirty: false,
   lastSavedAt: null,
   isSaving: false,
+  fieldErrors: {},
 
   setForm: (formVersion, fields) =>
     set({ formVersion, fields, dirty: false, selectedFieldId: null }),
@@ -53,10 +57,14 @@ export const useFormEditorStore = create<FormEditorState>((set) => ({
     set((s) => ({ fields: [...s.fields, field], selectedFieldId: field.id, dirty: true })),
 
   updateField: (id, patch) =>
-    set((s) => ({
-      fields: s.fields.map((f) => (f.id === id ? { ...f, ...patch } : f)),
-      dirty: true,
-    })),
+    set((s) => {
+      const { [id]: _removed, ...remainingErrors } = s.fieldErrors;
+      return {
+        fields: s.fields.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+        dirty: true,
+        fieldErrors: remainingErrors,
+      };
+    }),
 
   removeField: (id) =>
     set((s) => ({
@@ -81,4 +89,8 @@ export const useFormEditorStore = create<FormEditorState>((set) => ({
   markSaved: () => set({ dirty: false, lastSavedAt: new Date(), isSaving: false }),
 
   setIsSaving: (isSaving) => set({ isSaving }),
+
+  setFieldErrors: (errors) => set({ fieldErrors: errors }),
+
+  clearFieldErrors: () => set({ fieldErrors: {} }),
 }));
