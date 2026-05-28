@@ -1,3 +1,4 @@
+import React from "react";
 import { Body, Container, Head, Heading, Html, Link, Preview, Text } from "@react-email/components";
 
 interface NewResponseEmailProps {

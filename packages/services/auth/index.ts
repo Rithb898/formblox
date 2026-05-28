@@ -34,30 +34,57 @@ class AuthService {
 
   async signup(email: string, password: string, fullName: string): Promise<{ message: string }> {
     const [existing] = await db
-      .select({ id: usersTable.id })
+      .select({ id: usersTable.id, emailVerified: usersTable.emailVerified })
       .from(usersTable)
       .where(eq(usersTable.email, email))
       .limit(1);
 
-    if (existing) throw new Error("EMAIL_TAKEN");
+    if (existing?.emailVerified) throw new Error("EMAIL_TAKEN");
 
     const passwordHash = await bcrypt.hash(password, 12);
-
-    const insertedUsers = await db
-      .insert(usersTable)
-      .values({ email, fullName, emailVerified: false })
-      .returning({ id: usersTable.id });
-
-    const user = insertedUsers[0]!;
-
-    await db.insert(userCredentialsTable).values({ userId: user.id, passwordHash });
-    await this.createPersonalWorkspace(user.id, fullName);
-
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await db.insert(emailVerificationTokensTable).values({ userId: user.id, token, expiresAt });
 
-    await emailService.sendVerificationEmail(email, token);
+    await db.transaction(async (tx) => {
+      let userId: string;
+
+      if (existing) {
+        // Unverified user retrying signup — update credentials and re-issue token
+        userId = existing.id;
+        await tx
+          .update(userCredentialsTable)
+          .set({ passwordHash })
+          .where(eq(userCredentialsTable.userId, userId));
+        await tx
+          .update(emailVerificationTokensTable)
+          .set({ usedAt: new Date() })
+          .where(
+            and(
+              eq(emailVerificationTokensTable.userId, userId),
+              isNull(emailVerificationTokensTable.usedAt),
+            ),
+          );
+      } else {
+        const [user] = await tx
+          .insert(usersTable)
+          .values({ email, fullName, emailVerified: false })
+          .returning({ id: usersTable.id });
+        userId = user!.id;
+        await tx.insert(userCredentialsTable).values({ userId, passwordHash });
+        await tx
+          .insert(workspacesTable)
+          .values({ name: `${fullName}'s Workspace`, createdBy: userId })
+          .returning({ id: workspacesTable.id })
+          .then(([ws]) =>
+            tx.insert(workspaceMembersTable).values({ workspaceId: ws!.id, userId, role: "owner" }),
+          );
+      }
+
+      await tx.insert(emailVerificationTokensTable).values({ userId, token, expiresAt });
+
+      await emailService.sendVerificationEmail(email, token);
+    });
+
     return { message: "Check your email to verify your account." };
   }
 

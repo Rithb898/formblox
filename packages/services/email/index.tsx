@@ -1,3 +1,4 @@
+import React from "react";
 import { Resend } from "resend";
 import { env } from "../env";
 import VerifyEmail from "./templates/verify-email";
