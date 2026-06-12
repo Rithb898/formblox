@@ -8,8 +8,14 @@ export async function rateLimit(
   limit: number,
   windowSeconds: number,
 ): Promise<{ allowed: boolean; remaining: number }> {
-  const count = await redisClient.incr(key);
-  if (count === 1) await redisClient.expire(key, windowSeconds);
+  const lua = `
+    local c = redis.call('INCR', KEYS[1])
+    if c == 1 then
+      redis.call('EXPIRE', KEYS[1], tonumber(ARGV[1]))
+    end
+    return c
+  `;
+  const count = (await redisClient.eval(lua, 1, key, windowSeconds)) as number;
   return { allowed: count <= limit, remaining: Math.max(0, limit - count) };
 }
 
