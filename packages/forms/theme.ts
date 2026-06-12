@@ -13,6 +13,11 @@ export type ThemePresetKey = keyof typeof THEME_PRESETS;
 export const themeSchema = z.object({
   preset: z.enum(["sunset", "ocean", "forest", "midnight", "rose", "custom"]),
   accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  // Absent = inherit accentColor. Only set when the owner deliberately forks the AI color.
+  aiAccentColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
 });
 
 export type FormTheme = z.infer<typeof themeSchema>;

@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowUp, Check, Loader2, Star, Sparkles } from "lucide-react";
+import { ArrowUp, Check, Loader2, Pencil, Star, Sparkles } from "lucide-react";
 import { buildResponseSchema, zodForField, type FieldType, type FormTheme } from "@repo/forms";
 import { trpc } from "~/trpc/client";
 import { cn } from "~/lib/utils";
-import { themeToCSSVars, computeOnAccentColor, hexToRgba } from "~/lib/theme";
+import { themeToCSSVars, hexToRgba } from "~/lib/theme";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -85,6 +86,39 @@ function isFollowupEligible(f: Field): boolean {
   );
 }
 
+function coerceAndValidate(
+  field: Field,
+  rawValue: unknown,
+): { ok: true; value: unknown } | { ok: false; error: string } {
+  const validator = zodForField({
+    id: field.id,
+    type: field.type as FieldType,
+    required: field.required,
+    config: field.config,
+  });
+
+  let value = rawValue;
+  if (typeof value === "string" && value.trim() === "") value = undefined;
+  if (field.type === "number" && typeof value === "string") {
+    value = value === "" ? undefined : Number(value);
+  }
+
+  const result = validator.safeParse(value);
+  if (!result.success) {
+    return { ok: false, error: result.error.issues[0]?.message ?? "Invalid answer" };
+  }
+  return { ok: true, value };
+}
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
+type SavedProgress = { step: number; values: Record<string, unknown>; fieldIds: string[] };
+
 // ---------------------------------------------------------------------------
 // UI atoms
 // ---------------------------------------------------------------------------
@@ -99,8 +133,8 @@ function Avatar({ initial }: { initial: string }) {
 
 function AiAvatar() {
   return (
-    <div className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full border border-white/8 bg-(--form-avatar-bg)">
-      <Sparkles className="size-3.5 text-(--form-text-label)" />
+    <div className="mt-0.5 flex size-7 shrink-0 select-none items-center justify-center rounded-full border border-white/8 bg-[color-mix(in_srgb,var(--form-ai-accent)_18%,var(--form-avatar-bg))]">
+      <Sparkles className="size-3.5 text-(--form-ai-accent)" />
     </div>
   );
 }
@@ -139,12 +173,41 @@ function QuestionBubble({
   );
 }
 
-function AnswerBubble({ text, faded }: { text: string; faded: boolean }) {
-  return (
-    <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
-      <div className="max-w-[80%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm bg-(--form-accent) px-4 py-3 text-[15px] leading-relaxed text-(--form-text-on-accent)">
-        {text || "—"}
+function AnswerBubble({
+  text,
+  faded,
+  onEdit,
+}: {
+  text: string;
+  faded: boolean;
+  onEdit?: () => void;
+}) {
+  if (!onEdit) {
+    return (
+      <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
+        <div className="max-w-[80%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm bg-(--form-accent) px-4 py-3 text-[15px] leading-relaxed text-(--form-text-on-accent)">
+          {text || "—"}
+        </div>
       </div>
+    );
+  }
+  return (
+    <div
+      className={cn(
+        "group flex items-center justify-end gap-2 animate-bubble-in-right",
+        faded && "opacity-60",
+      )}
+    >
+      <Pencil className="size-3 shrink-0 text-(--form-text-muted) opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100" />
+      <button
+        type="button"
+        onClick={onEdit}
+        title="Edit answer"
+        aria-label="Edit this answer"
+        className="max-w-[80%] cursor-pointer whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm bg-(--form-accent) px-4 py-3 text-left text-[15px] leading-relaxed text-(--form-text-on-accent) transition-opacity hover:opacity-85"
+      >
+        {text || "—"}
+      </button>
     </div>
   );
 }
@@ -153,15 +216,15 @@ function AiFollowUpBubble({ text, streaming = false }: { text: string; streaming
   return (
     <div className="flex animate-bubble-in-left items-end gap-2.5">
       <AiAvatar />
-      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-white/7 bg-(--form-surface) px-4 py-3">
+      <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-[color-mix(in_srgb,var(--form-ai-accent)_25%,transparent)] bg-(--form-surface) px-4 py-3">
         <span className="mb-1.5 flex items-center gap-1.5">
-          <Sparkles className="size-3 text-(--form-text-muted)" />
-          <span className="font-mono text-[10px] uppercase tracking-widest text-(--form-text-muted)">AI</span>
+          <Sparkles className="size-3 text-(--form-ai-accent)" />
+          <span className="font-mono text-[10px] uppercase tracking-widest text-(--form-ai-accent)">AI</span>
         </span>
-        <p className="text-[15px] leading-relaxed text-(--form-text-primary)">
+        <p aria-live="polite" className="text-[15px] leading-relaxed text-(--form-text-primary)">
           {text}
           {streaming && (
-            <span className="ml-0.5 inline-block size-0.75 animate-pulse rounded-full bg-(--form-text-label) align-middle" />
+            <span className="ml-0.5 inline-block size-0.75 animate-pulse rounded-full bg-(--form-ai-accent) align-middle" />
           )}
         </p>
       </div>
@@ -189,7 +252,7 @@ function AiFollowUpAnswer({
   }
   return (
     <div className={cn("flex justify-end animate-bubble-in-right", faded && "opacity-60")}>
-      <div className="max-w-[80%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm border border-white/7 bg-(--form-surface-elevated) px-4 py-3 text-[15px] leading-relaxed text-(--form-text-primary)">
+      <div className="max-w-[80%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-br-sm bg-(--form-accent) px-4 py-3 text-[15px] leading-relaxed text-(--form-text-on-accent)">
         {text}
       </div>
     </div>
@@ -214,8 +277,39 @@ function AllDoneState() {
     <div className="flex animate-bubble-in-left items-end gap-2.5">
       <AiAvatar />
       <div className="rounded-2xl rounded-bl-sm border border-white/7 bg-(--form-surface) px-4 py-3 text-[15px] leading-relaxed text-(--form-text-primary)">
-        That's all — thank you for sharing!
+        That&apos;s all — thank you for sharing!
       </div>
+    </div>
+  );
+}
+
+function DoneActions({ slug, onReset }: { slug: string; onReset: () => void }) {
+  return (
+    <div className="mt-2 flex animate-fade-up flex-col items-center gap-5 rounded-2xl border border-white/7 bg-(--form-surface) px-6 py-8 text-center">
+      <p className="text-sm leading-relaxed text-(--form-text-muted)">
+        Your response has been recorded.
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-2.5">
+        <Button
+          type="button"
+          onClick={onReset}
+          className="cursor-pointer rounded-full border border-white/8 px-4 py-2 text-sm text-(--form-text-primary) transition-colors hover:border-white/20 hover:bg-white/4"
+        >
+          Submit another response
+        </Button>
+        <Link
+          href={`/signup?utm_source=public_form&utm_medium=referral&utm_content=${encodeURIComponent(slug)}`}
+          className="rounded-full bg-(--form-accent) px-4 py-2 text-sm font-medium text-(--form-text-on-accent) transition-opacity hover:opacity-90"
+        >
+          Create your own form
+        </Link>
+      </div>
+      <Link
+        href="/"
+        className="font-mono text-[10px] uppercase tracking-widest text-(--form-text-muted) transition-colors hover:text-(--form-text-primary)"
+      >
+        Powered by Formblox
+      </Link>
     </div>
   );
 }
@@ -225,7 +319,7 @@ function AllDoneState() {
 // ---------------------------------------------------------------------------
 
 export function FormRunner({ slug, title, description, theme, fields }: Props) {
-  const cssVars = themeToCSSVars(theme);
+  const cssVars = useMemo(() => themeToCSSVars(theme), [theme]);
   const accent = cssVars["--form-accent"] ?? "#E8854A";
   const ordered = useMemo(() => [...fields].sort((a, b) => a.order - b.order), [fields]);
   const initial = (title.trim()[0] ?? "F").toUpperCase();
@@ -237,7 +331,12 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [responseId, setResponseId] = useState<string | null>(null);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  // Bumped on "Submit another response" so the typing-indicator effect refires even at step 0
+  const [runKey, setRunKey] = useState(0);
   const honeypotRef = useRef<HTMLInputElement>(null);
+
+  const storageKey = `formblox:f:${slug}`;
 
   // Background-prefetched AI follow-ups (keyed by fieldId)
   const [aiFollowups, setAiFollowups] = useState<Map<string, AiFollowup>>(new Map());
@@ -250,6 +349,9 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
   const [debriefAnswers, setDebriefAnswers] = useState<Map<string, string | null>>(new Map());
 
   const threadEndRef = useRef<HTMLDivElement>(null);
+  // True while the user is at (or near) the bottom of the thread — auto-scroll only then,
+  // so someone scrolling back up to reread isn't yanked down.
+  const stickToBottomRef = useRef(true);
 
   const schema = useMemo(
     () =>
@@ -281,11 +383,11 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
     setTyping(true);
     const t = setTimeout(() => setTyping(false), TYPING_MS);
     return () => clearTimeout(t);
-  }, [step, total]);
+  }, [step, total, runKey]);
 
   // Confetti from both bottom corners when done
   useEffect(() => {
-    if (debrief.tag !== "done") return;
+    if (debrief.tag !== "done" || prefersReducedMotion()) return;
     const shared = {
       particleCount: 80,
       spread: 70,
@@ -295,25 +397,41 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
     };
     confetti({ ...shared, origin: { x: 0, y: 1 }, angle: 60 });
     confetti({ ...shared, origin: { x: 1, y: 1 }, angle: 120 });
-  }, [debrief.tag]);
+  }, [debrief.tag, accent, cssVars]);
 
   // Keep ref in sync so finalize() reads fresh aiFollowups without stale closure
   useEffect(() => {
     aiFollowupsRef.current = aiFollowups;
   }, [aiFollowups]);
 
+  // Track whether the user is near the bottom of the page
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      stickToBottomRef.current = window.innerHeight + window.scrollY >= doc.scrollHeight - 120;
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   // Auto-scroll on discrete state transitions
   useEffect(() => {
     const t = setTimeout(() => {
-      threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      if (stickToBottomRef.current) {
+        threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
     }, 80);
     return () => clearTimeout(t);
   }, [step, typing, submitted, debrief, debriefAnswers]);
 
-  // Auto-scroll during AI streaming — no cleanup so rapid chunk updates don't cancel each other
+  // Auto-scroll during AI streaming. Instant, not smooth: each smooth scroll cancels the
+  // previous one, so with rapid chunks the animation restarts forever and never reaches bottom.
   useEffect(() => {
     requestAnimationFrame(() => {
-      threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      if (stickToBottomRef.current) {
+        threadEndRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+      }
     });
   }, [aiFollowups]);
 
@@ -409,32 +527,80 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
   }, []);
 
   // ---------------------------------------------------------------------------
+  // Progress persistence — survive accidental refresh / tab close mid-form
+  // ---------------------------------------------------------------------------
+  const persistProgress = useCallback(
+    (nextStep: number) => {
+      try {
+        const snapshot: SavedProgress = {
+          step: nextStep,
+          values: form.getValues(),
+          fieldIds: ordered.map((f) => f.id),
+        };
+        sessionStorage.setItem(storageKey, JSON.stringify(snapshot));
+      } catch {
+        // Storage unavailable (private mode, quota) — non-fatal
+      }
+    },
+    [storageKey, form, ordered],
+  );
+
+  // Restore saved progress on mount; refire AI prefetch for restored text answers
+  // since in-memory follow-ups were lost on reload.
+  useEffect(() => {
+    let saved: SavedProgress;
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (!raw) return;
+      saved = JSON.parse(raw) as SavedProgress;
+    } catch {
+      return;
+    }
+
+    const ids = ordered.map((f) => f.id);
+    const valid =
+      Array.isArray(saved.fieldIds) &&
+      saved.fieldIds.length === ids.length &&
+      saved.fieldIds.every((id, i) => id === ids[i]) &&
+      typeof saved.step === "number" &&
+      saved.step > 0 &&
+      saved.values !== null &&
+      typeof saved.values === "object";
+    if (!valid) {
+      try {
+        sessionStorage.removeItem(storageKey);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
+    // step === total means a submit was in flight when the page closed — re-ask the last question
+    const restoredStep = Math.min(saved.step, ids.length - 1);
+    form.reset({ ...defaultValues, ...saved.values });
+    setStep(restoredStep);
+    for (const f of ordered.slice(0, restoredStep)) {
+      const v = saved.values[f.id];
+      if (typeof v === "string" && v.trim()) prefetchFollowup(f, v.trim());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Form answer validation + advance
   // ---------------------------------------------------------------------------
   function validateAndAdvance(rawValue: unknown) {
     if (typing || !current) return;
     setFieldError(null);
 
-    const validator = zodForField({
-      id: current.id,
-      type: current.type as FieldType,
-      required: current.required,
-      config: current.config,
-    });
-
-    let value = rawValue;
-    if (typeof value === "string" && value.trim() === "") value = undefined;
-    if (current.type === "number" && typeof value === "string") {
-      value = value === "" ? undefined : Number(value);
-    }
-
-    const result = validator.safeParse(value);
-    if (!result.success) {
-      setFieldError(result.error.issues[0]?.message ?? "Invalid answer");
+    const checked = coerceAndValidate(current, rawValue);
+    if (!checked.ok) {
+      setFieldError(checked.error);
       return;
     }
 
-    form.setValue(current.id, value === undefined ? "" : value);
+    form.setValue(current.id, checked.value === undefined ? "" : checked.value);
+    persistProgress(step + 1);
 
     // Kick off background AI fetch immediately (non-blocking)
     if (typeof rawValue === "string" && rawValue.trim()) {
@@ -446,6 +612,40 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
     } else {
       setStep((s) => s + 1);
     }
+  }
+
+  // Edit a previously answered question (pre-submit only)
+  const editingField = editingFieldId
+    ? (ordered.find((f) => f.id === editingFieldId) ?? null)
+    : null;
+
+  function handleEditSubmit(rawValue: unknown) {
+    if (!editingField) return;
+    setFieldError(null);
+
+    const checked = coerceAndValidate(editingField, rawValue);
+    if (!checked.ok) {
+      setFieldError(checked.error);
+      return;
+    }
+
+    form.setValue(editingField.id, checked.value === undefined ? "" : checked.value);
+    persistProgress(step);
+
+    if (typeof rawValue === "string" && rawValue.trim()) {
+      // Re-run the follow-up against the new answer
+      prefetchFollowup(editingField, rawValue.trim());
+    } else if (isFollowupEligible(editingField)) {
+      // Answer cleared — drop any stale follow-up for it
+      abortControllers.current.get(editingField.id)?.abort();
+      setAiFollowups((prev) => {
+        const m = new Map(prev);
+        m.delete(editingField.id);
+        return m;
+      });
+    }
+
+    setEditingFieldId(null);
   }
 
   // ---------------------------------------------------------------------------
@@ -462,6 +662,12 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
       });
       setResponseId(id);
       setSubmitted(true);
+      setEditingFieldId(null);
+      try {
+        sessionStorage.removeItem(storageKey);
+      } catch {
+        /* ignore */
+      }
 
       // Determine if there are eligible follow-ups to show (use ref to avoid stale closure)
       const eligible = ordered.filter(
@@ -487,37 +693,90 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
     [ordered, aiFollowups],
   );
 
+  // Persist follow-ups with one retry; non-fatal on failure (shouldn't block UX)
+  async function saveFollowupBatch(
+    followups: { fieldId: string; aiQuestion: string; userAnswer: string | null }[],
+  ) {
+    if (!responseId || followups.length === 0) return;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await saveFollowupsMutation.mutateAsync({ responseId, followups });
+        return;
+      } catch {
+        // retry once, then give up silently
+      }
+    }
+  }
+
   async function handleDebriefAnswer(fieldId: string, answer: string | null) {
-    const newAnswers = new Map(debriefAnswers).set(fieldId, answer);
-    setDebriefAnswers(newAnswers);
+    setDebriefAnswers((prev) => new Map(prev).set(fieldId, answer));
+
+    const fu = aiFollowups.get(fieldId);
+    const toSave = fu?.aiQuestion
+      ? [{ fieldId, aiQuestion: fu.aiQuestion, userAnswer: answer }]
+      : [];
 
     const currentIdx = debrief.tag === "active" ? debrief.index : 0;
     const nextIdx = currentIdx + 1;
 
     if (nextIdx >= eligibleFollowupFields.length) {
-      // All done — persist to DB
       setDebrief({ tag: "saving" });
-      const followupsToSave = eligibleFollowupFields
-        .map((f) => {
-          const fu = aiFollowups.get(f.id);
-          if (!fu || !fu.aiQuestion) return null;
-          const ua = newAnswers.get(f.id) ?? null;
-          return { fieldId: f.id, aiQuestion: fu.aiQuestion, userAnswer: ua };
-        })
-        .filter(Boolean) as { fieldId: string; aiQuestion: string; userAnswer: string | null }[];
-
-      if (responseId && followupsToSave.length > 0) {
-        try {
-          await saveFollowupsMutation.mutateAsync({ responseId, followups: followupsToSave });
-        } catch {
-          // Non-fatal — data is collected, persist failure shouldn't block UX
-        }
-      }
+      await saveFollowupBatch(toSave);
       setDebrief({ tag: "done" });
     } else {
       setDebrief({ tag: "active", index: nextIdx });
+      // Save each answer as it lands so closing the tab mid-debrief loses nothing
+      void saveFollowupBatch(toSave);
     }
   }
+
+  async function handleSkipAll() {
+    const currentIdx = debrief.tag === "active" ? debrief.index : 0;
+    const remaining = eligibleFollowupFields.slice(currentIdx);
+
+    // Stop any in-flight streams for skipped questions
+    for (const f of remaining) abortControllers.current.get(f.id)?.abort();
+
+    setDebriefAnswers((prev) => {
+      const m = new Map(prev);
+      for (const f of remaining) m.set(f.id, null);
+      return m;
+    });
+
+    setDebrief({ tag: "saving" });
+    const toSave = remaining
+      .map((f) => {
+        const fu = aiFollowups.get(f.id);
+        if (!fu?.aiQuestion) return null;
+        return { fieldId: f.id, aiQuestion: fu.aiQuestion, userAnswer: null };
+      })
+      .filter(Boolean) as { fieldId: string; aiQuestion: string; userAnswer: string | null }[];
+    await saveFollowupBatch(toSave);
+    setDebrief({ tag: "done" });
+  }
+
+  // Full reset for "Submit another response"
+  const resetAll = useCallback(() => {
+    for (const c of abortControllers.current.values()) c.abort();
+    abortControllers.current.clear();
+    try {
+      sessionStorage.removeItem(storageKey);
+    } catch {
+      /* ignore */
+    }
+    form.reset(defaultValues);
+    setStep(0);
+    setRunKey((k) => k + 1);
+    setFieldError(null);
+    setBannerError(null);
+    setSubmitted(false);
+    setResponseId(null);
+    setEditingFieldId(null);
+    setAiFollowups(new Map());
+    setDebrief({ tag: "idle" });
+    setDebriefAnswers(new Map());
+    window.scrollTo({ top: 0 });
+  }, [form, defaultValues, storageKey]);
 
   // ---------------------------------------------------------------------------
   // Computed UI flags
@@ -532,8 +791,10 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
     : null;
   const waitingOnAi = currentDebriefFollowup?.streaming ?? false;
 
-  const showFormFooter = !submitted && !!current;
+  const showFormFooter = !submitted && (!!current || !!editingField);
   const showDebriefFooter = debrief.tag === "active" && !!currentDebriefField && !waitingOnAi;
+  const remainingFollowups =
+    debrief.tag === "active" ? eligibleFollowupFields.length - debrief.index : 0;
 
   // ---------------------------------------------------------------------------
   // Render
@@ -582,13 +843,22 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
           {ordered.map((field, i) => {
             if (i > step) return null;
             const answered = i < step || submitted;
+            const isEditing = editingFieldId === field.id;
             return (
               <div key={field.id} className="flex flex-col gap-5">
-                <QuestionBubble field={field} initial={initial} faded={answered} />
+                <QuestionBubble field={field} initial={initial} faded={answered && !isEditing} />
                 {answered && (
                   <AnswerBubble
                     text={formatAnswer(field, form.getValues(field.id))}
-                    faded={answered}
+                    faded={answered && !isEditing}
+                    onEdit={
+                      !submitted && !submitMutation.isPending
+                        ? () => {
+                            setFieldError(null);
+                            setEditingFieldId(field.id);
+                          }
+                        : undefined
+                    }
                   />
                 )}
               </div>
@@ -656,8 +926,12 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
             </div>
           )}
 
-          {debrief.tag === "done" &&
-            (eligibleFollowupFields.length > 0 ? <AllDoneState /> : <SuccessState />)}
+          {debrief.tag === "done" && (
+            <>
+              {eligibleFollowupFields.length > 0 ? <AllDoneState /> : <SuccessState />}
+              <DoneActions slug={slug} onReset={resetAll} />
+            </>
+          )}
 
           <div ref={threadEndRef} className={debrief.tag === "done" ? "pb-16" : ""} />
         </div>
@@ -667,18 +941,49 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
       {showFormFooter && (
         <footer className="sticky bottom-0 z-20 border-t border-white/6 bg-[color-mix(in_srgb,var(--form-bg)_80%,transparent)] backdrop-blur-xl">
           <div className="mx-auto w-full max-w-2xl px-5 py-4">
+            {editingField && (
+              <p className="mb-2 flex items-center justify-between gap-3 text-xs">
+                <span className="flex min-w-0 items-center gap-1.5 text-(--form-text-muted)">
+                  <Pencil className="size-3 shrink-0" />
+                  <span className="truncate">Editing: {editingField.label}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingFieldId(null);
+                    setFieldError(null);
+                  }}
+                  className="shrink-0 cursor-pointer text-(--form-text-muted) underline-offset-2 transition-colors hover:text-(--form-text-primary) hover:underline"
+                >
+                  Cancel
+                </button>
+              </p>
+            )}
             {fieldError && (
               <p role="alert" className="mb-2 text-xs font-medium text-(--form-accent)">
                 {fieldError}
               </p>
             )}
-            <ReplyArea
-              key={current.id}
-              field={current}
-              disabled={typing || submitMutation.isPending}
-              pending={submitMutation.isPending}
-              onSubmit={validateAndAdvance}
-            />
+            {editingField ? (
+              <ReplyArea
+                key={`edit-${editingField.id}`}
+                field={editingField}
+                disabled={submitMutation.isPending}
+                pending={submitMutation.isPending}
+                initialValue={form.getValues(editingField.id)}
+                onSubmit={handleEditSubmit}
+              />
+            ) : (
+              current && (
+                <ReplyArea
+                  key={current.id}
+                  field={current}
+                  disabled={typing || submitMutation.isPending}
+                  pending={submitMutation.isPending}
+                  onSubmit={validateAndAdvance}
+                />
+              )
+            )}
           </div>
         </footer>
       )}
@@ -687,11 +992,22 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
       {showDebriefFooter && currentDebriefField && (
         <footer className="sticky bottom-0 z-20 border-t border-white/6 bg-[color-mix(in_srgb,var(--form-bg)_80%,transparent)] backdrop-blur-xl">
           <div className="mx-auto w-full max-w-2xl px-5 py-4">
-            <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-(--form-text-muted)">
-              <Sparkles className="size-3" />
-              AI follow-up ·{" "}
-              {String(debrief.tag === "active" ? debrief.index + 1 : 1).padStart(2, "0")} /{" "}
-              {String(eligibleFollowupFields.length).padStart(2, "0")}
+            <p className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-widest">
+              <span className="flex items-center gap-1.5 text-(--form-ai-accent)">
+                <Sparkles className="size-3" />
+                AI follow-up ·{" "}
+                {String(debrief.tag === "active" ? debrief.index + 1 : 1).padStart(2, "0")} /{" "}
+                {String(eligibleFollowupFields.length).padStart(2, "0")}
+              </span>
+              {remainingFollowups > 1 && (
+                <button
+                  type="button"
+                  onClick={() => void handleSkipAll()}
+                  className="cursor-pointer text-(--form-text-muted) underline-offset-2 transition-colors hover:text-(--form-text-primary) hover:underline"
+                >
+                  Skip all
+                </button>
+              )}
             </p>
             <FollowupReplyArea
               key={currentDebriefField.id}
@@ -707,19 +1023,30 @@ export function FormRunner({ slug, title, description, theme, fields }: Props) {
       {debrief.tag === "active" && waitingOnAi && (
         <footer className="sticky bottom-0 z-20 border-t border-white/6 bg-[color-mix(in_srgb,var(--form-bg)_80%,transparent)] backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-5 py-4">
-            <div className="flex items-center gap-2 text-xs text-(--form-text-muted)">
+            <div className="flex items-center gap-2 text-xs text-(--form-ai-accent)">
               <Loader2 className="size-3.5 animate-spin" />
               AI is thinking…
             </div>
-            {currentDebriefField && (
-              <Button
-                type="button"
-                onClick={() => void handleDebriefAnswer(currentDebriefField.id, null)}
-                className="cursor-pointer rounded-full border border-white/8 px-3 py-1.5 text-xs text-(--form-text-muted) transition-colors hover:border-white/20 hover:text-(--form-text-primary)"
-              >
-                Skip
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {remainingFollowups > 1 && (
+                <Button
+                  type="button"
+                  onClick={() => void handleSkipAll()}
+                  className="cursor-pointer rounded-full px-3 py-1.5 text-xs text-(--form-text-muted) transition-colors hover:text-(--form-text-primary)"
+                >
+                  Skip all
+                </Button>
+              )}
+              {currentDebriefField && (
+                <Button
+                  type="button"
+                  onClick={() => void handleDebriefAnswer(currentDebriefField.id, null)}
+                  className="cursor-pointer rounded-full border border-white/8 px-3 py-1.5 text-xs text-(--form-text-muted) transition-colors hover:border-white/20 hover:text-(--form-text-primary)"
+                >
+                  Skip
+                </Button>
+              )}
+            </div>
           </div>
         </footer>
       )}
@@ -746,13 +1073,23 @@ type ReplyAreaProps = {
   field: Field;
   disabled: boolean;
   pending: boolean;
+  initialValue?: unknown;
   onSubmit: (value: unknown) => void;
 };
 
-function ReplyArea({ field, disabled, pending, onSubmit }: ReplyAreaProps) {
+function ReplyArea({ field, disabled, pending, initialValue, onSubmit }: ReplyAreaProps) {
+  const initialText =
+    initialValue == null || initialValue === "" ? "" : String(initialValue);
   switch (field.type) {
     case "long_text":
-      return <LongTextReply field={field} disabled={disabled} onSubmit={onSubmit} />;
+      return (
+        <LongTextReply
+          field={field}
+          disabled={disabled}
+          initialValue={initialText}
+          onSubmit={onSubmit}
+        />
+      );
     case "single_choice":
       return <SingleChoiceReply field={field} disabled={disabled} onSubmit={onSubmit} />;
     case "multiple_choice":
@@ -761,19 +1098,52 @@ function ReplyArea({ field, disabled, pending, onSubmit }: ReplyAreaProps) {
           field={field}
           disabled={disabled}
           pending={pending}
+          initialValue={Array.isArray(initialValue) ? (initialValue as string[]) : []}
           onSubmit={onSubmit}
         />
       );
     case "rating":
       return <RatingReply field={field} disabled={disabled} onSubmit={onSubmit} />;
     case "date":
-      return <TextReply field={field} inputType="date" disabled={disabled} onSubmit={onSubmit} />;
+      return (
+        <TextReply
+          field={field}
+          inputType="date"
+          disabled={disabled}
+          initialValue={initialText}
+          onSubmit={onSubmit}
+        />
+      );
     case "email":
-      return <TextReply field={field} inputType="email" disabled={disabled} onSubmit={onSubmit} />;
+      return (
+        <TextReply
+          field={field}
+          inputType="email"
+          disabled={disabled}
+          initialValue={initialText}
+          onSubmit={onSubmit}
+        />
+      );
     case "number":
-      return <TextReply field={field} inputType="number" disabled={disabled} onSubmit={onSubmit} />;
+      return (
+        <TextReply
+          field={field}
+          inputType="number"
+          disabled={disabled}
+          initialValue={initialText}
+          onSubmit={onSubmit}
+        />
+      );
     default:
-      return <TextReply field={field} inputType="text" disabled={disabled} onSubmit={onSubmit} />;
+      return (
+        <TextReply
+          field={field}
+          inputType="text"
+          disabled={disabled}
+          initialValue={initialText}
+          onSubmit={onSubmit}
+        />
+      );
   }
 }
 
@@ -859,14 +1229,16 @@ function TextReply({
   field,
   inputType,
   disabled,
+  initialValue = "",
   onSubmit,
 }: {
   field: Field;
   inputType: string;
   disabled: boolean;
+  initialValue?: string;
   onSubmit: (v: unknown) => void;
 }) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
   const ph = (field.config.placeholder as string | undefined) ?? "";
 
@@ -909,13 +1281,15 @@ function TextReply({
 function LongTextReply({
   field,
   disabled,
+  initialValue = "",
   onSubmit,
 }: {
   field: Field;
   disabled: boolean;
+  initialValue?: string;
   onSubmit: (v: unknown) => void;
 }) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValue);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const ph = (field.config.placeholder as string | undefined) ?? "";
 
@@ -988,14 +1362,16 @@ function MultipleChoiceReply({
   field,
   disabled,
   pending,
+  initialValue,
   onSubmit,
 }: {
   field: Field;
   disabled: boolean;
   pending: boolean;
+  initialValue?: string[];
   onSubmit: (v: unknown) => void;
 }) {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(initialValue ?? []);
   function toggle(id: string) {
     setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   }

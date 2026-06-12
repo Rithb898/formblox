@@ -276,6 +276,15 @@
   --code-highlight: --alpha(var(--color-white) / 4%);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-bubble-in-left,
+  .animate-bubble-in-right,
+  .animate-fade-up,
+  .animate-typing-bounce {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

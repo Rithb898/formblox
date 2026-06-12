@@ -41,10 +41,13 @@ export function themeToCSSVars(
   theme: FormTheme | null | undefined,
 ): Record<string, string> {
   const accent = theme?.accentColor ?? THEME_PRESETS.sunset.accent;
+  const aiAccent = theme?.aiAccentColor ?? accent;
 
   return {
     "--form-accent": accent,
     "--form-text-on-accent": computeOnAccentColor(accent),
+    "--form-ai-accent": aiAccent,
+    "--form-text-on-ai-accent": computeOnAccentColor(aiAccent),
     "--form-bg": DEFAULTS.bg,
     "--form-surface": DEFAULTS.surface,
     "--form-surface-elevated": DEFAULTS.surfaceElevated,
