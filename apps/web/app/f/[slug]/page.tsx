@@ -7,7 +7,7 @@ import { FormRunner } from "./_components/form-runner";
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#080808]">
+    <div className="flex min-h-dvh items-center justify-center bg-[#080808]">
       <div className="mx-auto w-full max-w-2xl px-5 py-16">{children}</div>
     </div>
   );

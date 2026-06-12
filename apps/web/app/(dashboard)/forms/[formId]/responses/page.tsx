@@ -150,8 +150,8 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                         <span className="font-mono text-[10px] text-[#4A4A4A]">
                           {response.completedAt
                             ? formatDistanceToNow(new Date(response.completedAt), {
-                                addSuffix: true,
-                              })
+                              addSuffix: true,
+                            })
                             : "—"}
                         </span>
                       </div>
@@ -185,7 +185,7 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                   type="button"
                   onClick={() => q.fetchNextPage()}
                   disabled={q.isFetchingNextPage}
-                  className="w-full rounded-xl p-3 font-mono text-[11px] text-[#6B6B6B] ring-1 ring-white/[0.06] transition-colors hover:text-[#F2F2F2]"
+                  className="w-full rounded-xl p-3 font-mono text-[11px] text-[#6B6B6B] ring-1 ring-white/6 transition-colors hover:text-[#F2F2F2]"
                 >
                   {q.isFetchingNextPage ? (
                     <span className="flex items-center justify-center gap-2">
