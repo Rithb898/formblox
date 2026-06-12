@@ -292,8 +292,9 @@ function DoneActions({ slug, onReset }: { slug: string; onReset: () => void }) {
       <div className="flex flex-wrap items-center justify-center gap-2.5">
         <Button
           type="button"
+          variant="outline"
           onClick={onReset}
-          className="cursor-pointer rounded-full border border-white/8 px-4 py-2 text-sm text-(--form-text-primary) transition-colors hover:border-white/20 hover:bg-white/4"
+          className="cursor-pointer rounded-full px-4 py-2 text-sm"
         >
           Submit another response
         </Button>
