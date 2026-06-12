@@ -1,6 +1,8 @@
 import { streamText } from "ai";
 import { z } from "zod";
 import { aiModel, SUMMARY_SYSTEM_PROMPT } from "~/lib/ai";
+import { getUserIdFromCookies } from "~/lib/auth";
+import { rateLimit } from "~/lib/rate-limit";
 
 const bodySchema = z.object({
   formTitle: z.string(),
@@ -15,6 +17,12 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const userId = await getUserIdFromCookies();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
+
+  const { allowed } = await rateLimit(`ai:summary:${userId}`, 30, 3600);
+  if (!allowed) return new Response("Rate limited", { status: 429 });
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) return new Response("Bad request", { status: 400 });
