@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { nanoid } from "nanoid";
 import type { FieldType } from "@repo/forms";
+import { ShareFormPopover } from "~/components/share-form-popover";
 import { trpc } from "~/trpc/client";
 import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "~/components/ui/tooltip";
@@ -164,12 +165,6 @@ function FormCard({
     e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
-  function copyLink() {
-    const url = `${window.location.origin}/f/${form.publicSlug}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Public link copied");
-  }
-
   return (
     <div
       style={{ animationDelay: `${index * 70}ms` }}
@@ -236,7 +231,27 @@ function FormCard({
             delay={50}
             onClick={() => router.push(`/forms/${form.id}/responses`)}
           />
-          <QuickAction icon={Link2} label="Copy link" delay={100} onClick={copyLink} />
+          <ShareFormPopover
+            publicSlug={form.publicSlug}
+            trigger={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Share"
+                onClick={(e) => e.stopPropagation()}
+                style={{ animationDelay: "100ms" }}
+                className={cn(
+                  "size-8 rounded-full bg-white/4 text-[#8A8A8A] ring-1 ring-white/6",
+                  "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                  "hover:scale-105 hover:bg-white/8 hover:text-white",
+                  "group-hover:animate-fade-up",
+                )}
+              >
+                <Link2 className="size-3.5" />
+              </Button>
+            }
+          />
           <QuickAction
             icon={Trash2}
             label="Delete"

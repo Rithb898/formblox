@@ -11,10 +11,12 @@ import {
   ChevronLeft,
   Lock,
   Eye,
+  Share2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "~/trpc/client";
 import { useFormEditorStore } from "~/stores/form-editor";
+import { ShareFormPopover } from "~/components/share-form-popover";
 import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
@@ -280,6 +282,21 @@ export function EditorTopbar({
             </TooltipTrigger>
             <TooltipContent>Open public form</TooltipContent>
           </Tooltip>
+        )}
+        {publicSlug && (
+          <ShareFormPopover
+            publicSlug={publicSlug}
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Share form"
+                className="rounded-full text-[#6B6B6B] hover:bg-white/6 hover:text-[#F2F2F2]"
+              >
+                <Share2 className="size-4" />
+              </Button>
+            }
+          />
         )}
         <Tooltip>
           <TooltipTrigger asChild>
