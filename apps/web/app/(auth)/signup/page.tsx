@@ -38,7 +38,8 @@ export default function SignupPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl tracking-tight">Check your email</CardTitle>
             <CardDescription className="text-[#6B6B6B]">
-              We sent a verification link to your inbox. Click it to activate your account.
+              We sent a verification link to your inbox. Click it to activate your account. Don&apos;t
+              forget to check your spam or junk folder if you don&apos;t see it.
             </CardDescription>
           </CardHeader>
           <CardFooter className="justify-center">
@@ -123,7 +124,7 @@ export default function SignupPage() {
             {formError && (
               <p
                 role="alert"
-                className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/[0.08] px-3 py-2 text-xs text-[#E8854A]"
+                className="rounded-lg border border-[#E8854A]/30 bg-[#E8854A]/8 px-3 py-2 text-xs text-[#E8854A]"
               >
                 {formError}
               </p>
@@ -135,7 +136,7 @@ export default function SignupPage() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/[0.08]" />
+              <span className="w-full border-t border-white/8" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-[#111] px-2 text-[#6B6B6B]">Or continue with</span>
