@@ -37,13 +37,14 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-// Strict rate limiter for auth endpoints (5 req / 15 min)
+// Strict rate limiter for OAuth endpoints (10 req / 15 min; each attempt uses 2: start + callback)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
+    prefix: "rl:oauth:",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendCommand: (...args: string[]) => redisClient.call(...(args as [string, ...string[]])) as any,
   }),
@@ -60,6 +61,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
+    prefix: "rl:api:",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendCommand: (...args: string[]) => redisClient.call(...(args as [string, ...string[]])) as any,
   }),
@@ -74,6 +76,7 @@ const credentialLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
+    prefix: "rl:credential:",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendCommand: (...args: string[]) => redisClient.call(...(args as [string, ...string[]])) as any,
   }),
