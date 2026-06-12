@@ -1,4 +1,4 @@
-import db, { eq, and, inArray, desc, asc, isNotNull } from "@repo/database";
+import db, { eq, and, inArray, desc, asc, isNotNull, count } from "@repo/database";
 import {
   responsesTable,
   responseAnswersTable,
@@ -8,7 +8,7 @@ import {
 } from "@repo/database/schema";
 import { withCache, CacheKeys } from "@repo/services/redis";
 import { router, formProcedure } from "../../trpc";
-import { responseListSchema, summaryDataSchema } from "./model";
+import { responseListPageSchema, summaryDataSchema } from "./model";
 import { z } from "../../schema";
 
 const TAGS = ["Form Responses"];
@@ -129,16 +129,36 @@ export const formsResponsesRouter = router({
 
   list: formProcedure
     .meta({ openapi: { method: "GET", path: "/forms/{formId}/responses", tags: TAGS } })
-    .input(z.object({ formId: z.string() }))
-    .output(responseListSchema)
-    .query(async ({ ctx }) => {
-      return withCache(CacheKeys.formResponses(ctx.form.id), 120, async () => {
+    .input(
+      z.object({
+        formId: z.string(),
+        limit: z.number().int().min(1).max(100).optional(),
+        cursor: z.number().int().min(0).optional(),
+      }),
+    )
+    .output(responseListPageSchema)
+    .query(async ({ ctx, input }) => {
+      const limit = input.limit ?? 50;
+      const offset = input.cursor ?? 0;
+
+      const loader = async () => {
         const versions = await db
           .select({ id: formVersionsTable.id })
           .from(formVersionsTable)
           .where(eq(formVersionsTable.formId, ctx.form.id));
         const versionIds = versions.map((v) => v.id);
-        if (versionIds.length === 0) return [];
+        if (versionIds.length === 0) return { items: [], total: 0, nextCursor: null };
+
+        const [totalRow] = await db
+          .select({ value: count() })
+          .from(responsesTable)
+          .where(
+            and(
+              inArray(responsesTable.formVersionId, versionIds),
+              isNotNull(responsesTable.completedAt),
+            ),
+          );
+        const total = totalRow?.value ?? 0;
 
         const responses = await db
           .select({ id: responsesTable.id, completedAt: responsesTable.completedAt })
@@ -149,8 +169,11 @@ export const formsResponsesRouter = router({
               isNotNull(responsesTable.completedAt),
             ),
           )
-          .orderBy(desc(responsesTable.completedAt));
-        if (responses.length === 0) return [];
+          .orderBy(desc(responsesTable.completedAt))
+          .limit(limit)
+          .offset(offset);
+
+        if (responses.length === 0) return { items: [], total, nextCursor: null };
 
         const responseIds = responses.map((r) => r.id);
 
@@ -178,7 +201,6 @@ export const formsResponsesRouter = router({
           .from(aiFollowupsTable)
           .where(inArray(aiFollowupsTable.responseId, responseIds));
 
-        // Index followups by responseId+fieldId for O(1) lookup
         const followupIndex = new Map<string, { aiQuestion: string; userAnswer: string | null }>();
         for (const f of followups) {
           followupIndex.set(`${f.responseId}:${f.fieldId}`, {
@@ -209,11 +231,22 @@ export const formsResponsesRouter = router({
           byResponse.set(a.responseId, list);
         }
 
-        return responses.map((r) => ({
+        const items = responses.map((r) => ({
           id: r.id,
           completedAt: r.completedAt,
           answers: byResponse.get(r.id) ?? [],
         }));
-      });
+
+        return {
+          items,
+          total,
+          nextCursor: offset + items.length < total ? offset + items.length : null,
+        };
+      };
+
+      if (offset === 0 && limit === 50) {
+        return withCache(CacheKeys.formResponses(ctx.form.id), 120, loader);
+      }
+      return loader();
     }),
 });

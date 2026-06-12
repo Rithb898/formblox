@@ -66,6 +66,39 @@ const apiLimiter = rateLimit({
   skip: () => env.NODE_ENV !== "prod",
 });
 
+// Sensitive credential operations — strict per-IP limit (10 / 15 min).
+// Mounted ahead of the tRPC/OpenAPI handlers; only matches auth paths.
+const credentialLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new RedisStore({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sendCommand: (...args: string[]) => redisClient.call(...(args as [string, ...string[]])) as any,
+  }),
+  skip: () => env.NODE_ENV !== "prod",
+  message: { error: "rate_limited" },
+});
+
+// Operations that must be tightly throttled regardless of transport (REST or tRPC).
+const CREDENTIAL_PATTERNS = [
+  /\/authentication\/(login|signup|forgot-password|reset-password|verify-email)/,
+  /auth\.(login|signup|forgotPassword|resetPassword|verifyEmail)/,
+];
+
+function credentialGuard(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const target = `${req.path}${req.url}`;
+  if (CREDENTIAL_PATTERNS.some((re) => re.test(target))) {
+    return credentialLimiter(req, res, next);
+  }
+  return next();
+}
+
 app.get("/", (req, res) => {
   return res.json({ message: "FormBlox is up and running..." });
 });
@@ -144,6 +177,7 @@ app.use("/docs", apiReference({ url: "/openapi.json" }));
 
 app.use(
   "/api",
+  credentialGuard,
   apiLimiter,
   createOpenApiExpressMiddleware({
     router: serverRouter,
@@ -153,6 +187,7 @@ app.use(
 
 app.use(
   "/trpc",
+  credentialGuard,
   apiLimiter,
   trpcExpress.createExpressMiddleware({
     router: serverRouter,

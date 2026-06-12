@@ -105,10 +105,16 @@ export const responseListItemSchema = z.object({
 
 export const responseListSchema = z.array(responseListItemSchema);
 
+export const responseListPageSchema = z.object({
+  items: z.array(responseListItemSchema),
+  total: z.number().int().describe("Total completed responses for the form"),
+  nextCursor: z.number().int().nullable().describe("Offset of the next page, or null"),
+});
+
 export const followupInputSchema = z.object({
-  fieldId: z.string().describe("Field nanoid that triggered the follow-up"),
-  aiQuestion: z.string().describe("The AI-generated follow-up question"),
-  userAnswer: z.string().nullable().describe("User's reply, or null if skipped"),
+  fieldId: z.string().max(64).describe("Field nanoid that triggered the follow-up"),
+  aiQuestion: z.string().max(2000).describe("The AI-generated follow-up question"),
+  userAnswer: z.string().max(10000).nullable().describe("User's reply, or null if skipped"),
 });
 
 export const summaryFieldSchema = z.object({

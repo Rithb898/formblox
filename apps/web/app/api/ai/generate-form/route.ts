@@ -2,6 +2,8 @@ import { generateObject } from "ai";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { aiModel, GENERATE_SYSTEM_PROMPT } from "~/lib/ai";
+import { getUserIdFromCookies } from "~/lib/auth";
+import { rateLimit } from "~/lib/rate-limit";
 import { FIELD_TYPES, type FieldType } from "@repo/forms";
 
 const bodySchema = z.object({
@@ -72,6 +74,12 @@ function normalizeConfig(type: FieldType, raw: RawConfig): Record<string, unknow
 }
 
 export async function POST(req: Request) {
+  const userId = await getUserIdFromCookies();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
+
+  const { allowed } = await rateLimit(`ai:generate-form:${userId}`, 20, 3600);
+  if (!allowed) return new Response("Rate limited", { status: 429 });
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) return new Response("Bad request", { status: 400 });

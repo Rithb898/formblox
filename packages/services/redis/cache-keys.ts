@@ -3,7 +3,7 @@ import { redisClient } from "./index";
 export const CacheKeys = {
   formSlug: (slug: string) => `form:slug:${slug}`,
   formSummary: (formId: string) => `form:summary:${formId}`,
-  formResponses: (formId: string) => `form:responses:${formId}`,
+  formResponses: (formId: string) => `form:responses:v2:${formId}`,
   formsPublicList: () => `forms:public:list`,
   workspaceForms: (workspaceId: string) => `workspace:forms:${workspaceId}`,
   userWorkspaces: (userId: string) => `user:workspaces:${userId}`,

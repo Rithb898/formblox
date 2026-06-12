@@ -3,7 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow, format } from "date-fns";
-import { Inbox, ArrowLeft, Sparkles, Clock, Hash } from "lucide-react";
+import { Inbox, ArrowLeft, Sparkles, Clock, Hash, Loader2 } from "lucide-react";
 import { trpc } from "~/trpc/client";
 import { cn } from "~/lib/utils";
 import { FormTabs } from "../_components/form-tabs";
@@ -18,12 +18,18 @@ function renderValue(value: unknown): string {
 
 export default function ResponsesPage({ params }: { params: Promise<{ formId: string }> }) {
   const { formId } = use(params);
-  const q = trpc.forms.responses.list.useQuery({ formId });
+  const q = trpc.forms.responses.list.useInfiniteQuery(
+    { formId },
+    { getNextPageParam: (last) => last.nextCursor },
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const responses = q.data?.pages.flatMap((p) => p.items) ?? [];
+  const count = q.data?.pages[0]?.total ?? 0;
 
   const columns: { fieldId: string; label: string }[] = [];
   const seenFieldIds = new Set<string>();
-  for (const response of q.data ?? []) {
+  for (const response of responses) {
     for (const answer of response.answers) {
       if (!seenFieldIds.has(answer.fieldId)) {
         seenFieldIds.add(answer.fieldId);
@@ -32,8 +38,6 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
     }
   }
 
-  const responses = q.data ?? [];
-  const count = responses.length;
   const selected = responses.find((r) => r.id === selectedId) ?? responses[0] ?? null;
 
   return (
@@ -176,6 +180,23 @@ export default function ResponsesPage({ params }: { params: Promise<{ formId: st
                   </button>
                 );
               })}
+              {q.hasNextPage && (
+                <button
+                  type="button"
+                  onClick={() => q.fetchNextPage()}
+                  disabled={q.isFetchingNextPage}
+                  className="w-full rounded-xl p-3 font-mono text-[11px] text-[#6B6B6B] ring-1 ring-white/[0.06] transition-colors hover:text-[#F2F2F2]"
+                >
+                  {q.isFetchingNextPage ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="size-3 animate-spin" />
+                      Loading…
+                    </span>
+                  ) : (
+                    "Load more"
+                  )}
+                </button>
+              )}
             </div>
 
             {/* RIGHT — detail */}

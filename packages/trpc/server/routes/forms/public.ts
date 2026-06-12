@@ -249,21 +249,36 @@ export const formsPublicRouter = router({
     .input(
       z.object({
         responseId: z.string().uuid(),
-        followups: z.array(followupInputSchema),
+        followups: z.array(followupInputSchema).min(1).max(50),
       }),
     )
     .output(z.void())
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (input.followups.length === 0) return;
 
-      // Verify the response exists before writing; fetch formId for cache invalidation
+      const ip = ctx.ip ?? "unknown";
+      const { allowed } = await rateLimit(`responses:followups:${ip}`, 30, 60);
+      if (!allowed) throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "rate_limited" });
+
+      // Verify the response exists; fetch formId (cache) and completedAt (recency).
       const [response] = await db
-        .select({ id: responsesTable.id, formId: formVersionsTable.formId })
+        .select({
+          id: responsesTable.id,
+          formId: formVersionsTable.formId,
+          completedAt: responsesTable.completedAt,
+        })
         .from(responsesTable)
         .innerJoin(formVersionsTable, eq(formVersionsTable.id, responsesTable.formVersionId))
         .where(eq(responsesTable.id, input.responseId))
         .limit(1);
       if (!response) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // Follow-ups are saved immediately after submission. Reject appends to
+      // responses completed more than an hour ago to close the "append forever" hole.
+      const completedAt = response.completedAt;
+      if (!completedAt || Date.now() - completedAt.getTime() > 60 * 60 * 1000) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "response_closed" });
+      }
 
       await db.insert(aiFollowupsTable).values(
         input.followups.map((f) => ({
